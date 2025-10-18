@@ -9,19 +9,28 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@hestia/ui": "workspace:*",
+    "@tamagui/animations-react-native": "^1.135.3",
+    "@tamagui/config-default": "^1.135.3",
+    "@tamagui/core": "^1.135.3",
+    "@tamagui/font-inter": "^1.135.3",
+    "@tamagui/shorthands": "^1.135.3",
+    "@tamagui/themes": "^1.135.3",
+    "@tamagui/toast": "^1.135.3",
+    "next": "15.5.5",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.5"
+    "tamagui": "^1.135.3"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
