@@ -1,4 +1,4 @@
-import { Card, XStack, YStack, H4, Paragraph, Button } from "tamagui";
+import { Card, XStack, YStack, H4, Paragraph, Button, Image } from "tamagui";
 import { MapPin, Clock, Euro } from "@tamagui/lucide-icons";
 
 interface MissionCardProps {
@@ -29,11 +29,11 @@ export function MissionCard({
     >
       <YStack gap="$3">
         {image && (
-          <Card.Image
+          <Image
             source={{ uri: image }}
             height={120}
             width="100%"
-            borderRadius="$3"
+            borderRadius={8}
           />
         )}
 
