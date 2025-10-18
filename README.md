@@ -13,7 +13,7 @@ Ce monorepo contient l’ensemble des applications **web**, **mobile**, et des *
 | **Mobile App**       | [Expo](https://expo.dev/) (React Native 0.74, TypeScript)                                                       |
 | **Backend / Data**   | [Supabase](https://supabase.io/) (PostgreSQL, Auth, Realtime, Storage)                                          |
 | **ORM Serveur**      | [Prisma](https://www.prisma.io/) _(optionnel pour les fonctions serveur Next)_                                  |
-| **Design System**    | [Tamagui](https://tamagui.dev/) / [NativeWind](https://www.nativewind.dev/)                                     |
+| **Design System**    | [Tamagui](https://tamagui.dev/)                                                                                 |
 | **State & Data**     | [TanStack Query](https://tanstack.com/query), [Zustand](https://zustand-demo.pmnd.rs/), [Zod](https://zod.dev/) |
 | **Monorepo Tooling** | [Turborepo](https://turbo.build/) + [pnpm](https://pnpm.io/)                                                    |
 | **CI/CD**            | [Vercel](https://vercel.com/) (Web) & [Expo EAS](https://expo.dev/eas) (Mobile)                                 |
