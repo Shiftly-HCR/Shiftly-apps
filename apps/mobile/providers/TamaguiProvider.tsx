@@ -1,5 +1,3 @@
-"use client";
-
 import { TamaguiProvider as TamaguiProviderBase } from "tamagui";
 import { config } from "@hestia/ui";
 

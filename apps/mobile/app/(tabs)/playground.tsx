@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   YStack,
   XStack,
@@ -14,49 +14,43 @@ import {
   Badge,
   Avatar,
   Header,
-  SearchBar,
-  MissionCard,
-  BottomNavigation,
   StatsCard,
   ChatBubble,
-  ProfileCard,
   FormField,
   Stack,
 } from "@hestia/ui";
+import { SearchBar } from "../../../../packages/ui/src/components/SearchBar";
+import { MissionCard } from "../../../../packages/ui/src/components/MissionCard";
+import { BottomNavigation } from "../../../../packages/ui/src/components/BottomNavigation";
+import { ProfileCard } from "../../../../packages/ui/src/components/ProfileCard";
 
 export default function PlaygroundScreen() {
-  const [activeTab, setActiveTab] = useState("home");
-  const [searchText, setSearchText] = useState("");
-
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} backgroundColor="$background">
       <Header
         title="Hestia UI Playground"
         showAvatar={true}
         avatarUrl="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
       />
 
-      <ScrollView flex={1} p="$4">
+      <ScrollView flex={1} padding="$4">
         <YStack gap="$6">
           {/* Buttons Section */}
           <YStack gap="$3">
             <H2>Boutons</H2>
-            <YStack gap="$3">
-              <Button bg="$orange9" color="white" size="$4">
+            <XStack gap="$3" flexWrap="wrap">
+              <Button backgroundColor="$orange9" color="white">
                 Bouton Principal
               </Button>
               <Button
                 variant="outlined"
                 borderColor="$orange9"
                 color="$orange9"
-                size="$4"
               >
                 Bouton Secondaire
               </Button>
-              <Button variant="ghost" color="$orange9" size="$4">
-                Bouton Ghost
-              </Button>
-            </YStack>
+              <Button color="$orange9">Bouton Ghost</Button>
+            </XStack>
           </YStack>
 
           <Separator />
@@ -64,7 +58,7 @@ export default function PlaygroundScreen() {
           {/* Cards Section */}
           <YStack gap="$3">
             <H2>Cartes</H2>
-            <YStack gap="$3">
+            <XStack gap="$3" flexWrap="wrap">
               <Card title="Carte Simple" subtitle="Description de la carte">
                 <Paragraph>Contenu de la carte</Paragraph>
               </Card>
@@ -74,7 +68,7 @@ export default function PlaygroundScreen() {
                 value="€1,250.00"
                 subtitle="Ce mois"
               />
-            </YStack>
+            </XStack>
           </YStack>
 
           <Separator />
@@ -82,7 +76,7 @@ export default function PlaygroundScreen() {
           {/* Badges Section */}
           <YStack gap="$3">
             <H2>Badges</H2>
-            <XStack gap="$3" fw="wrap">
+            <XStack gap="$3" flexWrap="wrap">
               <Badge>Cuisine</Badge>
               <Badge>Service</Badge>
               <Badge>Bartender</Badge>
@@ -94,11 +88,7 @@ export default function PlaygroundScreen() {
           {/* Search Bar */}
           <YStack gap="$3">
             <H2>Barre de Recherche</H2>
-            <SearchBar
-              placeholder="Rechercher une mission..."
-              value={searchText}
-              onChangeText={setSearchText}
-            />
+            <SearchBar placeholder="Rechercher une mission..." />
           </YStack>
 
           <Separator />
@@ -176,8 +166,8 @@ export default function PlaygroundScreen() {
           <YStack gap="$3">
             <H2>Navigation</H2>
             <BottomNavigation
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
+              activeTab="home"
+              onTabChange={(tab) => console.log("Tab changed:", tab)}
             />
           </YStack>
         </YStack>
