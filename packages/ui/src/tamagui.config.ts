@@ -38,6 +38,10 @@ const tokens = createTokens({
     red10: "#dc2626",
     orange8: "#ea580c",
     outlineColor: "#3b82f6",
+    black: colors.black,
+    white: colors.white,
+    primaryLight: hestiaLight.primaryLight,
+    gold: hestiaLight.gold,
   },
   radius: {
     $true: 8,

@@ -34,11 +34,11 @@ export default function PlaygroundScreen() {
             <Text fontSize={20} fontWeight="600">
               Boutons
             </Text>
-            <XStack gap={12} flexWrap="wrap">
+            <YStack gap={12}>
               <Button variant="primary">Bouton Principal</Button>
               <Button variant="secondary">Bouton Secondaire</Button>
               <Button variant="ghost">Bouton Ghost</Button>
-            </XStack>
+            </YStack>
           </YStack>
         </YStack>
       </ScrollView>

@@ -5,6 +5,7 @@ export const colors = {
   gray900: "#2B2B2B",
   gray050: "#F3F3F3",
   white: "#FFFFFF",
+  black: "#000000",
 };
 
 export const radius = {
@@ -28,20 +29,26 @@ export const hestiaLight = {
   background: colors.white,
   color: colors.gray900,
   primary: colors.hestiaOrange,
+  primaryLight: "rgba(255, 89, 0, 0.1)",
   secondary: colors.gray900,
+  gold: colors.hestiaGold,
   surface: colors.gray050,
   muted: "#EAEAEA",
   borderColor: "#E5E5E5",
+  black: colors.black,
 };
 
 export const hestiaDark = {
   background: "#121212",
   color: colors.white,
   primary: colors.hestiaOrange,
+  primaryLight: "rgba(255, 89, 0, 0.1)",
   secondary: colors.gray050,
+  gold: colors.hestiaGold,
   surface: "#1B1B1B",
   muted: "#2A2A2A",
   borderColor: "#2A2A2A",
+  black: colors.black,
 };
 
 export const hestiaPremium = {
