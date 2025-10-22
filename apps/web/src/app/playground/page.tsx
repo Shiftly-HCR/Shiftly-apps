@@ -53,6 +53,74 @@ export default function PlaygroundPage() {
               <Button variant="ghost">Bouton Ghost</Button>
             </XStack>
           </YStack>
+
+          <Separator />
+
+          {/* Badges Section */}
+          <YStack gap="$3">
+            <H2>Badges</H2>
+
+            <YStack gap="$2">
+              <H3>Variants de statut</H3>
+              <XStack gap="$2" flexWrap="wrap">
+                <Badge variant="default">Par défaut</Badge>
+                <Badge variant="success">Succès</Badge>
+                <Badge variant="warning">Avertissement</Badge>
+                <Badge variant="error">Erreur</Badge>
+                <Badge variant="info">Information</Badge>
+              </XStack>
+            </YStack>
+
+            <YStack gap="$2">
+              <H3>Variants de mission</H3>
+              <XStack gap="$2" flexWrap="wrap">
+                <Badge variant="inProgress">En cours</Badge>
+                <Badge variant="completed">Terminé</Badge>
+                <Badge variant="cancelled">Annulé</Badge>
+                <Badge variant="new">Nouvelle mission</Badge>
+                <Badge variant="urgent">Urgent</Badge>
+              </XStack>
+            </YStack>
+
+            <YStack gap="$2">
+              <H3>Variants spéciaux</H3>
+              <XStack gap="$2" flexWrap="wrap">
+                <Badge variant="premium">Premium</Badge>
+                <Badge variant="certified">Certifié</Badge>
+              </XStack>
+            </YStack>
+
+            <YStack gap="$2">
+              <H3>Tailles</H3>
+              <XStack gap="$2" flexWrap="wrap" alignItems="center">
+                <Badge variant="inProgress" size="sm">
+                  Petit
+                </Badge>
+                <Badge variant="inProgress" size="md">
+                  Moyen
+                </Badge>
+                <Badge variant="inProgress" size="lg">
+                  Grand
+                </Badge>
+              </XStack>
+            </YStack>
+
+            <YStack gap="$2">
+              <H3>Exemples d'usage</H3>
+              <XStack gap="$2" flexWrap="wrap">
+                <Badge>26€/h</Badge>
+                <Badge variant="inProgress">En mission</Badge>
+                <Badge variant="premium" size="sm">
+                  Premium
+                </Badge>
+                <Badge variant="new" size="sm">
+                  Nouveau
+                </Badge>
+              </XStack>
+            </YStack>
+          </YStack>
+
+          <Separator />
           {/* Input Section */}
           <YStack gap="$3">
             <H2>Champs de saisie</H2>

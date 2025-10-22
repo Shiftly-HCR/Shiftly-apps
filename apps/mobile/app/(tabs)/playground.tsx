@@ -2,6 +2,7 @@ import React from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
 import {
   Button,
+  Badge,
   Input,
   RadioGroup,
   Select,
@@ -48,6 +49,80 @@ export default function PlaygroundScreen() {
               <Button variant="primary">Bouton Principal</Button>
               <Button variant="secondary">Bouton Secondaire</Button>
               <Button variant="ghost">Bouton Ghost</Button>
+            </YStack>
+          </YStack>
+
+          {/* Badges Section */}
+          <YStack gap={12} marginTop={30}>
+            <Text fontSize={20} fontWeight="600">
+              Badges
+            </Text>
+
+            <YStack gap={16}>
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Variants de statut
+                </Text>
+                <XStack gap={8} flexWrap="wrap">
+                  <Badge variant="default">Par défaut</Badge>
+                  <Badge variant="success">Succès</Badge>
+                  <Badge variant="warning">Avertissement</Badge>
+                  <Badge variant="error">Erreur</Badge>
+                  <Badge variant="info">Information</Badge>
+                </XStack>
+              </YStack>
+
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Variants de mission
+                </Text>
+                <XStack gap={8} flexWrap="wrap">
+                  <Badge variant="inProgress">En cours</Badge>
+                  <Badge variant="completed">Terminé</Badge>
+                  <Badge variant="cancelled">Annulé</Badge>
+                  <Badge variant="new">Nouvelle mission</Badge>
+                  <Badge variant="urgent">Urgent</Badge>
+                </XStack>
+              </YStack>
+
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Variants spéciaux
+                </Text>
+                <XStack gap={8} flexWrap="wrap">
+                  <Badge variant="premium">Premium</Badge>
+                  <Badge variant="certified" icon={<Text>★</Text>}>
+                    Certifié
+                  </Badge>
+                </XStack>
+              </YStack>
+
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Tailles
+                </Text>
+                <XStack gap={8} flexWrap="wrap" alignItems="center">
+                  <Badge size="sm">Petit</Badge>
+                  <Badge size="md">Moyen</Badge>
+                  <Badge size="lg">Grand</Badge>
+                </XStack>
+              </YStack>
+
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Exemples d'usage
+                </Text>
+                <XStack gap={8} flexWrap="wrap">
+                  <Badge>26€/h</Badge>
+                  <Badge variant="inProgress">En mission</Badge>
+                  <Badge variant="premium" size="sm">
+                    Premium
+                  </Badge>
+                  <Badge variant="new" size="sm">
+                    Nouveau
+                  </Badge>
+                </XStack>
+              </YStack>
             </YStack>
           </YStack>
 
