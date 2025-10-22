@@ -2,7 +2,7 @@ export * from "./tamagui.config";
 export * from "./theme";
 export * from "./components/Stack";
 export * from "./components/Button";
-export * from "./components/Input";
+export * from "./components/form/Input";
 export * from "./components/Card";
 export * from "./components/Badge";
 export * from "./components/Avatar";

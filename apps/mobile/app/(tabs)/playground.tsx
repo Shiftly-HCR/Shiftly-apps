@@ -1,6 +1,6 @@
 import React from "react";
 import { YStack, XStack, ScrollView, Card as TamaguiCard, Text } from "tamagui";
-import { Button } from "@hestia/ui";
+import { Button, Input } from "@hestia/ui";
 
 export default function PlaygroundScreen() {
   return (
@@ -38,6 +38,49 @@ export default function PlaygroundScreen() {
               <Button variant="primary">Bouton Principal</Button>
               <Button variant="secondary">Bouton Secondaire</Button>
               <Button variant="ghost">Bouton Ghost</Button>
+            </YStack>
+          </YStack>
+
+          {/* Input Section */}
+          <YStack gap={30}>
+            <Text fontSize={20} fontWeight="600" marginTop={50}>
+              Champs de saisie
+            </Text>
+            <YStack gap={30}>
+              {/* Input simple avec label */}
+              <Input label="Titre attendu" placeholder="Du lac du Der" />
+
+              {/* Input requis */}
+              <Input label="Ville" placeholder="Paris" required />
+
+              {/* Input avec texte d'aide */}
+              <Input
+                label="Parcours diplômant"
+                placeholder="Ex: Formation sous-officier"
+                helperText="Indiquez le parcours ou formation diplômante"
+              />
+
+              {/* TextArea multiligne */}
+              <Input
+                label="Description"
+                placeholder="Décrivez votre mission..."
+                multiline
+              />
+
+              {/* Input avec erreur */}
+              <Input
+                label="Email"
+                placeholder="exemple@email.com"
+                error="Format d'email invalide"
+                required
+              />
+
+              {/* Input désactivé */}
+              <Input
+                label="Champ désactivé"
+                placeholder="Non modifiable"
+                disabled
+              />
             </YStack>
           </YStack>
         </YStack>
