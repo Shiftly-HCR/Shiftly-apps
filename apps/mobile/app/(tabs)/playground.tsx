@@ -1,6 +1,14 @@
 import React from "react";
 import { YStack, XStack, ScrollView, Card as TamaguiCard, Text } from "tamagui";
-import { Button, Input, RadioGroup, Select, Checkbox } from "@hestia/ui";
+import {
+  Button,
+  Input,
+  RadioGroup,
+  Select,
+  Checkbox,
+  DatePicker,
+  FileUpload,
+} from "@hestia/ui";
 
 export default function PlaygroundScreen() {
   return (
