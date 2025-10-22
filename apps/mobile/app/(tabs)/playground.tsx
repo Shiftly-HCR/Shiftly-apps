@@ -1,6 +1,6 @@
 import React from "react";
 import { YStack, XStack, ScrollView, Card as TamaguiCard, Text } from "tamagui";
-import { Button, Input } from "@hestia/ui";
+import { Button, Input, RadioGroup, Select, Checkbox } from "@hestia/ui";
 
 export default function PlaygroundScreen() {
   return (
@@ -81,6 +81,43 @@ export default function PlaygroundScreen() {
                 placeholder="Non modifiable"
                 disabled
               />
+
+              {/* RadioGroup */}
+              <RadioGroup
+                label="Uniforme"
+                options={[
+                  { label: "Oui", value: "yes" },
+                  { label: "Non", value: "no" },
+                ]}
+                required
+              />
+
+              {/* RadioGroup vertical */}
+              <RadioGroup
+                label="Niveau requis"
+                options={[
+                  { label: "Débutant", value: "beginner" },
+                  { label: "Intermédiaire", value: "intermediate" },
+                  { label: "Avancé", value: "advanced" },
+                ]}
+                orientation="vertical"
+              />
+
+              {/* Select */}
+              <Select
+                label="Ville"
+                placeholder="Sélectionnez une ville"
+                options={[
+                  { label: "Paris", value: "paris" },
+                  { label: "Lyon", value: "lyon" },
+                  { label: "Marseille", value: "marseille" },
+                  { label: "Toulouse", value: "toulouse" },
+                ]}
+                required
+              />
+
+              {/* Checkbox */}
+              <Checkbox label="J'accepte les conditions générales d'utilisation" />
             </YStack>
           </YStack>
         </YStack>

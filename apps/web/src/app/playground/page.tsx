@@ -20,6 +20,11 @@ import {
   FormField,
   Stack,
   Input,
+  RadioGroup,
+  Select,
+  Checkbox,
+  FileUpload,
+  DatePicker,
 } from "@hestia/ui";
 import { SearchBar } from "../../../../../packages/ui/src/components/web/SearchBar";
 import { MissionCard } from "../../../../../packages/ui/src/components/web/MissionCard";
@@ -83,6 +88,59 @@ export default function PlaygroundPage() {
                 label="Champ désactivé"
                 placeholder="Non modifiable"
                 disabled
+              />
+
+              {/* RadioGroup */}
+              <RadioGroup
+                label="Uniforme"
+                options={[
+                  { label: "Oui", value: "yes" },
+                  { label: "Non", value: "no" },
+                ]}
+                required
+              />
+
+              {/* RadioGroup vertical */}
+              <RadioGroup
+                label="Niveau requis"
+                options={[
+                  { label: "Débutant", value: "beginner" },
+                  { label: "Intermédiaire", value: "intermediate" },
+                  { label: "Avancé", value: "advanced" },
+                ]}
+                orientation="vertical"
+              />
+
+              {/* Select */}
+              <Select
+                label="Ville"
+                placeholder="Sélectionnez une ville"
+                options={[
+                  { label: "Paris", value: "paris" },
+                  { label: "Lyon", value: "lyon" },
+                  { label: "Marseille", value: "marseille" },
+                  { label: "Toulouse", value: "toulouse" },
+                ]}
+                required
+              />
+
+              {/* Checkbox */}
+              <Checkbox label="J'accepte les conditions générales d'utilisation" />
+
+              {/* DatePicker */}
+              <DatePicker
+                label="Date de début"
+                required
+                helperText="Sélectionnez la date de début de la mission"
+              />
+
+              {/* FileUpload */}
+              <FileUpload
+                label="Documents à fournir"
+                accept="image/*,.pdf"
+                multiple
+                helperText="Carte d'identité et Carte Vitale"
+                required
               />
             </YStack>
           </YStack>
