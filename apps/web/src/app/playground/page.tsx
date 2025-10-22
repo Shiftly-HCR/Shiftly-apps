@@ -11,11 +11,9 @@ import {
 } from "tamagui";
 import {
   Button,
-  Card,
   Badge,
   Avatar,
   Header,
-  StatsCard,
   ChatBubble,
   FormField,
   Stack,
@@ -25,9 +23,13 @@ import {
   Checkbox,
   FileUpload,
   DatePicker,
+  BaseCard,
+  MissionCard,
+  FreelanceCard,
+  StatCard,
+  MissionDetailCard,
 } from "@hestia/ui";
 import { SearchBar } from "../../../../../packages/ui/src/components/web/SearchBar";
-import { MissionCard } from "../../../../../packages/ui/src/components/web/MissionCard";
 import { BottomNavigation } from "../../../../../packages/ui/src/components/web/BottomNavigation";
 import { ProfileCard } from "../../../../../packages/ui/src/components/web/ProfileCard";
 
@@ -142,6 +144,97 @@ export default function PlaygroundPage() {
                 helperText="Carte d'identité et Carte Vitale"
                 required
               />
+            </YStack>
+          </YStack>
+
+          <Separator />
+
+          {/* Cards Section */}
+          <YStack gap="$3">
+            <H2>Cartes</H2>
+
+            {/* StatCards */}
+            <YStack gap="$2">
+              <H3>Cartes de statistiques</H3>
+              <XStack gap="$3" flexWrap="wrap">
+                <StatCard label="Missions actives" value="2" color="$primary" />
+                <StatCard
+                  label="Candidatures en attente"
+                  value="15"
+                  color="$gold"
+                />
+                <StatCard
+                  label="Taux de réussite"
+                  value="80%"
+                  color="#4CAF50"
+                  trend="up"
+                  trendValue="12%"
+                />
+              </XStack>
+            </YStack>
+
+            {/* MissionCards */}
+            <YStack gap="$2">
+              <H3>Cartes de missions</H3>
+              <XStack gap="$3" flexWrap="wrap">
+                <MissionCard
+                  title="Serveur(se) pour soirée événementielle"
+                  date="18 Juillet 2024"
+                  time="18:00 - 00:30"
+                  price="25€"
+                  priceUnit="/ heure"
+                  image="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop"
+                  isPremium
+                />
+                <MissionCard
+                  title="Chef de rang - Hôtel Le Gourmet"
+                  date="20 Juillet 2024"
+                  time="12:00 - 22:00"
+                  price="24€"
+                  priceUnit="/ heure"
+                  image="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop"
+                />
+              </XStack>
+            </YStack>
+
+            {/* FreelanceCards */}
+            <YStack gap="$2">
+              <H3>Cartes de freelances</H3>
+              <XStack gap="$3" flexWrap="wrap">
+                <FreelanceCard
+                  name="Léa Martin"
+                  subtitle="Serveuse expérimentée"
+                  avatar="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+                  rating={4.8}
+                  isOnline
+                  tags={["Contacter", "Service client", "Anglais"]}
+                  onViewProfile={() => console.log("View profile")}
+                />
+                <FreelanceCard
+                  name="Jean Dupont"
+                  subtitle="Chef de rang professionnel"
+                  avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+                  rating={4.9}
+                  tags={["Restauration", "Hôtellerie"]}
+                  onViewProfile={() => console.log("View profile")}
+                />
+              </XStack>
+            </YStack>
+
+            {/* BaseCard */}
+            <YStack gap="$2">
+              <H3>Carte de base</H3>
+              <BaseCard elevated>
+                <YStack gap="$2">
+                  <Paragraph fontSize={18} fontWeight="600">
+                    Contenu personnalisé
+                  </Paragraph>
+                  <Paragraph>
+                    Utilisez BaseCard pour créer vos propres designs de cartes
+                    avec le style Hestia.
+                  </Paragraph>
+                </YStack>
+              </BaseCard>
             </YStack>
           </YStack>
 

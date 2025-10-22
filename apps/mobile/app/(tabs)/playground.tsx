@@ -1,13 +1,15 @@
 import React from "react";
-import { YStack, XStack, ScrollView, Card as TamaguiCard, Text } from "tamagui";
+import { YStack, XStack, ScrollView, Text } from "tamagui";
 import {
   Button,
   Input,
   RadioGroup,
   Select,
   Checkbox,
-  DatePicker,
-  FileUpload,
+  BaseCard,
+  MissionCard,
+  FreelanceCard,
+  StatCard,
 } from "@hestia/ui";
 
 export default function PlaygroundScreen() {
@@ -126,6 +128,92 @@ export default function PlaygroundScreen() {
 
               {/* Checkbox */}
               <Checkbox label="J'accepte les conditions générales d'utilisation" />
+            </YStack>
+          </YStack>
+
+          {/* Cards Section */}
+          <YStack gap={30}>
+            <Text fontSize={20} fontWeight="600" marginTop={50}>
+              Cartes
+            </Text>
+
+            {/* StatCards */}
+            <YStack gap={12}>
+              <Text fontSize={16} fontWeight="600">
+                Cartes de statistiques
+              </Text>
+              <XStack gap={12} flexWrap="wrap">
+                <StatCard label="Missions actives" value="2" />
+                <StatCard label="Candidatures" value="15" color="$gold" />
+              </XStack>
+            </YStack>
+
+            {/* MissionCards */}
+            <YStack gap={12}>
+              <Text fontSize={16} fontWeight="600">
+                Cartes de missions
+              </Text>
+              <MissionCard
+                title="Serveur(se) pour soirée événementielle"
+                date="18 Juillet 2024"
+                time="18:00 - 00:30"
+                price="25€"
+                priceUnit="/ heure"
+                image="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop"
+                isPremium
+              />
+              <MissionCard
+                title="Chef de rang - Hôtel Le Gourmet"
+                date="20 Juillet 2024"
+                time="12:00 - 22:00"
+                price="24€"
+                priceUnit="/ heure"
+                image="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop"
+              />
+            </YStack>
+
+            {/* FreelanceCards */}
+            <YStack gap={12}>
+              <Text fontSize={16} fontWeight="600">
+                Cartes de freelances
+              </Text>
+              <XStack gap={12} flexWrap="wrap">
+                <FreelanceCard
+                  name="Léa Martin"
+                  subtitle="Serveuse expérimentée"
+                  avatar="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+                  rating={4.8}
+                  isOnline
+                  tags={["Contacter", "Service client", "Anglais"]}
+                  onViewProfile={() => console.log("View profile")}
+                />
+                <FreelanceCard
+                  name="Jean Dupont"
+                  subtitle="Chef de rang"
+                  avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+                  rating={4.9}
+                  tags={["Restauration"]}
+                  onViewProfile={() => console.log("View profile")}
+                />
+              </XStack>
+            </YStack>
+
+            {/* BaseCard */}
+            <YStack gap={12}>
+              <Text fontSize={16} fontWeight="600">
+                Carte de base
+              </Text>
+              <BaseCard elevated>
+                <YStack gap={8}>
+                  <Text fontSize={18} fontWeight="600">
+                    Contenu personnalisé
+                  </Text>
+                  <Text fontSize={14} color="#666666">
+                    Utilisez BaseCard pour créer vos propres designs de cartes
+                    avec le style Hestia.
+                  </Text>
+                </YStack>
+              </BaseCard>
             </YStack>
           </YStack>
         </YStack>
