@@ -1,5 +1,5 @@
 import { Button as TButton, styled, Text } from "tamagui";
-import React from "react";
+import React, { useState } from "react";
 
 const StyledButton = styled(TButton, {
   name: "Button",
@@ -125,7 +125,12 @@ export const Button = ({
   size = "md",
   ...props
 }: ButtonProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const getTextColor = () => {
+    if (isHovered && variant === "secondary") {
+      return "#000000";
+    }
     switch (variant) {
       case "primary":
         return "white";
@@ -152,7 +157,13 @@ export const Button = ({
   };
 
   return (
-    <StyledButton variant={variant} size={size} {...props}>
+    <StyledButton
+      variant={variant}
+      size={size}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      {...props}
+    >
       <Text
         color={getTextColor()}
         textAlign="center"
