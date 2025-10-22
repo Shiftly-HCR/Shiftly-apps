@@ -8,14 +8,14 @@ const StyledCard = styled(YStack, {
   borderWidth: 1,
   borderColor: "$borderColor",
   padding: "$4",
-  shadowColor: "#00000010",
+  shadowColor: "rgba(0, 0, 0, 0.08)",
   shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
+  shadowOpacity: 1,
   shadowRadius: 8,
   elevation: 2,
   hoverStyle: {
     borderColor: "$primary",
-    shadowOpacity: 0.15,
+    shadowColor: "rgba(0, 0, 0, 0.12)",
     scale: 1.01,
   },
   pressStyle: {
@@ -24,9 +24,13 @@ const StyledCard = styled(YStack, {
   variants: {
     elevated: {
       true: {
-        shadowOpacity: 0.15,
+        shadowColor: "rgba(0, 0, 0, 0.1)",
+        shadowOffset: { width: 0, height: 4 },
         shadowRadius: 12,
         elevation: 4,
+        hoverStyle: {
+          shadowColor: "rgba(0, 0, 0, 0.15)",
+        },
       },
     },
     clickable: {
