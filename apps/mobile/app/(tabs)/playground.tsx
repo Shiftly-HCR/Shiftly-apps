@@ -11,9 +11,12 @@ import {
   MissionCard,
   FreelanceCard,
   StatCard,
+  useHestiaToast,
 } from "@hestia/ui";
 
 export default function PlaygroundScreen() {
+  const toast = useHestiaToast();
+
   return (
     <YStack flex={1} backgroundColor="white">
       {/* Header simplifié */}
@@ -289,6 +292,189 @@ export default function PlaygroundScreen() {
                   </Text>
                 </YStack>
               </BaseCard>
+            </YStack>
+          </YStack>
+
+          {/* Toast Section */}
+          <YStack gap={12} marginTop={30}>
+            <Text fontSize={20} fontWeight="600">
+              Toasts (Notifications)
+            </Text>
+
+            <YStack gap={16}>
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Types de notifications
+                </Text>
+                <XStack gap={8} flexWrap="wrap">
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#22C55E"
+                    borderRadius={8}
+                    pressStyle={{ opacity: 0.85 }}
+                    onPress={() =>
+                      toast.success("Mission acceptée", {
+                        description:
+                          "La mission a été ajoutée à votre planning",
+                      })
+                    }
+                  >
+                    <Text color="white" fontWeight="600" fontSize={14}>
+                      Toast Succès
+                    </Text>
+                  </XStack>
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#EF4444"
+                    borderRadius={8}
+                    pressStyle={{ opacity: 0.85 }}
+                    onPress={() =>
+                      toast.error("Erreur de connexion", {
+                        description: "Impossible de se connecter au serveur",
+                      })
+                    }
+                  >
+                    <Text color="white" fontWeight="600" fontSize={14}>
+                      Toast Erreur
+                    </Text>
+                  </XStack>
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#F3F3F3"
+                    borderColor="#E5E5E5"
+                    borderWidth={1}
+                    borderRadius={8}
+                    pressStyle={{ backgroundColor: "#EAEAEA" }}
+                    onPress={() =>
+                      toast.info("Nouvelle fonctionnalité", {
+                        description: "Découvrez le nouveau système de badges",
+                      })
+                    }
+                  >
+                    <Text color="#2B2B2B" fontWeight="600" fontSize={14}>
+                      Toast Info
+                    </Text>
+                  </XStack>
+                </XStack>
+              </YStack>
+
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Notifications personnalisées
+                </Text>
+                <XStack gap={8} flexWrap="wrap">
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#FF5900"
+                    borderRadius={8}
+                    pressStyle={{ opacity: 0.85 }}
+                    onPress={() =>
+                      toast.show("Notification simple", {
+                        duration: 3000,
+                      })
+                    }
+                  >
+                    <Text color="white" fontWeight="600" fontSize={14}>
+                      Toast Simple (3s)
+                    </Text>
+                  </XStack>
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#FFE5D9"
+                    borderColor="#FF5900"
+                    borderWidth={1}
+                    borderRadius={8}
+                    pressStyle={{ backgroundColor: "#FFD5C2" }}
+                    onPress={() =>
+                      toast.success("Profil mis à jour", {
+                        duration: 5000,
+                        description:
+                          "Vos modifications ont été enregistrées avec succès",
+                      })
+                    }
+                  >
+                    <Text color="#FF5900" fontWeight="600" fontSize={14}>
+                      Toast Long (5s)
+                    </Text>
+                  </XStack>
+                </XStack>
+              </YStack>
+
+              <YStack gap={8}>
+                <Text fontSize={16} fontWeight="600">
+                  Cas d'usage réels
+                </Text>
+                <XStack gap={8} flexWrap="wrap">
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#2B2B2B"
+                    borderRadius={8}
+                    alignItems="center"
+                    gap={6}
+                    pressStyle={{ opacity: 0.85 }}
+                    onPress={() =>
+                      toast.success("Candidature envoyée", {
+                        description:
+                          "Le client examinera votre profil sous 24h",
+                      })
+                    }
+                  >
+                    <Text fontSize={16}>📝</Text>
+                    <Text color="white" fontWeight="600" fontSize={14}>
+                      Candidature
+                    </Text>
+                  </XStack>
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#FFE5D9"
+                    borderColor="#FF5900"
+                    borderWidth={1}
+                    borderRadius={8}
+                    alignItems="center"
+                    gap={6}
+                    pressStyle={{ backgroundColor: "#FFD5C2" }}
+                    onPress={() =>
+                      toast.info("Nouveau message", {
+                        description: "Jean Dupont vous a envoyé un message",
+                      })
+                    }
+                  >
+                    <Text fontSize={16}>💬</Text>
+                    <Text color="#FF5900" fontWeight="600" fontSize={14}>
+                      Message
+                    </Text>
+                  </XStack>
+                  <XStack
+                    paddingHorizontal={16}
+                    paddingVertical={10}
+                    backgroundColor="#F3F3F3"
+                    borderColor="#E5E5E5"
+                    borderWidth={1}
+                    borderRadius={8}
+                    alignItems="center"
+                    gap={6}
+                    pressStyle={{ backgroundColor: "#EAEAEA" }}
+                    onPress={() =>
+                      toast.error("Paiement refusé", {
+                        description:
+                          "Veuillez vérifier vos informations bancaires",
+                      })
+                    }
+                  >
+                    <Text fontSize={16}>💳</Text>
+                    <Text color="#2B2B2B" fontWeight="600" fontSize={14}>
+                      Paiement
+                    </Text>
+                  </XStack>
+                </XStack>
+              </YStack>
             </YStack>
           </YStack>
         </YStack>

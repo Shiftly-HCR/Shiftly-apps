@@ -1,10 +1,13 @@
 import { TamaguiProvider as TamaguiProviderBase } from "tamagui";
-import { config } from "@hestia/ui";
+import { config, ToastProvider, ToastViewport } from "@hestia/ui";
 
 export function TamaguiProvider({ children }: { children: React.ReactNode }) {
   return (
     <TamaguiProviderBase config={config} defaultTheme="light">
-      {children}
+      <ToastProvider>
+        {children}
+        <ToastViewport />
+      </ToastProvider>
     </TamaguiProviderBase>
   );
 }
