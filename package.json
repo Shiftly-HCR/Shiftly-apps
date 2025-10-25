@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@tamagui/lucide-icons": "^1.135.3",
-    "burnt": "^0.13.0"
+    "burnt": "^0.13.0",
+    "react-icons": "^5.4.0"
   }
 }
