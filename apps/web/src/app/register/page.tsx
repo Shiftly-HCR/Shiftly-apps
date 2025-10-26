@@ -1,27 +1,36 @@
 "use client";
 
-import { YStack, XStack, Text, Image } from "tamagui";
+import { YStack, XStack, Text } from "tamagui";
 import { Button, Input } from "@hestia/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLogin = () => {
-    console.log("Login:", { email, password });
+  const handleRegister = () => {
+    console.log("Register:", {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+    });
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google login");
+  const handleGoogleRegister = () => {
+    console.log("Google register");
   };
 
-  const handleFacebookLogin = () => {
-    console.log("Facebook login");
+  const handleFacebookRegister = () => {
+    console.log("Facebook register");
   };
 
   return (
@@ -32,6 +41,7 @@ export default function LoginPage() {
       justifyContent="center"
       padding="$4"
       minHeight="100vh"
+      paddingVertical="$8"
     >
       <YStack
         maxWidth={440}
@@ -57,7 +67,7 @@ export default function LoginPage() {
             alignItems="center"
             justifyContent="center"
           >
-            <Text fontSize={24}>🔑</Text>
+            <Text fontSize={24}>👤</Text>
           </YStack>
 
           {/* Titre et sous-titre */}
@@ -68,7 +78,7 @@ export default function LoginPage() {
               color="#2B2B2B"
               textAlign="center"
             >
-              Connexion Recruteur
+              Créer un compte
             </Text>
             <Text
               fontSize={14}
@@ -76,12 +86,34 @@ export default function LoginPage() {
               textAlign="center"
               lineHeight={20}
             >
-              Accédez à votre espace pour gérer vos missions
+              Rejoignez Hestia et commencez à gérer vos missions
             </Text>
           </YStack>
 
           {/* Formulaire */}
           <YStack gap="$4" width="100%">
+            {/* Nom et Prénom */}
+            <XStack gap="$3" width="100%">
+              <YStack flex={1}>
+                <Input
+                  label="Prénom"
+                  placeholder="Jean"
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  required
+                />
+              </YStack>
+              <YStack flex={1}>
+                <Input
+                  label="Nom"
+                  placeholder="Dupont"
+                  value={lastName}
+                  onChangeText={setLastName}
+                  required
+                />
+              </YStack>
+            </XStack>
+
             {/* Email */}
             <Input
               label="Adresse e-mail"
@@ -90,42 +122,39 @@ export default function LoginPage() {
               onChangeText={setEmail}
               autoComplete="email"
               keyboardType="email-address"
+              required
             />
 
             {/* Mot de passe */}
-            <YStack gap="$2" width="100%">
-              <XStack justifyContent="space-between" alignItems="center">
-                <Text fontSize={14} fontWeight="600" color="#2B2B2B">
-                  Mot de passe
-                </Text>
-                <Text
-                  fontSize={14}
-                  color="#FF5900"
-                  fontWeight="600"
-                  cursor="pointer"
-                  hoverStyle={{ textDecorationLine: "underline" }}
-                  onPress={() => console.log("Forgot password")}
-                >
-                  Mot de passe oublié ?
-                </Text>
-              </XStack>
-              <Input
-                placeholder="Entrez votre mot de passe"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoComplete="current-password"
-              />
-            </YStack>
+            <Input
+              label="Mot de passe"
+              placeholder="Minimum 8 caractères"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="new-password"
+              required
+            />
 
-            {/* Bouton de connexion */}
+            {/* Confirmation mot de passe */}
+            <Input
+              label="Confirmer le mot de passe"
+              placeholder="Répétez votre mot de passe"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              autoComplete="new-password"
+              required
+            />
+
+            {/* Bouton d'inscription */}
             <Button
               variant="primary"
               size="lg"
-              onPress={handleLogin}
+              onPress={handleRegister}
               marginTop="$2"
             >
-              Se connecter
+              Créer mon compte
             </Button>
           </YStack>
 
@@ -141,7 +170,7 @@ export default function LoginPage() {
           {/* Boutons sociaux */}
           <XStack gap="$3" width="100%">
             <YStack flex={1}>
-              <Button variant="ghost" size="md" onPress={handleGoogleLogin}>
+              <Button variant="ghost" size="md" onPress={handleGoogleRegister}>
                 <XStack gap="$2" alignItems="center">
                   <FcGoogle size={20} />
                   <Text fontSize={14} fontWeight="600" color="#2B2B2B">
@@ -152,7 +181,11 @@ export default function LoginPage() {
             </YStack>
 
             <YStack flex={1}>
-              <Button variant="ghost" size="md" onPress={handleFacebookLogin}>
+              <Button
+                variant="ghost"
+                size="md"
+                onPress={handleFacebookRegister}
+              >
                 <XStack gap="$2" alignItems="center">
                   <FaFacebook size={20} color="#1877F2" />
                   <Text fontSize={14} fontWeight="600" color="#2B2B2B">
@@ -163,10 +196,10 @@ export default function LoginPage() {
             </YStack>
           </XStack>
 
-          {/* Lien d'inscription */}
+          {/* Lien de connexion */}
           <XStack gap="$1" marginTop="$2">
             <Text fontSize={14} color="#6B7280">
-              Vous n'avez pas de compte ?
+              Vous avez déjà un compte ?
             </Text>
             <Text
               fontSize={14}
@@ -174,9 +207,9 @@ export default function LoginPage() {
               fontWeight="600"
               cursor="pointer"
               hoverStyle={{ textDecorationLine: "underline" }}
-              onPress={() => router.push("/register")}
+              onPress={() => router.push("/login")}
             >
-              Inscrivez-vous
+              Connectez-vous
             </Text>
           </XStack>
         </YStack>
