@@ -1,11 +1,17 @@
 // Tokens & thèmes Hestia
 export const colors = {
   hestiaOrange: "#FF5900",
+  hestiaOrangeHover: "#E04F00",
   hestiaGold: "#CC9933",
   gray900: "#2B2B2B",
+  gray700: "#6B7280",
+  gray500: "#9CA3AF",
+  gray200: "#E5E5E5",
+  gray100: "#EAEAEA",
   gray050: "#F3F3F3",
   white: "#FFFFFF",
   black: "#000000",
+  backgroundLight: "#F9FAFB",
 };
 
 export const radius = {
@@ -27,14 +33,18 @@ export const spacing = {
 
 export const hestiaLight = {
   background: colors.white,
+  backgroundLight: colors.backgroundLight,
   color: colors.gray900,
+  colorSecondary: colors.gray700,
+  colorTertiary: colors.gray500,
   primary: colors.hestiaOrange,
+  primaryHover: colors.hestiaOrangeHover,
   primaryLight: "rgba(255, 89, 0, 0.1)",
   secondary: colors.gray900,
   gold: colors.hestiaGold,
   surface: colors.gray050,
-  muted: "#EAEAEA",
-  borderColor: "#E5E5E5",
+  muted: colors.gray100,
+  borderColor: colors.gray200,
   black: colors.black,
 };
 

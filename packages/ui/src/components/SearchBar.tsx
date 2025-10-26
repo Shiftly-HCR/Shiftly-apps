@@ -1,5 +1,7 @@
-import { XStack, Input, Button } from "tamagui";
-import { Search } from "@tamagui/lucide-icons";
+import React from "react";
+import { XStack, Input, YStack } from "tamagui";
+import { FiSearch } from "react-icons/fi";
+import { colors } from "../theme";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -9,7 +11,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({
-  placeholder = "Rechercher...",
+  placeholder = "Rechercher un poste, un lieu ou un établissement",
   value,
   onChangeText,
   onSearch,
@@ -17,14 +19,20 @@ export function SearchBar({
   return (
     <XStack
       alignItems="center"
-      gap="$2"
-      padding="$3"
-      backgroundColor="$background"
-      borderRadius="$4"
+      paddingLeft="$4"
+      paddingRight="$1.5"
+      paddingVertical="$1.5"
+      backgroundColor={colors.gray050}
+      borderRadius={100}
       borderWidth={1}
-      borderColor="$borderColor"
+      borderColor={colors.gray200}
+      gap="$3"
+      maxWidth={600}
+      width="100%"
+      hoverStyle={{
+        backgroundColor: colors.gray100,
+      }}
     >
-      <Search size="$1" color="$gray10" />
       <Input
         flex={1}
         borderWidth={0}
@@ -32,13 +40,35 @@ export function SearchBar({
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
-        size="$4"
+        fontSize={14}
+        color={colors.gray900}
+        placeholderTextColor={colors.gray500}
+        outlineWidth={0}
+        height={44}
+        focusStyle={{
+          borderWidth: 0,
+          outlineWidth: 0,
+          backgroundColor: "transparent",
+        }}
       />
-      {onSearch && (
-        <Button size="$3" onPress={onSearch}>
-          Rechercher
-        </Button>
-      )}
+      <YStack
+        width={44}
+        height={44}
+        borderRadius={22}
+        backgroundColor={colors.hestiaOrange}
+        alignItems="center"
+        justifyContent="center"
+        cursor="pointer"
+        hoverStyle={{
+          backgroundColor: colors.hestiaOrangeHover,
+        }}
+        pressStyle={{
+          scale: 0.95,
+        }}
+        onPress={onSearch}
+      >
+        <FiSearch size={20} color={colors.white} />
+      </YStack>
     </XStack>
   );
 }

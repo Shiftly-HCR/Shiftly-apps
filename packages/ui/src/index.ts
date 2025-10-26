@@ -7,6 +7,7 @@ export * from "./components/Cards";
 export * from "./components/Badge";
 export * from "./components/Avatar";
 export * from "./components/Header";
+export * from "./components/Navbar";
 export * from "./components/SearchBar";
 export * from "./components/BottomNavigation";
 export * from "./components/ChatBubble";
