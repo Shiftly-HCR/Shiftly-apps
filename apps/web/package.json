@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@hestia/data": "workspace:*",
     "@hestia/ui": "workspace:*",
     "@tamagui/animations-react-native": "^1.135.3",
     "@tamagui/config-default": "^1.135.3",
@@ -28,6 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",
     "tailwindcss": "^4",

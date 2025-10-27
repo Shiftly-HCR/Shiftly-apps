@@ -12,6 +12,7 @@ interface NavbarProps {
   onMissionsClick?: () => void;
   onSubscriptionClick?: () => void;
   onHelpClick?: () => void;
+  onLogoutClick?: () => void;
 }
 
 export function Navbar({
@@ -23,6 +24,7 @@ export function Navbar({
   onMissionsClick,
   onSubscriptionClick,
   onHelpClick,
+  onLogoutClick,
 }: NavbarProps) {
   return (
     <YStack
@@ -124,6 +126,20 @@ export function Navbar({
           >
             Aide
           </Text>
+          {onLogoutClick && (
+            <Text
+              fontSize={14}
+              fontWeight="600"
+              color={colors.gray900}
+              cursor="pointer"
+              hoverStyle={{
+                color: "#EF4444",
+              }}
+              onPress={onLogoutClick}
+            >
+              Déconnexion
+            </Text>
+          )}
 
           {/* Avatar utilisateur */}
           <XStack

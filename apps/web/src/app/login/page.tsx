@@ -4,24 +4,34 @@ import { YStack, XStack, Text, Image } from "tamagui";
 import { Button, Input } from "@hestia/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
-import { FaFacebook } from "react-icons/fa";
+import { signIn } from "@hestia/data";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    console.log("Login:", { email, password });
-  };
+  const handleLogin = async () => {
+    setError("");
+    setIsLoading(true);
 
-  const handleGoogleLogin = () => {
-    console.log("Google login");
-  };
+    if (!email || !password) {
+      setError("Veuillez remplir tous les champs");
+      setIsLoading(false);
+      return;
+    }
 
-  const handleFacebookLogin = () => {
-    console.log("Facebook login");
+    const result = await signIn({ email, password });
+
+    if (result.success) {
+      router.push("/home");
+    } else {
+      setError(result.error || "Une erreur est survenue");
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -82,6 +92,21 @@ export default function LoginPage() {
 
           {/* Formulaire */}
           <YStack gap="$4" width="100%">
+            {/* Message d'erreur */}
+            {error && (
+              <YStack
+                padding="$3"
+                backgroundColor="#FEE2E2"
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor="#EF4444"
+              >
+                <Text fontSize={14} color="#DC2626" fontWeight="500">
+                  {error}
+                </Text>
+              </YStack>
+            )}
+
             {/* Email */}
             <Input
               label="Adresse e-mail"
@@ -124,44 +149,12 @@ export default function LoginPage() {
               size="lg"
               onPress={handleLogin}
               marginTop="$2"
+              disabled={isLoading}
+              opacity={isLoading ? 0.6 : 1}
             >
-              Se connecter
+              {isLoading ? "Connexion..." : "Se connecter"}
             </Button>
           </YStack>
-
-          {/* Séparateur */}
-          <XStack gap="$3" alignItems="center" width="100%">
-            <YStack flex={1} height={1} backgroundColor="#E5E5E5" />
-            <Text fontSize={13} color="#6B7280">
-              Ou continuer avec
-            </Text>
-            <YStack flex={1} height={1} backgroundColor="#E5E5E5" />
-          </XStack>
-
-          {/* Boutons sociaux */}
-          <XStack gap="$3" width="100%">
-            <YStack flex={1}>
-              <Button variant="ghost" size="md" onPress={handleGoogleLogin}>
-                <XStack gap="$2" alignItems="center">
-                  <FcGoogle size={20} />
-                  <Text fontSize={14} fontWeight="600" color="#2B2B2B">
-                    Google
-                  </Text>
-                </XStack>
-              </Button>
-            </YStack>
-
-            <YStack flex={1}>
-              <Button variant="ghost" size="md" onPress={handleFacebookLogin}>
-                <XStack gap="$2" alignItems="center">
-                  <FaFacebook size={20} color="#1877F2" />
-                  <Text fontSize={14} fontWeight="600" color="#2B2B2B">
-                    Facebook
-                  </Text>
-                </XStack>
-              </Button>
-            </YStack>
-          </XStack>
 
           {/* Lien d'inscription */}
           <XStack gap="$1" marginTop="$2">

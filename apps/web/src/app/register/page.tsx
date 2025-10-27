@@ -4,8 +4,7 @@ import { YStack, XStack, Text } from "tamagui";
 import { Button, Input } from "@hestia/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
-import { FaFacebook } from "react-icons/fa";
+import { signUp } from "@hestia/data";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,23 +13,46 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = () => {
-    console.log("Register:", {
-      firstName,
-      lastName,
+  const handleRegister = async () => {
+    setError("");
+    setIsLoading(true);
+
+    // Validation
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      setError("Veuillez remplir tous les champs");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Les mots de passe ne correspondent pas");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères");
+      setIsLoading(false);
+      return;
+    }
+
+    const result = await signUp({
       email,
       password,
-      confirmPassword,
+      firstName,
+      lastName,
     });
-  };
 
-  const handleGoogleRegister = () => {
-    console.log("Google register");
-  };
+    if (result.success) {
+      router.push("/home");
+    } else {
+      setError(result.error || "Une erreur est survenue");
+    }
 
-  const handleFacebookRegister = () => {
-    console.log("Facebook register");
+    setIsLoading(false);
   };
 
   return (
@@ -92,6 +114,21 @@ export default function RegisterPage() {
 
           {/* Formulaire */}
           <YStack gap="$4" width="100%">
+            {/* Message d'erreur */}
+            {error && (
+              <YStack
+                padding="$3"
+                backgroundColor="#FEE2E2"
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor="#EF4444"
+              >
+                <Text fontSize={14} color="#DC2626" fontWeight="500">
+                  {error}
+                </Text>
+              </YStack>
+            )}
+
             {/* Nom et Prénom */}
             <XStack gap="$3" width="100%">
               <YStack flex={1}>
@@ -153,48 +190,12 @@ export default function RegisterPage() {
               size="lg"
               onPress={handleRegister}
               marginTop="$2"
+              disabled={isLoading}
+              opacity={isLoading ? 0.6 : 1}
             >
-              Créer mon compte
+              {isLoading ? "Création en cours..." : "Créer mon compte"}
             </Button>
           </YStack>
-
-          {/* Séparateur */}
-          <XStack gap="$3" alignItems="center" width="100%">
-            <YStack flex={1} height={1} backgroundColor="#E5E5E5" />
-            <Text fontSize={13} color="#6B7280">
-              Ou continuer avec
-            </Text>
-            <YStack flex={1} height={1} backgroundColor="#E5E5E5" />
-          </XStack>
-
-          {/* Boutons sociaux */}
-          <XStack gap="$3" width="100%">
-            <YStack flex={1}>
-              <Button variant="ghost" size="md" onPress={handleGoogleRegister}>
-                <XStack gap="$2" alignItems="center">
-                  <FcGoogle size={20} />
-                  <Text fontSize={14} fontWeight="600" color="#2B2B2B">
-                    Google
-                  </Text>
-                </XStack>
-              </Button>
-            </YStack>
-
-            <YStack flex={1}>
-              <Button
-                variant="ghost"
-                size="md"
-                onPress={handleFacebookRegister}
-              >
-                <XStack gap="$2" alignItems="center">
-                  <FaFacebook size={20} color="#1877F2" />
-                  <Text fontSize={14} fontWeight="600" color="#2B2B2B">
-                    Facebook
-                  </Text>
-                </XStack>
-              </Button>
-            </YStack>
-          </XStack>
 
           {/* Lien de connexion */}
           <XStack gap="$1" marginTop="$2">

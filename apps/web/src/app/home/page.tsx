@@ -2,10 +2,13 @@
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Navbar, Badge, Button, MissionCard, colors } from "@hestia/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FiMap } from "react-icons/fi";
+import { getCurrentUser, signOut } from "@hestia/data";
 
 export default function HomePage() {
+  const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
   const [activeFilters, setActiveFilters] = useState([
     "Serveur",
@@ -13,6 +16,33 @@ export default function HomePage() {
     "Disponible demain",
     "Rémunération 18€/heure",
   ]);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Vérifier l'authentification au chargement
+  useEffect(() => {
+    const checkAuth = async () => {
+      const currentUser = await getCurrentUser();
+
+      if (!currentUser) {
+        router.push("/login");
+      } else {
+        setUser(currentUser);
+      }
+
+      setIsLoading(false);
+    };
+
+    checkAuth();
+  }, [router]);
+
+  const handleLogout = async () => {
+    const result = await signOut();
+
+    if (result.success) {
+      router.push("/login");
+    }
+  };
 
   const missions = [
     {
@@ -80,17 +110,38 @@ export default function HomePage() {
     setActiveFilters([]);
   };
 
+  // Afficher un loader pendant la vérification
+  if (isLoading) {
+    return (
+      <YStack
+        flex={1}
+        backgroundColor={colors.backgroundLight}
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text fontSize={16} color={colors.gray700}>
+          Chargement...
+        </Text>
+      </YStack>
+    );
+  }
+
   return (
     <YStack flex={1} backgroundColor={colors.backgroundLight}>
       {/* Navbar */}
       <Navbar
         searchValue={searchValue}
         onSearch={setSearchValue}
-        userName="Julie"
+        userName={
+          user?.user_metadata?.first_name ||
+          user?.email?.split("@")[0] ||
+          "Utilisateur"
+        }
         onProfileClick={() => console.log("Profile")}
         onMissionsClick={() => console.log("Missions")}
         onSubscriptionClick={() => console.log("Subscription")}
         onHelpClick={() => console.log("Help")}
+        onLogoutClick={handleLogout}
       />
 
       {/* Contenu principal */}
