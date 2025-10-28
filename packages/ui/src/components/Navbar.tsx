@@ -151,8 +151,17 @@ export function Navbar({
               {userAvatar ? (
                 <Avatar.Image src={userAvatar} />
               ) : (
-                <Avatar.Fallback backgroundColor={colors.hestiaOrange}>
-                  <Text color={colors.white} fontSize={16} fontWeight="600">
+                <Avatar.Fallback
+                  backgroundColor={colors.hestiaOrange}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text
+                    color={colors.white}
+                    fontSize={16}
+                    fontWeight="600"
+                    textAlign="center"
+                  >
                     {userName.charAt(0).toUpperCase()}
                   </Text>
                 </Avatar.Fallback>
