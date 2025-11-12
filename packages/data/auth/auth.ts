@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { createProfile } from "../profiles/profiles";
 
 export interface SignUpParams {
   email: string;
@@ -44,6 +45,25 @@ export async function signUp({
         success: false,
         error: error.message,
       };
+    }
+
+    // Si l'utilisateur est créé, on crée aussi son profil
+    // Note: Le trigger SQL devrait le faire automatiquement, mais on le fait aussi ici
+    // pour s'assurer que le profil existe immédiatement
+    if (data.user) {
+      const profileResult = await createProfile({
+        userId: data.user.id,
+        email,
+        firstName,
+        lastName,
+      });
+
+      // On ne bloque pas l'inscription si le profil échoue (le trigger le créera)
+      if (!profileResult.success) {
+        console.warn(
+          "Le profil n'a pas pu être créé immédiatement, le trigger le créera automatiquement"
+        );
+      }
     }
 
     return {
