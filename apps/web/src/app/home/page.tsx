@@ -3,11 +3,13 @@
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Badge, Button, MissionCard, colors } from "@hestia/ui";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FiMap } from "react-icons/fi";
 import { AppLayout } from "../../components/AppLayout";
 import { getPublishedMissions, type Mission } from "@hestia/data";
 
 export default function HomePage() {
+  const router = useRouter();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState([
@@ -196,6 +198,8 @@ export default function HomePage() {
                     width="calc(33.333% - 12px)"
                     minWidth={300}
                     position="relative"
+                    cursor="pointer"
+                    onPress={() => router.push(`/missions/${mission.id}`)}
                   >
                     {isNewMission(mission.created_at) && (
                       <YStack
