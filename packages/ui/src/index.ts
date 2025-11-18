@@ -13,4 +13,5 @@ export * from "./components/BottomNavigation";
 export * from "./components/ChatBubble";
 export * from "./components/ProfileCard";
 export * from "./components/FormField";
+export * from "./components/Footer";
 export * from "./toast";

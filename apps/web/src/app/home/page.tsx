@@ -1,48 +1,18 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { Navbar, Badge, Button, MissionCard, colors } from "@hestia/ui";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Badge, Button, MissionCard, colors } from "@hestia/ui";
+import { useState } from "react";
 import { FiMap } from "react-icons/fi";
-import { getCurrentUser, signOut } from "@hestia/data";
+import { AppLayout } from "../../components/AppLayout";
 
 export default function HomePage() {
-  const router = useRouter();
-  const [searchValue, setSearchValue] = useState("");
   const [activeFilters, setActiveFilters] = useState([
     "Serveur",
     "Paris",
     "Disponible demain",
     "Rémunération 18€/heure",
   ]);
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Vérifier l'authentification au chargement
-  useEffect(() => {
-    const checkAuth = async () => {
-      const currentUser = await getCurrentUser();
-
-      if (!currentUser) {
-        router.push("/login");
-      } else {
-        setUser(currentUser);
-      }
-
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, [router]);
-
-  const handleLogout = async () => {
-    const result = await signOut();
-
-    if (result.success) {
-      router.push("/login");
-    }
-  };
 
   const missions = [
     {
@@ -110,40 +80,8 @@ export default function HomePage() {
     setActiveFilters([]);
   };
 
-  // Afficher un loader pendant la vérification
-  if (isLoading) {
-    return (
-      <YStack
-        flex={1}
-        backgroundColor={colors.backgroundLight}
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Text fontSize={16} color={colors.gray700}>
-          Chargement...
-        </Text>
-      </YStack>
-    );
-  }
-
   return (
-    <YStack flex={1} backgroundColor={colors.backgroundLight}>
-      {/* Navbar */}
-      <Navbar
-        searchValue={searchValue}
-        onSearch={setSearchValue}
-        userName={
-          user?.user_metadata?.first_name ||
-          user?.email?.split("@")[0] ||
-          "Utilisateur"
-        }
-        onProfileClick={() => console.log("Profile")}
-        onMissionsClick={() => console.log("Missions")}
-        onSubscriptionClick={() => console.log("Subscription")}
-        onHelpClick={() => console.log("Help")}
-        onLogoutClick={handleLogout}
-      />
-
+    <AppLayout>
       {/* Contenu principal */}
       <ScrollView flex={1}>
         <YStack maxWidth={1400} width="100%" alignSelf="center" padding="$6">
@@ -252,6 +190,6 @@ export default function HomePage() {
           </YStack>
         </YStack>
       </ScrollView>
-    </YStack>
+    </AppLayout>
   );
 }

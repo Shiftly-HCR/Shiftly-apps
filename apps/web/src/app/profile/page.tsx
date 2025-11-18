@@ -4,8 +4,9 @@ import { YStack, XStack, Text } from "tamagui";
 import { Button, Input } from "@hestia/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentProfile, updateProfile, getCurrentUser } from "@hestia/data";
+import { getCurrentProfile, updateProfile } from "@hestia/data";
 import type { Profile } from "@hestia/data";
+import { AppLayout } from "../../components/AppLayout";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -25,13 +26,6 @@ export default function ProfilePage() {
   // Charger le profil au montage du composant
   useEffect(() => {
     const loadProfile = async () => {
-      const user = await getCurrentUser();
-      
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
       const userProfile = await getCurrentProfile();
       
       if (userProfile) {
@@ -46,7 +40,7 @@ export default function ProfilePage() {
     };
 
     loadProfile();
-  }, [router]);
+  }, []);
 
   const handleSave = async () => {
     setError("");
@@ -85,29 +79,30 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <YStack
-        flex={1}
-        backgroundColor="#F9FAFB"
-        alignItems="center"
-        justifyContent="center"
-        minHeight="100vh"
-      >
-        <Text fontSize={16} color="#6B7280">
-          Chargement...
-        </Text>
-      </YStack>
+      <AppLayout>
+        <YStack
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          padding="$4"
+          paddingVertical="$8"
+        >
+          <Text fontSize={16} color="#6B7280">
+            Chargement...
+          </Text>
+        </YStack>
+      </AppLayout>
     );
   }
 
   return (
-    <YStack
-      flex={1}
-      backgroundColor="#F9FAFB"
-      alignItems="center"
-      padding="$4"
-      minHeight="100vh"
-      paddingVertical="$8"
-    >
+    <AppLayout>
+      <YStack
+        flex={1}
+        alignItems="center"
+        padding="$4"
+        paddingVertical="$8"
+      >
       <YStack maxWidth={800} width="100%" gap="$4">
         {/* En-tête */}
         <YStack
@@ -345,8 +340,12 @@ export default function ProfilePage() {
           Retour à l'accueil
         </Button>
       </YStack>
-    </YStack>
+      </YStack>
+    </AppLayout>
   );
 }
+
+
+
 
 
