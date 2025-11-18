@@ -4,10 +4,46 @@ import { colors } from "../theme";
 
 interface FooterProps {
   className?: string;
+  onHomeClick?: () => void;
+  onMissionsClick?: () => void;
+  onProfileClick?: () => void;
+  onSubscriptionClick?: () => void;
+  onHelpClick?: () => void;
+  onContactClick?: () => void;
+  onFaqClick?: () => void;
+  onTermsClick?: () => void;
+  onPrivacyClick?: () => void;
+  onLegalClick?: () => void;
 }
 
-export function Footer({ className }: FooterProps) {
+export function Footer({
+  className,
+  onHomeClick,
+  onMissionsClick,
+  onProfileClick,
+  onSubscriptionClick,
+  onHelpClick,
+  onContactClick,
+  onFaqClick,
+  onTermsClick,
+  onPrivacyClick,
+  onLegalClick,
+}: FooterProps) {
   const currentYear = new Date().getFullYear();
+
+  const handleNavigation = (
+    callback?: () => void,
+    defaultPath: string
+  ) => {
+    if (callback) {
+      callback();
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.location.href = defaultPath;
+    }
+  };
 
   return (
     <YStack
@@ -29,7 +65,13 @@ export function Footer({ className }: FooterProps) {
       >
         {/* Section Logo et description */}
         <YStack gap="$3" flex={1} minWidth={200}>
-          <XStack alignItems="center" gap="$2">
+          <XStack
+            alignItems="center"
+            gap="$2"
+            cursor="pointer"
+            hoverStyle={{ opacity: 0.8 }}
+            onPress={() => handleNavigation(onHomeClick, "/home")}
+          >
             <YStack
               width={32}
               height={32}
@@ -64,6 +106,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onHomeClick, "/home")}
             >
               Accueil
             </Text>
@@ -72,6 +115,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onMissionsClick, "/missions")}
             >
               Missions
             </Text>
@@ -80,6 +124,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onProfileClick, "/profile")}
             >
               Profil
             </Text>
@@ -88,6 +133,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onSubscriptionClick, "/subscription")}
             >
               Abonnement
             </Text>
@@ -103,6 +149,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onHelpClick, "/help")}
             >
               Aide
             </Text>
@@ -111,6 +158,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onContactClick, "/contact")}
             >
               Contact
             </Text>
@@ -119,6 +167,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onFaqClick, "/faq")}
             >
               FAQ
             </Text>
@@ -134,6 +183,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onTermsClick, "/terms")}
             >
               Conditions d'utilisation
             </Text>
@@ -142,6 +192,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onPrivacyClick, "/privacy")}
             >
               Politique de confidentialité
             </Text>
@@ -150,6 +201,7 @@ export function Footer({ className }: FooterProps) {
               color={colors.gray700}
               cursor="pointer"
               hoverStyle={{ color: colors.hestiaOrange }}
+              onPress={() => handleNavigation(onLegalClick, "/legal")}
             >
               Mentions légales
             </Text>

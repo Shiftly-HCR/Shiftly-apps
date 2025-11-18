@@ -66,16 +66,28 @@ export function AppLayout({ children }: AppLayoutProps) {
           user?.email?.split("@")[0] ||
           "Utilisateur"
         }
+        onHomeClick={() => router.push("/home")}
         onProfileClick={() => router.push("/profile")}
-        onMissionsClick={() => console.log("Missions")}
-        onSubscriptionClick={() => console.log("Subscription")}
-        onHelpClick={() => console.log("Help")}
+        onMissionsClick={() => router.push("/missions")}
+        onSubscriptionClick={() => router.push("/subscription")}
+        onHelpClick={() => router.push("/help")}
         onLogoutClick={handleLogout}
       />
       <YStack flex={1}>
         {children}
       </YStack>
-      <Footer />
+      <Footer
+        onHomeClick={() => router.push("/home")}
+        onMissionsClick={() => router.push("/missions")}
+        onProfileClick={() => router.push("/profile")}
+        onSubscriptionClick={() => router.push("/subscription")}
+        onHelpClick={() => router.push("/help")}
+        onContactClick={() => router.push("/contact")}
+        onFaqClick={() => router.push("/faq")}
+        onTermsClick={() => router.push("/terms")}
+        onPrivacyClick={() => router.push("/privacy")}
+        onLegalClick={() => router.push("/legal")}
+      />
     </YStack>
   );
 }

@@ -8,6 +8,7 @@ interface NavbarProps {
   searchValue?: string;
   userAvatar?: string;
   userName?: string;
+  onHomeClick?: () => void;
   onProfileClick?: () => void;
   onMissionsClick?: () => void;
   onSubscriptionClick?: () => void;
@@ -20,12 +21,23 @@ export function Navbar({
   searchValue = "",
   userAvatar,
   userName = "Utilisateur",
+  onHomeClick,
   onProfileClick,
   onMissionsClick,
   onSubscriptionClick,
   onHelpClick,
   onLogoutClick,
 }: NavbarProps) {
+  const handleHomeClick = () => {
+    if (onHomeClick) {
+      onHomeClick();
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.location.href = "/home";
+    }
+  };
   return (
     <YStack
       backgroundColor={colors.white}
@@ -47,7 +59,14 @@ export function Navbar({
         alignSelf="center"
       >
         {/* Logo */}
-        <XStack alignItems="center" gap="$2" flexShrink={0}>
+        <XStack
+          alignItems="center"
+          gap="$2"
+          flexShrink={0}
+          cursor="pointer"
+          hoverStyle={{ opacity: 0.8 }}
+          onPress={handleHomeClick}
+        >
           <YStack
             width={32}
             height={32}
