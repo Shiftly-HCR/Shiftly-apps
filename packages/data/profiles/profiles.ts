@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { uploadImage, replaceImage, deleteImage } from "../helpers/imageUpload";
 
 export interface Profile {
   id: string;
@@ -26,6 +27,7 @@ export interface CreateProfileParams {
 export interface UpdateProfileParams {
   firstName?: string;
   lastName?: string;
+  email?: string;
   phone?: string;
   bio?: string;
   photo_url?: string;
@@ -149,6 +151,7 @@ export async function updateProfile(
     if (params.firstName !== undefined)
       updateData.first_name = params.firstName;
     if (params.lastName !== undefined) updateData.last_name = params.lastName;
+    if (params.email !== undefined) updateData.email = params.email;
     if (params.phone !== undefined) updateData.phone = params.phone;
     if (params.bio !== undefined) updateData.bio = params.bio;
     if (params.photo_url !== undefined) updateData.photo_url = params.photo_url;
@@ -221,6 +224,151 @@ export async function deleteProfile(): Promise<{
     return {
       success: false,
       error: "Une erreur est survenue lors de la suppression du profil",
+    };
+  }
+}
+
+/**
+ * Upload une photo de profil pour l'utilisateur actuel
+ * @param file - Le fichier image à uploader
+ * @returns L'URL de la photo uploadée
+ */
+export async function uploadProfilePhoto(file: File): Promise<{
+  success: boolean;
+  error?: string;
+  url?: string;
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    // Récupérer le profil actuel pour obtenir l'ancienne photo
+    const profile = await getProfileById(user.id);
+    const oldPhotoUrl = profile?.photo_url;
+
+    // Extraire le chemin de l'ancienne photo depuis l'URL si elle existe
+    let oldPhotoPath: string | null = null;
+    if (oldPhotoUrl) {
+      const urlParts = oldPhotoUrl.split("/avatars/");
+      if (urlParts.length > 1) {
+        oldPhotoPath = urlParts[1].split("?")[0];
+      }
+    }
+
+    // Upload la nouvelle photo (et supprime l'ancienne si elle existe)
+    const uploadResult = await replaceImage(
+      file,
+      oldPhotoPath,
+      "avatars",
+      `profiles/${user.id}`
+    );
+
+    if (!uploadResult.success) {
+      return {
+        success: false,
+        error: uploadResult.error,
+      };
+    }
+
+    // Mettre à jour le profil avec la nouvelle URL
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        photo_url: uploadResult.url,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Erreur lors de la mise à jour du profil:", error);
+      // Supprimer l'image uploadée en cas d'erreur
+      if (uploadResult.path) {
+        await deleteImage(uploadResult.path);
+      }
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      url: uploadResult.url,
+    };
+  } catch (err) {
+    console.error("Erreur lors de l'upload de la photo:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de l'upload de la photo",
+    };
+  }
+}
+
+/**
+ * Supprime la photo de profil de l'utilisateur actuel
+ */
+export async function deleteProfilePhoto(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    // Récupérer le profil actuel pour obtenir le chemin de la photo
+    const profile = await getProfileById(user.id);
+    const photoUrl = profile?.photo_url;
+
+    if (photoUrl) {
+      // Extraire le chemin depuis l'URL
+      const urlParts = photoUrl.split("/avatars/");
+      if (urlParts.length > 1) {
+        const photoPath = urlParts[1].split("?")[0];
+        await deleteImage(photoPath);
+      }
+    }
+
+    // Mettre à jour le profil pour supprimer l'URL
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        photo_url: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Erreur lors de la mise à jour du profil:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (err) {
+    console.error("Erreur lors de la suppression de la photo:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la suppression de la photo",
     };
   }
 }

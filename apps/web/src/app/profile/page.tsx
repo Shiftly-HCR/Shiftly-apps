@@ -1,10 +1,15 @@
 "use client";
 
-import { YStack, XStack, Text } from "tamagui";
-import { Button, Input } from "@hestia/ui";
+import { YStack, XStack, Text, Image } from "tamagui";
+import { Button, Input, ImagePicker } from "@hestia/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentProfile, updateProfile } from "@hestia/data";
+import {
+  getCurrentProfile,
+  updateProfile,
+  uploadProfilePhoto,
+  deleteProfilePhoto,
+} from "@hestia/data";
 import type { Profile } from "@hestia/data";
 import { AppLayout } from "../../components/AppLayout";
 
@@ -20,8 +25,11 @@ export default function ProfilePage() {
   // Champs du formulaire
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   // Charger le profil au montage du composant
   useEffect(() => {
@@ -32,8 +40,10 @@ export default function ProfilePage() {
         setProfile(userProfile);
         setFirstName(userProfile.first_name || "");
         setLastName(userProfile.last_name || "");
+        setEmail(userProfile.email || "");
         setPhone(userProfile.phone || "");
         setBio(userProfile.bio || "");
+        setPhotoUrl(userProfile.photo_url || null);
       }
 
       setIsLoading(false);
@@ -47,9 +57,11 @@ export default function ProfilePage() {
     setSuccess("");
     setIsSaving(true);
 
+    // Mettre à jour les informations du profil
     const result = await updateProfile({
       firstName,
       lastName,
+      email,
       phone,
       bio,
     });
@@ -65,11 +77,57 @@ export default function ProfilePage() {
     setIsSaving(false);
   };
 
+  const handlePhotoChange = async (file: File) => {
+    setError("");
+    setSuccess("");
+    setIsUploadingPhoto(true);
+
+    const uploadResult = await uploadProfilePhoto(file);
+    setIsUploadingPhoto(false);
+
+    if (uploadResult.success) {
+      setPhotoUrl(uploadResult.url || null);
+      setSuccess("Photo mise à jour avec succès !");
+      
+      // Recharger le profil pour mettre à jour les données
+      const updatedProfile = await getCurrentProfile();
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+      }
+    } else {
+      setError(uploadResult.error || "Erreur lors de l'upload de la photo");
+    }
+  };
+
+  const handlePhotoRemove = async () => {
+    if (!photoUrl) {
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    const result = await deleteProfilePhoto();
+    setIsUploadingPhoto(false);
+
+    if (result.success) {
+      setPhotoUrl(null);
+      setSuccess("Photo supprimée avec succès !");
+      
+      // Recharger le profil pour mettre à jour les données
+      const updatedProfile = await getCurrentProfile();
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+      }
+    } else {
+      setError(result.error || "Erreur lors de la suppression de la photo");
+    }
+  };
+
   const handleCancel = () => {
     // Réinitialiser les champs avec les valeurs actuelles
     if (profile) {
       setFirstName(profile.first_name || "");
       setLastName(profile.last_name || "");
+      setEmail(profile.email || "");
       setPhone(profile.phone || "");
       setBio(profile.bio || "");
     }
@@ -122,22 +180,46 @@ export default function ProfilePage() {
                 Mon Profil
               </Text>
               <Text fontSize={14} color="#6B7280">
-                {profile?.email}
+                {firstName && lastName
+                  ? `${firstName} ${lastName}`
+                  : email || "Utilisateur"}
               </Text>
             </YStack>
-            <YStack
-              width={64}
-              height={64}
-              borderRadius={32}
-              backgroundColor="#FF5900"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text fontSize={28} color="white" fontWeight="600">
-                {firstName.charAt(0).toUpperCase() || "?"}
-                {lastName.charAt(0).toUpperCase() || ""}
-              </Text>
-            </YStack>
+            {photoUrl ? (
+              <YStack
+                width={64}
+                height={64}
+                borderRadius={32}
+                overflow="hidden"
+                borderWidth={2}
+                borderColor="#FF5900"
+              >
+                <Image
+                  source={{ uri: photoUrl }}
+                  width={64}
+                  height={64}
+                  style={{
+                    width: 64,
+                    height: 64,
+                    objectFit: "cover",
+                  }}
+                />
+              </YStack>
+            ) : (
+              <YStack
+                width={64}
+                height={64}
+                borderRadius={32}
+                backgroundColor="#FF5900"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Text fontSize={28} color="white" fontWeight="600">
+                  {firstName.charAt(0).toUpperCase() || "?"}
+                  {lastName.charAt(0).toUpperCase() || ""}
+                </Text>
+              </YStack>
+            )}
           </XStack>
         </YStack>
 
@@ -169,6 +251,38 @@ export default function ProfilePage() {
             </Text>
           </YStack>
         )}
+
+        {/* Photo de profil */}
+        <YStack
+          padding="$6"
+          backgroundColor="white"
+          borderRadius="$4"
+          borderWidth={1}
+          borderColor="#E5E5E5"
+          shadowColor="rgba(0, 0, 0, 0.1)"
+          shadowOffset={{ width: 0, height: 4 }}
+          shadowOpacity={1}
+          shadowRadius={12}
+          gap="$4"
+        >
+          <Text fontSize={18} fontWeight="600" color="#2B2B2B">
+            Photo de profil
+          </Text>
+          <ImagePicker
+            value={photoUrl}
+            onChange={handlePhotoChange}
+            onRemove={handlePhotoRemove}
+            disabled={isUploadingPhoto}
+            shape="circle"
+            size={150}
+            placeholder="Cliquez pour ajouter une photo"
+          />
+          {isUploadingPhoto && (
+            <Text fontSize={14} color="#FF5900" fontWeight="500">
+              Upload en cours...
+            </Text>
+          )}
+        </YStack>
 
         {/* Informations du profil */}
         <YStack
@@ -219,6 +333,17 @@ export default function ProfilePage() {
               />
             </YStack>
           </XStack>
+
+          {/* Email */}
+          <Input
+            label="Adresse e-mail"
+            placeholder="exemple@email.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoComplete="email"
+            disabled={!isEditing}
+          />
 
           {/* Téléphone */}
           <Input

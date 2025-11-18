@@ -4,7 +4,7 @@ import { YStack } from "tamagui";
 import { Navbar, Footer } from "@hestia/ui";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getCurrentUser, signOut } from "@hestia/data";
+import { getCurrentUser, signOut, getCurrentProfile } from "@hestia/data";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -14,6 +14,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
   const [user, setUser] = useState<any>(null);
+  const [userAvatar, setUserAvatar] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
   // Vérifier l'authentification au chargement
@@ -25,6 +26,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         router.push("/login");
       } else {
         setUser(currentUser);
+        
+        // Charger le profil pour obtenir la photo
+        const profile = await getCurrentProfile();
+        if (profile?.photo_url) {
+          setUserAvatar(profile.photo_url);
+        }
       }
 
       setIsLoading(false);
@@ -66,6 +73,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           user?.email?.split("@")[0] ||
           "Utilisateur"
         }
+        userAvatar={userAvatar}
         onHomeClick={() => router.push("/home")}
         onProfileClick={() => router.push("/profile")}
         onMissionsClick={() => router.push("/missions")}
