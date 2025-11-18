@@ -2,11 +2,14 @@
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Badge, Button, MissionCard, colors } from "@hestia/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiMap } from "react-icons/fi";
 import { AppLayout } from "../../components/AppLayout";
+import { getPublishedMissions, type Mission } from "@hestia/data";
 
 export default function HomePage() {
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState([
     "Serveur",
     "Paris",
@@ -14,63 +17,55 @@ export default function HomePage() {
     "Rémunération 18€/heure",
   ]);
 
-  const missions = [
-    {
-      id: 1,
-      title: "Chef de rang – Hôtel de la Plage",
-      establishment: "Hôtel de la Plage",
-      date: "Du 21 au 24 juil, 4 jours",
-      price: "23€/h",
-      image:
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-      isNew: true,
-    },
-    {
-      id: 2,
-      title: "Serveur – Brasserie du Centre",
-      establishment: "Brasserie du Centre",
-      date: "Le 20 juil, 1 jour",
-      price: "20€/h",
-      image:
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
-    },
-    {
-      id: 3,
-      title: "Barman – Rooftop Le Ciel",
-      establishment: "Rooftop Le Ciel",
-      date: "Du 15 au 19 juil",
-      price: "25€/h",
-      image:
-        "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400&h=300&fit=crop",
-    },
-    {
-      id: 4,
-      title: "Plongeur – Restaurant Le Zinc",
-      establishment: "Restaurant Le Zinc",
-      date: "Du 22 au 28 juil, 6 jours",
-      price: "18€/h",
-      image:
-        "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop",
-    },
-    {
-      id: 5,
-      title: "Réceptionniste – Hôtel Le Grand",
-      establishment: "Hôtel Le Grand",
-      date: "Dès que possible, 2 semaines",
-      price: "22€/h",
-      image:
-        "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&h=300&fit=crop",
-    },
-    {
-      id: 6,
-      title: "Sommelier – Restaurant L'Étoile",
-      establishment: "Restaurant L'Étoile",
-      date: "Du lun au ven, 13 juil",
-      price: "28€/h",
-      image:
-        "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=300&fit=crop",
-    },
-  ];
+  // Charger les missions publiées depuis Supabase
+  useEffect(() => {
+    const loadMissions = async () => {
+      setIsLoading(true);
+      const publishedMissions = await getPublishedMissions();
+      setMissions(publishedMissions);
+      setIsLoading(false);
+    };
+
+    loadMissions();
+  }, []);
+
+  // Formater les dates pour l'affichage
+  const formatDate = (startDate?: string, endDate?: string) => {
+    if (!startDate && !endDate) return "Dates non définies";
+
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      day: "numeric",
+      month: "short",
+    };
+
+    if (startDate && endDate) {
+      const start = new Date(startDate).toLocaleDateString(
+        "fr-FR",
+        formatOptions
+      );
+      const end = new Date(endDate).toLocaleDateString("fr-FR", formatOptions);
+      return `Du ${start} au ${end}`;
+    }
+
+    if (startDate) {
+      const date = new Date(startDate).toLocaleDateString(
+        "fr-FR",
+        formatOptions
+      );
+      return `À partir du ${date}`;
+    }
+
+    return "Dates non définies";
+  };
+
+  // Déterminer si une mission est nouvelle (créée dans les dernières 48h)
+  const isNewMission = (createdAt?: string) => {
+    if (!createdAt) return false;
+    const created = new Date(createdAt);
+    const now = new Date();
+    const diffInHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+    return diffInHours <= 48;
+  };
 
   const removeFilter = (filter: string) => {
     setActiveFilters(activeFilters.filter((f) => f !== filter));
@@ -79,6 +74,23 @@ export default function HomePage() {
   const clearAllFilters = () => {
     setActiveFilters([]);
   };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <YStack
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          padding="$6"
+        >
+          <Text fontSize={16} color={colors.gray700}>
+            Chargement des missions...
+          </Text>
+        </YStack>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -162,31 +174,56 @@ export default function HomePage() {
 
           {/* Grille de missions */}
           <YStack gap="$4" marginTop="$4">
-            <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
-              {missions.map((mission) => (
-                <YStack
-                  key={mission.id}
-                  width="calc(33.333% - 12px)"
-                  minWidth={300}
-                  position="relative"
-                >
-                  {mission.isNew && (
-                    <YStack position="absolute" top={12} left={12} zIndex={10}>
-                      <Badge variant="new" size="sm">
-                        Nouveau
-                      </Badge>
-                    </YStack>
-                  )}
-                  <MissionCard
-                    title={mission.title}
-                    date={mission.date}
-                    price={mission.price}
-                    priceUnit="/ heure"
-                    image={mission.image}
-                  />
-                </YStack>
-              ))}
-            </XStack>
+            {missions.length === 0 ? (
+              <YStack
+                padding="$8"
+                alignItems="center"
+                justifyContent="center"
+                gap="$4"
+              >
+                <Text fontSize={18} color={colors.gray700} textAlign="center">
+                  Aucune mission disponible pour le moment
+                </Text>
+                <Text fontSize={14} color={colors.gray500} textAlign="center">
+                  Revenez plus tard pour découvrir de nouvelles opportunités
+                </Text>
+              </YStack>
+            ) : (
+              <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
+                {missions.map((mission) => (
+                  <YStack
+                    key={mission.id}
+                    width="calc(33.333% - 12px)"
+                    minWidth={300}
+                    position="relative"
+                  >
+                    {isNewMission(mission.created_at) && (
+                      <YStack
+                        position="absolute"
+                        top={12}
+                        left={12}
+                        zIndex={10}
+                      >
+                        <Badge variant="new" size="sm">
+                          Nouveau
+                        </Badge>
+                      </YStack>
+                    )}
+                    <MissionCard
+                      title={mission.title}
+                      date={formatDate(mission.start_date, mission.end_date)}
+                      price={
+                        mission.hourly_rate
+                          ? `${mission.hourly_rate}€`
+                          : "À négocier"
+                      }
+                      priceUnit="/ heure"
+                      image={mission.image_url}
+                    />
+                  </YStack>
+                ))}
+              </XStack>
+            )}
           </YStack>
         </YStack>
       </ScrollView>
