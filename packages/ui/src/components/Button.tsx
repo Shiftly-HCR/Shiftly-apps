@@ -13,16 +13,13 @@ const StyledButton = styled(TButton, {
   cursor: "pointer",
   minHeight: 44,
   pressStyle: {
-    scale: 0.95,
-    opacity: 0.8,
+    scale: 0.98,
   },
   hoverStyle: {
-    scale: 1.05,
-    opacity: 0.9,
+    scale: 1.02,
   },
   focusStyle: {
-    scale: 1.05,
-    opacity: 0.9,
+    scale: 1.02,
     borderWidth: 2,
     borderColor: "$outlineColor",
   },
@@ -32,20 +29,18 @@ const StyledButton = styled(TButton, {
         backgroundColor: "$primary",
         hoverStyle: {
           backgroundColor: "$primary",
-          scale: 1.05,
-          opacity: 0.9,
+          scale: 1.02,
+          opacity: 0.95,
         },
         focusStyle: {
           backgroundColor: "$primary",
-          scale: 1.05,
-          opacity: 0.9,
+          scale: 1.02,
           borderWidth: 2,
           borderColor: "$outlineColor",
         },
         pressStyle: {
           backgroundColor: "$primary",
-          scale: 0.95,
-          opacity: 0.8,
+          scale: 0.98,
         },
       },
       secondary: {
@@ -54,40 +49,56 @@ const StyledButton = styled(TButton, {
         hoverStyle: {
           backgroundColor: "$gold",
           color: "#000000",
-          scale: 1.05,
-          opacity: 0.9,
+          scale: 1.02,
         },
         focusStyle: {
           backgroundColor: "$primary",
-          scale: 1.05,
-          opacity: 0.9,
+          scale: 1.02,
           borderWidth: 2,
           borderColor: "$outlineColor",
         },
         pressStyle: {
           backgroundColor: "$gold",
           borderBlockColor: "$primary",
-          scale: 0.95,
-          opacity: 0.8,
+          scale: 0.98,
         },
       },
       ghost: {
         backgroundColor: "$surface",
         hoverStyle: {
           backgroundColor: "$primaryLight",
-          scale: 1.05,
-          opacity: 0.9,
+          scale: 1.02,
         },
         focusStyle: {
           backgroundColor: "$primaryLight",
-          scale: 1.05,
-          opacity: 0.9,
+          scale: 1.02,
           borderWidth: 2,
           borderColor: "$outlineColor",
         },
         pressStyle: {
           backgroundColor: "$primaryLight",
-          scale: 0.95,
+          scale: 0.98,
+        },
+      },
+      outline: {
+        backgroundColor: "transparent",
+        borderWidth: 2,
+        borderColor: "$primary",
+        hoverStyle: {
+          backgroundColor: "transparent",
+          borderColor: "$primary",
+          scale: 1.02,
+          opacity: 0.9,
+        },
+        focusStyle: {
+          backgroundColor: "transparent",
+          scale: 1.02,
+          borderWidth: 2,
+          borderColor: "$primary",
+        },
+        pressStyle: {
+          backgroundColor: "transparent",
+          scale: 0.98,
           opacity: 0.8,
         },
       },
@@ -114,7 +125,7 @@ const StyledButton = styled(TButton, {
 
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "outline";
   size?: "sm" | "md" | "lg";
   [key: string]: any;
 }
@@ -138,6 +149,8 @@ export const Button = ({
         return "$primary";
       case "ghost":
         return "#000000";
+      case "outline":
+        return "$primary";
       default:
         return "white";
     }

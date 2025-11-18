@@ -117,32 +117,36 @@ export const MissionCard = ({
         {onEdit ? (
           // Mode recruteur : afficher bouton "Modifier"
           <XStack gap="$2" width="100%">
-            <Button
-              variant="outline"
-              size="md"
-              flex={1}
-              onPress={(e) => {
-                e?.stopPropagation();
-                onPress?.();
-              }}
-            >
-              Voir
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              flex={1}
-              onPress={(e) => {
-                e?.stopPropagation();
-                onEdit();
-              }}
-            >
-              Modifier
-            </Button>
+            <YStack flex={1}>
+              <Button
+                variant="outline"
+                size="md"
+                width="100%"
+                onPress={(e: any) => {
+                  e?.stopPropagation();
+                  onPress?.();
+                }}
+              >
+                Voir
+              </Button>
+            </YStack>
+            <YStack flex={1}>
+              <Button
+                variant="primary"
+                size="md"
+                width="100%"
+                onPress={(e: any) => {
+                  e?.stopPropagation();
+                  onEdit();
+                }}
+              >
+                Modifier
+              </Button>
+            </YStack>
           </XStack>
         ) : showButton ? (
           // Mode public : afficher bouton "Voir la mission"
-          <Button variant="primary" size="md" onPress={onPress}>
+          <Button variant="primary" size="md" width="100%" onPress={onPress}>
             {buttonText}
           </Button>
         ) : null}

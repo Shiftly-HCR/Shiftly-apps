@@ -406,14 +406,9 @@ export default function MissionDetailPage() {
                 {/* Boutons d'action */}
                 <YStack gap="$3">
                   <Button
-                    backgroundColor="#FF6B35"
-                    color="white"
-                    borderRadius={8}
-                    fontSize={16}
-                    fontWeight="600"
-                    paddingVertical="$3"
-                    hoverStyle={{ opacity: 0.9 }}
-                    pressStyle={{ opacity: 0.8 }}
+                    variant="primary"
+                    size="md"
+                    width="100%"
                     onPress={() => {
                       console.log("Postuler à cette mission:", mission.id);
                     }}
@@ -422,14 +417,9 @@ export default function MissionDetailPage() {
                   </Button>
 
                   <Button
-                    backgroundColor="#FF6B35"
-                    color="white"
-                    borderRadius={8}
-                    fontSize={16}
-                    fontWeight="600"
-                    paddingVertical="$3"
-                    hoverStyle={{ opacity: 0.9 }}
-                    pressStyle={{ opacity: 0.8 }}
+                    variant="primary"
+                    size="md"
+                    width="100%"
                     onPress={() => {
                       console.log("Sauvegarder la mission:", mission.id);
                     }}
@@ -543,16 +533,9 @@ export default function MissionDetailPage() {
 
                 {/* Bouton Contact */}
                 <Button
-                  backgroundColor="white"
-                  borderColor="#FF6B35"
-                  borderWidth={2}
-                  color="#FF6B35"
-                  borderRadius={8}
-                  fontSize={16}
-                  fontWeight="600"
-                  paddingVertical="$3"
-                  hoverStyle={{ backgroundColor: "#FFF4F0" }}
-                  pressStyle={{ opacity: 0.8 }}
+                  variant="outline"
+                  size="md"
+                  width="100%"
                   onPress={() => {
                     console.log("Contacter l'établissement:", mission.id);
                   }}
