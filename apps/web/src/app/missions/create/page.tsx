@@ -15,14 +15,12 @@ import {
   createMission,
   uploadMissionImage,
   publishMission,
-} from "@hestia/data";
-import { AppLayout } from "../../../components/AppLayout";
-import dynamic from "next/dynamic";
-import {
   geocodeAddress,
   reverseGeocode,
   debounce,
-} from "../../../utils/geocoding";
+} from "@hestia/data";
+import { AppLayout } from "../../../components/AppLayout";
+import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
 const Map = dynamic(() => import("../../../components/Map"), {
@@ -77,6 +75,7 @@ export default function CreateMissionPage() {
 
   // État pour le géocodage
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
   // Géocodage de l'adresse vers coordonnées (avec debounce)
   const handleAddressChange = useCallback(
@@ -84,7 +83,7 @@ export default function CreateMissionPage() {
       if (!addr && !cty && !postal) return;
 
       setIsGeocoding(true);
-      const result = await geocodeAddress(addr, cty, postal);
+      const result = await geocodeAddress(addr, cty, postal, mapboxToken);
       setIsGeocoding(false);
 
       if (result) {
@@ -95,24 +94,27 @@ export default function CreateMissionPage() {
         if (!postal && result.postalCode) setPostalCode(result.postalCode);
       }
     }, 1000),
-    []
+    [mapboxToken]
   );
 
   // Géocodage inversé des coordonnées vers adresse
-  const handleMapClick = useCallback(async (lat: number, lng: number) => {
-    setLatitude(lat);
-    setLongitude(lng);
+  const handleMapClick = useCallback(
+    async (lat: number, lng: number) => {
+      setLatitude(lat);
+      setLongitude(lng);
 
-    setIsGeocoding(true);
-    const result = await reverseGeocode(lat, lng);
-    setIsGeocoding(false);
+      setIsGeocoding(true);
+      const result = await reverseGeocode(lat, lng, mapboxToken);
+      setIsGeocoding(false);
 
-    if (result) {
-      setAddress(result.address);
-      setCity(result.city);
-      setPostalCode(result.postalCode);
-    }
-  }, []);
+      if (result) {
+        setAddress(result.address);
+        setCity(result.city);
+        setPostalCode(result.postalCode);
+      }
+    },
+    [mapboxToken]
+  );
 
   // Effet pour déclencher le géocodage quand l'adresse change
   useEffect(() => {

@@ -17,14 +17,12 @@ import {
   uploadMissionImage,
   deleteMission,
   type Mission,
-} from "@hestia/data";
-import { AppLayout } from "../../../../components/AppLayout";
-import dynamic from "next/dynamic";
-import {
   geocodeAddress,
   reverseGeocode,
   debounce,
-} from "../../../../utils/geocoding";
+} from "@hestia/data";
+import { AppLayout } from "../../../../components/AppLayout";
+import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
 const Map = dynamic(() => import("../../../../components/Map"), {
@@ -85,6 +83,7 @@ export default function EditMissionPage() {
 
   // État pour le géocodage
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
   // Géocodage de l'adresse vers coordonnées (avec debounce)
   const handleAddressChange = useCallback(
@@ -92,7 +91,7 @@ export default function EditMissionPage() {
       if (!addr && !cty && !postal) return;
 
       setIsGeocoding(true);
-      const result = await geocodeAddress(addr, cty, postal);
+      const result = await geocodeAddress(addr, cty, postal, mapboxToken);
       setIsGeocoding(false);
 
       if (result) {
@@ -103,7 +102,7 @@ export default function EditMissionPage() {
         if (!postal && result.postalCode) setPostalCode(result.postalCode);
       }
     }, 1000),
-    []
+    [mapboxToken]
   );
 
   // Géocodage inversé des coordonnées vers adresse
@@ -112,7 +111,7 @@ export default function EditMissionPage() {
     setLongitude(lng);
 
     setIsGeocoding(true);
-    const result = await reverseGeocode(lat, lng);
+    const result = await reverseGeocode(lat, lng, mapboxToken);
     setIsGeocoding(false);
 
     if (result) {
@@ -120,7 +119,7 @@ export default function EditMissionPage() {
       setCity(result.city);
       setPostalCode(result.postalCode);
     }
-  }, []);
+  }, [mapboxToken]);
 
   // Charger les données de la mission
   useEffect(() => {
