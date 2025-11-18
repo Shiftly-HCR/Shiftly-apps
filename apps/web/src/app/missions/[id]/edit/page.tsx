@@ -1,9 +1,16 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Button, Input, ImagePicker, colors } from "@hestia/ui";
+import {
+  Button,
+  Input,
+  ImagePicker,
+  DatePicker,
+  TimePicker,
+  colors,
+} from "@hestia/ui";
 import {
   getMissionById,
   updateMission,
@@ -13,6 +20,11 @@ import {
 } from "@hestia/data";
 import { AppLayout } from "../../../../components/AppLayout";
 import dynamic from "next/dynamic";
+import {
+  geocodeAddress,
+  reverseGeocode,
+  debounce,
+} from "../../../../utils/geocoding";
 
 // Import dynamique de Map pour éviter les erreurs SSR
 const Map = dynamic(() => import("../../../../components/Map"), {
@@ -71,6 +83,45 @@ export default function EditMissionPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [existingImageUrl, setExistingImageUrl] = useState<string>("");
 
+  // État pour le géocodage
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Géocodage de l'adresse vers coordonnées (avec debounce)
+  const handleAddressChange = useCallback(
+    debounce(async (addr: string, cty: string, postal: string) => {
+      if (!addr && !cty && !postal) return;
+
+      setIsGeocoding(true);
+      const result = await geocodeAddress(addr, cty, postal);
+      setIsGeocoding(false);
+
+      if (result) {
+        setLatitude(result.latitude);
+        setLongitude(result.longitude);
+        // Mettre à jour les champs si vides
+        if (!cty && result.city) setCity(result.city);
+        if (!postal && result.postalCode) setPostalCode(result.postalCode);
+      }
+    }, 1000),
+    []
+  );
+
+  // Géocodage inversé des coordonnées vers adresse
+  const handleMapClick = useCallback(async (lat: number, lng: number) => {
+    setLatitude(lat);
+    setLongitude(lng);
+
+    setIsGeocoding(true);
+    const result = await reverseGeocode(lat, lng);
+    setIsGeocoding(false);
+
+    if (result) {
+      setAddress(result.address);
+      setCity(result.city);
+      setPostalCode(result.postalCode);
+    }
+  }, []);
+
   // Charger les données de la mission
   useEffect(() => {
     const loadMission = async () => {
@@ -108,6 +159,12 @@ export default function EditMissionPage() {
 
     loadMission();
   }, [missionId]);
+
+  // Effet pour déclencher le géocodage quand l'adresse change (sauf au chargement initial)
+  useEffect(() => {
+    if (!mission) return; // Ne pas géocoder pendant le chargement initial
+    handleAddressChange(address, city, postalCode);
+  }, [address, city, postalCode, mission, handleAddressChange]);
 
   const handleNext = () => {
     setError("");
@@ -185,7 +242,9 @@ export default function EditMissionPage() {
       if (missionImage) {
         const imageResult = await uploadMissionImage(missionId, missionImage);
         if (!imageResult.success) {
-          setError("Mission mise à jour mais erreur lors de l'upload de l'image");
+          setError(
+            "Mission mise à jour mais erreur lors de l'upload de l'image"
+          );
         }
       }
 
@@ -352,11 +411,19 @@ export default function EditMissionPage() {
 
       {/* Carte interactive */}
       <YStack gap="$2">
-        <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-          Localisation sur la carte
-        </Text>
+        <XStack justifyContent="space-between" alignItems="center">
+          <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+            Localisation sur la carte
+          </Text>
+          {isGeocoding && (
+            <Text fontSize={12} color={colors.hestiaOrange}>
+              🔄 Mise à jour...
+            </Text>
+          )}
+        </XStack>
         <Text fontSize={12} color={colors.gray500}>
-          Cliquez sur la carte pour ajuster la position exacte
+          Cliquez sur la carte pour positionner le marqueur et remplir l'adresse
+          automatiquement
         </Text>
         <Map
           latitude={latitude}
@@ -371,8 +438,7 @@ export default function EditMissionPage() {
             },
           ]}
           onMapClick={(event) => {
-            setLatitude(event.lngLat.lat);
-            setLongitude(event.lngLat.lng);
+            handleMapClick(event.lngLat.lat, event.lngLat.lng);
           }}
           interactive={true}
         />
@@ -393,40 +459,42 @@ export default function EditMissionPage() {
 
       <XStack gap="$3">
         <YStack flex={1}>
-          <Input
+          <DatePicker
             label="Date de début"
-            type="date"
             value={startDate}
             onChangeText={setStartDate}
           />
         </YStack>
         <YStack flex={1}>
-          <Input
+          <DatePicker
             label="Date de fin"
-            type="date"
             value={endDate}
             onChangeText={setEndDate}
+            min={startDate || undefined}
           />
         </YStack>
       </XStack>
 
-      <Text fontSize={16} fontWeight="600" color={colors.gray900} marginTop="$3">
+      <Text
+        fontSize={16}
+        fontWeight="600"
+        color={colors.gray900}
+        marginTop="$3"
+      >
         Horaires
       </Text>
 
       <XStack gap="$3">
         <YStack flex={1}>
-          <Input
+          <TimePicker
             label="Heure de début"
-            type="time"
             value={startTime}
             onChangeText={setStartTime}
           />
         </YStack>
         <YStack flex={1}>
-          <Input
+          <TimePicker
             label="Heure de fin"
-            type="time"
             value={endTime}
             onChangeText={setEndTime}
           />
@@ -480,7 +548,8 @@ export default function EditMissionPage() {
           <Text fontWeight="600">Ville :</Text> {city || "Non définie"}
         </Text>
         <Text fontSize={14} color={colors.gray700}>
-          <Text fontWeight="600">Taux horaire :</Text> {hourlyRate || "Non défini"}€/h
+          <Text fontWeight="600">Taux horaire :</Text>{" "}
+          {hourlyRate || "Non défini"}€/h
         </Text>
       </YStack>
     </YStack>
@@ -582,4 +651,3 @@ export default function EditMissionPage() {
     </AppLayout>
   );
 }
-

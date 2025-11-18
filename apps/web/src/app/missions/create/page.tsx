@@ -1,9 +1,16 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView, Image } from "tamagui";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input, ImagePicker, colors } from "@hestia/ui";
+import {
+  Button,
+  Input,
+  ImagePicker,
+  DatePicker,
+  TimePicker,
+  colors,
+} from "@hestia/ui";
 import {
   createMission,
   uploadMissionImage,
@@ -11,6 +18,11 @@ import {
 } from "@hestia/data";
 import { AppLayout } from "../../../components/AppLayout";
 import dynamic from "next/dynamic";
+import {
+  geocodeAddress,
+  reverseGeocode,
+  debounce,
+} from "../../../utils/geocoding";
 
 // Import dynamique de Map pour éviter les erreurs SSR
 const Map = dynamic(() => import("../../../components/Map"), {
@@ -62,6 +74,50 @@ export default function CreateMissionPage() {
   const [hourlyRate, setHourlyRate] = useState("");
   const [missionImage, setMissionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+
+  // État pour le géocodage
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Géocodage de l'adresse vers coordonnées (avec debounce)
+  const handleAddressChange = useCallback(
+    debounce(async (addr: string, cty: string, postal: string) => {
+      if (!addr && !cty && !postal) return;
+
+      setIsGeocoding(true);
+      const result = await geocodeAddress(addr, cty, postal);
+      setIsGeocoding(false);
+
+      if (result) {
+        setLatitude(result.latitude);
+        setLongitude(result.longitude);
+        // Mettre à jour les champs si vides
+        if (!cty && result.city) setCity(result.city);
+        if (!postal && result.postalCode) setPostalCode(result.postalCode);
+      }
+    }, 1000),
+    []
+  );
+
+  // Géocodage inversé des coordonnées vers adresse
+  const handleMapClick = useCallback(async (lat: number, lng: number) => {
+    setLatitude(lat);
+    setLongitude(lng);
+
+    setIsGeocoding(true);
+    const result = await reverseGeocode(lat, lng);
+    setIsGeocoding(false);
+
+    if (result) {
+      setAddress(result.address);
+      setCity(result.city);
+      setPostalCode(result.postalCode);
+    }
+  }, []);
+
+  // Effet pour déclencher le géocodage quand l'adresse change
+  useEffect(() => {
+    handleAddressChange(address, city, postalCode);
+  }, [address, city, postalCode, handleAddressChange]);
 
   const handleNext = () => {
     setError("");
@@ -240,11 +296,19 @@ export default function CreateMissionPage() {
 
       {/* Carte interactive */}
       <YStack gap="$2">
-        <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-          Localisation sur la carte
-        </Text>
+        <XStack justifyContent="space-between" alignItems="center">
+          <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+            Localisation sur la carte
+          </Text>
+          {isGeocoding && (
+            <Text fontSize={12} color={colors.hestiaOrange}>
+              🔄 Mise à jour...
+            </Text>
+          )}
+        </XStack>
         <Text fontSize={12} color={colors.gray500}>
-          Cliquez sur la carte pour ajuster la position exacte
+          Cliquez sur la carte pour positionner le marqueur et remplir l'adresse
+          automatiquement
         </Text>
         <Map
           latitude={latitude}
@@ -259,8 +323,7 @@ export default function CreateMissionPage() {
             },
           ]}
           onMapClick={(event) => {
-            setLatitude(event.lngLat.lat);
-            setLongitude(event.lngLat.lng);
+            handleMapClick(event.lngLat.lat, event.lngLat.lng);
           }}
           interactive={true}
         />
@@ -280,21 +343,18 @@ export default function CreateMissionPage() {
 
       <XStack gap="$3">
         <YStack flex={1}>
-          <Input
+          <DatePicker
             label="Date de début"
-            placeholder="JJ/MM/AAAA"
             value={startDate}
             onChangeText={setStartDate}
-            type="date"
           />
         </YStack>
         <YStack flex={1}>
-          <Input
+          <DatePicker
             label="Date de fin"
-            placeholder="JJ/MM/AAAA"
             value={endDate}
             onChangeText={setEndDate}
-            type="date"
+            min={startDate || undefined}
           />
         </YStack>
       </XStack>
@@ -310,21 +370,17 @@ export default function CreateMissionPage() {
 
       <XStack gap="$3">
         <YStack flex={1}>
-          <Input
+          <TimePicker
             label="Heure de début"
-            placeholder="09:00"
             value={startTime}
             onChangeText={setStartTime}
-            type="time"
           />
         </YStack>
         <YStack flex={1}>
-          <Input
+          <TimePicker
             label="Heure de fin"
-            placeholder="17:00"
             value={endTime}
             onChangeText={setEndTime}
-            type="time"
           />
         </YStack>
       </XStack>

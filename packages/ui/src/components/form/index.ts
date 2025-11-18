@@ -4,3 +4,4 @@ export * from "./Select";
 export * from "./Checkbox";
 export * from "./FileUpload";
 export * from "./DatePicker";
+export * from "./TimePicker";

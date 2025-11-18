@@ -1,7 +1,7 @@
 import { YStack, Label, Text } from "tamagui";
 import React from "react";
 
-interface DatePickerProps {
+interface TimePickerProps {
   label?: string;
   value?: string;
   onChangeText?: (text: string) => void;
@@ -13,7 +13,7 @@ interface DatePickerProps {
   max?: string;
 }
 
-export const DatePicker = ({
+export const TimePicker = ({
   label,
   value,
   onChangeText,
@@ -23,7 +23,7 @@ export const DatePicker = ({
   disabled = false,
   min,
   max,
-}: DatePickerProps) => {
+}: TimePickerProps) => {
   return (
     <YStack gap="$2" width="100%">
       {label && (
@@ -39,7 +39,7 @@ export const DatePicker = ({
       )}
 
       <input
-        type="date"
+        type="time"
         value={value || ""}
         onChange={(e) => onChangeText?.(e.target.value)}
         disabled={disabled}
@@ -82,3 +82,4 @@ export const DatePicker = ({
     </YStack>
   );
 };
+
