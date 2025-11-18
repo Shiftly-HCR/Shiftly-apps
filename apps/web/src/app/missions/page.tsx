@@ -31,6 +31,10 @@ export default function MissionsPage() {
     router.push(`/missions/${missionId}`);
   };
 
+  const handleEditMission = (missionId: string) => {
+    router.push(`/missions/${missionId}/edit`);
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -143,8 +147,7 @@ export default function MissionsPage() {
                   key={mission.id}
                   width="calc(33.333% - 12px)"
                   minWidth={300}
-                  cursor="pointer"
-                  onPress={() => handleMissionClick(mission.id)}
+                  position="relative"
                 >
                   <MissionCard
                     title={mission.title}
@@ -160,6 +163,8 @@ export default function MissionsPage() {
                     }
                     priceUnit="/ heure"
                     image={mission.image_url}
+                    onPress={() => handleMissionClick(mission.id)}
+                    onEdit={() => handleEditMission(mission.id)}
                   />
                   
                   {/* Badge de statut */}

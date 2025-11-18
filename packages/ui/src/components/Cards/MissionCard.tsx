@@ -14,6 +14,7 @@ interface MissionCardProps {
   onPress?: () => void;
   showButton?: boolean;
   buttonText?: string;
+  onEdit?: () => void; // Callback pour le bouton "Modifier" (mode recruteur)
 }
 
 export const MissionCard = ({
@@ -27,6 +28,7 @@ export const MissionCard = ({
   onPress,
   showButton = true,
   buttonText = "Voir la mission",
+  onEdit,
 }: MissionCardProps) => {
   return (
     <BaseCard
@@ -111,12 +113,39 @@ export const MissionCard = ({
           </Text>
         </XStack>
 
-        {/* Bouton */}
-        {showButton && (
+        {/* Boutons */}
+        {onEdit ? (
+          // Mode recruteur : afficher bouton "Modifier"
+          <XStack gap="$2" width="100%">
+            <Button
+              variant="outline"
+              size="md"
+              flex={1}
+              onPress={(e) => {
+                e?.stopPropagation();
+                onPress?.();
+              }}
+            >
+              Voir
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              flex={1}
+              onPress={(e) => {
+                e?.stopPropagation();
+                onEdit();
+              }}
+            >
+              Modifier
+            </Button>
+          </XStack>
+        ) : showButton ? (
+          // Mode public : afficher bouton "Voir la mission"
           <Button variant="primary" size="md" onPress={onPress}>
             {buttonText}
           </Button>
-        )}
+        ) : null}
       </YStack>
     </BaseCard>
   );
