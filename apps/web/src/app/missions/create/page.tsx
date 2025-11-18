@@ -10,6 +10,27 @@ import {
   publishMission,
 } from "@hestia/data";
 import { AppLayout } from "../../../components/AppLayout";
+import dynamic from "next/dynamic";
+
+// Import dynamique de Map pour éviter les erreurs SSR
+const Map = dynamic(() => import("../../../components/Map"), {
+  ssr: false,
+  loading: () => (
+    <YStack
+      backgroundColor={colors.gray100}
+      borderRadius={12}
+      height={250}
+      alignItems="center"
+      justifyContent="center"
+      borderWidth={1}
+      borderColor={colors.gray200}
+    >
+      <Text fontSize={14} color={colors.gray500}>
+        Chargement de la carte...
+      </Text>
+    </YStack>
+  ),
+});
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -28,6 +49,8 @@ export default function CreateMissionPage() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
+  const [latitude, setLatitude] = useState<number>(48.8566); // Paris par défaut
+  const [longitude, setLongitude] = useState<number>(2.3522);
 
   // Étape 3: Dates et horaires
   const [startDate, setStartDate] = useState("");
@@ -42,7 +65,7 @@ export default function CreateMissionPage() {
 
   const handleNext = () => {
     setError("");
-    
+
     // Validation selon l'étape
     if (currentStep === 1) {
       if (!title.trim()) {
@@ -90,6 +113,8 @@ export default function CreateMissionPage() {
         address: address || undefined,
         city: city || undefined,
         postal_code: postalCode || undefined,
+        latitude: latitude,
+        longitude: longitude,
         start_date: startDate || undefined,
         end_date: endDate || undefined,
         start_time: startTime || undefined,
@@ -213,19 +238,32 @@ export default function CreateMissionPage() {
         </YStack>
       </XStack>
 
-      {/* Map placeholder */}
-      <YStack
-        height={250}
-        backgroundColor={colors.gray100}
-        borderRadius={12}
-        alignItems="center"
-        justifyContent="center"
-        borderWidth={1}
-        borderColor={colors.gray200}
-      >
-        <Text fontSize={14} color={colors.gray500}>
-          Carte (à implémenter)
+      {/* Carte interactive */}
+      <YStack gap="$2">
+        <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+          Localisation sur la carte
         </Text>
+        <Text fontSize={12} color={colors.gray500}>
+          Cliquez sur la carte pour ajuster la position exacte
+        </Text>
+        <Map
+          latitude={latitude}
+          longitude={longitude}
+          zoom={13}
+          height={250}
+          markers={[
+            {
+              id: "mission-location",
+              latitude: latitude,
+              longitude: longitude,
+            },
+          ]}
+          onMapClick={(event) => {
+            setLatitude(event.lngLat.lat);
+            setLongitude(event.lngLat.lng);
+          }}
+          interactive={true}
+        />
       </YStack>
     </YStack>
   );
@@ -261,7 +299,12 @@ export default function CreateMissionPage() {
         </YStack>
       </XStack>
 
-      <Text fontSize={16} fontWeight="600" color={colors.gray900} marginTop="$2">
+      <Text
+        fontSize={16}
+        fontWeight="600"
+        color={colors.gray900}
+        marginTop="$2"
+      >
         Fourchette d'horaires
       </Text>
 
@@ -477,4 +520,3 @@ export default function CreateMissionPage() {
     </AppLayout>
   );
 }
-

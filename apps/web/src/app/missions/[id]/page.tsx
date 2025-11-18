@@ -6,6 +6,25 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@hestia/ui";
 import { getMissionById, type Mission } from "@hestia/data";
 import { AppLayout } from "../../../components/AppLayout";
+import dynamic from "next/dynamic";
+
+// Import dynamique de Map pour éviter les erreurs SSR
+const Map = dynamic(() => import("../../../components/Map"), {
+  ssr: false,
+  loading: () => (
+    <YStack
+      backgroundColor="#E0E0E0"
+      borderRadius={8}
+      height={300}
+      alignItems="center"
+      justifyContent="center"
+    >
+      <Text fontSize={14} color="#999">
+        Chargement de la carte...
+      </Text>
+    </YStack>
+  ),
+});
 
 export default function MissionDetailPage() {
   const router = useRouter();
@@ -319,17 +338,21 @@ export default function MissionDetailPage() {
                 <Text fontSize={14} color="#666" marginBottom="$3">
                   {mission.postal_code || "75000"} {mission.city || "Paris"}
                 </Text>
-                <YStack
-                  backgroundColor="#E0E0E0"
-                  borderRadius={8}
+                <Map
+                  latitude={mission.latitude || 48.8566}
+                  longitude={mission.longitude || 2.3522}
+                  zoom={15}
                   height={300}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Text fontSize={14} color="#999">
-                    Carte (à implémenter)
-                  </Text>
-                </YStack>
+                  markers={[
+                    {
+                      id: mission.id,
+                      latitude: mission.latitude || 48.8566,
+                      longitude: mission.longitude || 2.3522,
+                      title: mission.title,
+                    },
+                  ]}
+                  interactive={true}
+                />
               </YStack>
 
               {/* Autres missions similaires */}

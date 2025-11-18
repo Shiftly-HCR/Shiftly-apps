@@ -4,14 +4,34 @@ import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Badge, Button, MissionCard, colors } from "@hestia/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiMap } from "react-icons/fi";
+import { FiMap, FiList } from "react-icons/fi";
 import { AppLayout } from "../../components/AppLayout";
 import { getPublishedMissions, type Mission } from "@hestia/data";
+import dynamic from "next/dynamic";
+
+// Import dynamique de Map pour éviter les erreurs SSR
+const Map = dynamic(() => import("../../components/Map"), {
+  ssr: false,
+  loading: () => (
+    <YStack
+      backgroundColor={colors.gray100}
+      borderRadius={12}
+      height={600}
+      alignItems="center"
+      justifyContent="center"
+    >
+      <Text fontSize={14} color={colors.gray500}>
+        Chargement de la carte...
+      </Text>
+    </YStack>
+  ),
+});
 
 export default function HomePage() {
   const router = useRouter();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [activeFilters, setActiveFilters] = useState([
     "Serveur",
     "Paris",
@@ -150,31 +170,80 @@ export default function HomePage() {
                 Effacer tout
               </Text>
 
-              <XStack
-                marginLeft="auto"
-                paddingHorizontal="$3"
-                paddingVertical="$2"
-                backgroundColor={colors.white}
-                borderRadius="$3"
-                borderWidth={1}
-                borderColor={colors.gray200}
-                gap="$2"
-                alignItems="center"
-                cursor="pointer"
-                hoverStyle={{
-                  borderColor: colors.hestiaOrange,
-                  backgroundColor: "#FFF4E6",
-                }}
-              >
-                <FiMap size={16} color={colors.hestiaOrange} />
-                <Text fontSize={13} color={colors.gray900} fontWeight="600">
-                  Carte
-                </Text>
+              {/* Toggle Liste/Carte */}
+              <XStack marginLeft="auto" gap="$2">
+                <XStack
+                  paddingHorizontal="$3"
+                  paddingVertical="$2"
+                  backgroundColor={
+                    viewMode === "list" ? colors.hestiaOrange : colors.white
+                  }
+                  borderRadius="$3"
+                  borderWidth={1}
+                  borderColor={
+                    viewMode === "list" ? colors.hestiaOrange : colors.gray200
+                  }
+                  gap="$2"
+                  alignItems="center"
+                  cursor="pointer"
+                  hoverStyle={{
+                    borderColor: colors.hestiaOrange,
+                    backgroundColor:
+                      viewMode === "list" ? colors.hestiaOrange : "#FFF4E6",
+                  }}
+                  onPress={() => setViewMode("list")}
+                >
+                  <FiList
+                    size={16}
+                    color={viewMode === "list" ? "#fff" : colors.gray900}
+                  />
+                  <Text
+                    fontSize={13}
+                    color={viewMode === "list" ? "#fff" : colors.gray900}
+                    fontWeight="600"
+                  >
+                    Liste
+                  </Text>
+                </XStack>
+
+                <XStack
+                  paddingHorizontal="$3"
+                  paddingVertical="$2"
+                  backgroundColor={
+                    viewMode === "map" ? colors.hestiaOrange : colors.white
+                  }
+                  borderRadius="$3"
+                  borderWidth={1}
+                  borderColor={
+                    viewMode === "map" ? colors.hestiaOrange : colors.gray200
+                  }
+                  gap="$2"
+                  alignItems="center"
+                  cursor="pointer"
+                  hoverStyle={{
+                    borderColor: colors.hestiaOrange,
+                    backgroundColor:
+                      viewMode === "map" ? colors.hestiaOrange : "#FFF4E6",
+                  }}
+                  onPress={() => setViewMode("map")}
+                >
+                  <FiMap
+                    size={16}
+                    color={viewMode === "map" ? "#fff" : colors.hestiaOrange}
+                  />
+                  <Text
+                    fontSize={13}
+                    color={viewMode === "map" ? "#fff" : colors.gray900}
+                    fontWeight="600"
+                  >
+                    Carte
+                  </Text>
+                </XStack>
               </XStack>
             </XStack>
           )}
 
-          {/* Grille de missions */}
+          {/* Grille de missions OU Carte */}
           <YStack gap="$4" marginTop="$4">
             {missions.length === 0 ? (
               <YStack
@@ -190,7 +259,7 @@ export default function HomePage() {
                   Revenez plus tard pour découvrir de nouvelles opportunités
                 </Text>
               </YStack>
-            ) : (
+            ) : viewMode === "list" ? (
               <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
                 {missions.map((mission) => (
                   <YStack
@@ -227,6 +296,23 @@ export default function HomePage() {
                   </YStack>
                 ))}
               </XStack>
+            ) : (
+              <Map
+                latitude={48.8566}
+                longitude={2.3522}
+                zoom={11}
+                height={600}
+                markers={missions
+                  .filter((m) => m.latitude && m.longitude)
+                  .map((mission) => ({
+                    id: mission.id,
+                    latitude: mission.latitude!,
+                    longitude: mission.longitude!,
+                    title: mission.title,
+                    onClick: () => router.push(`/missions/${mission.id}`),
+                  }))}
+                interactive={true}
+              />
             )}
           </YStack>
         </YStack>
