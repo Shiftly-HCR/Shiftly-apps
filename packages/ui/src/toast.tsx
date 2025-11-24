@@ -14,7 +14,7 @@ export interface ToastOptions {
   description?: string;
 }
 
-export function useHestiaToast() {
+export function useShiftlyToast() {
   const toast = useToastController();
 
   return {
@@ -88,8 +88,8 @@ function ProgressBar({ duration, color }: { duration: number; color: string }) {
   );
 }
 
-// Composant Toast personnalisé avec les styles Hestia
-export function HestiaToast() {
+// Composant Toast personnalisé avec les styles Shiftly
+export function ShiftlyToast() {
   const currentToast = useToastState();
 
   if (!currentToast || currentToast.isHandledNatively) return null;
@@ -256,7 +256,7 @@ export function ToastViewport() {
       gap="$3"
       zIndex={100000}
     >
-      <HestiaToast />
+      <ShiftlyToast />
     </TamaguiToastViewport>
   );
 }

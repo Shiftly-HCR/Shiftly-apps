@@ -3,8 +3,8 @@
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MissionCard, CreateMissionCard, colors } from "@hestia/ui";
-import { getRecruiterMissions, type Mission } from "@hestia/data";
+import { MissionCard, CreateMissionCard, colors } from "@shiftly/ui";
+import { getRecruiterMissions, type Mission } from "@shiftly/data";
 import { AppLayout } from "../../components/AppLayout";
 
 export default function MissionsPage() {
@@ -103,7 +103,7 @@ export default function MissionsPage() {
               <Text fontSize={14} color={colors.gray700} fontWeight="600">
                 Missions publiées
               </Text>
-              <Text fontSize={32} fontWeight="700" color={colors.hestiaOrange}>
+              <Text fontSize={32} fontWeight="700" color={colors.shiftlyOrange}>
                 {missions.filter((m) => m.status === "published").length}
               </Text>
             </YStack>

@@ -71,7 +71,7 @@ export function Navbar({
             width={32}
             height={32}
             borderRadius={16}
-            backgroundColor={colors.hestiaOrange}
+            backgroundColor={colors.shiftlyOrange}
             alignItems="center"
             justifyContent="center"
           >
@@ -82,7 +82,7 @@ export function Navbar({
             />
           </YStack>
           <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-            Hestia
+            Shiftly
           </Text>
         </XStack>
 
@@ -103,7 +103,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.hestiaOrange,
+              color: colors.shiftlyOrange,
             }}
             onPress={onProfileClick}
           >
@@ -115,7 +115,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.hestiaOrange,
+              color: colors.shiftlyOrange,
             }}
             onPress={onMissionsClick}
           >
@@ -127,7 +127,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.hestiaOrange,
+              color: colors.shiftlyOrange,
             }}
             onPress={onSubscriptionClick}
           >
@@ -139,7 +139,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.hestiaOrange,
+              color: colors.shiftlyOrange,
             }}
             onPress={onHelpClick}
           >
@@ -166,12 +166,12 @@ export function Navbar({
             hoverStyle={{ opacity: 0.8 }}
             onPress={onProfileClick}
           >
-            <Avatar circular size={40} backgroundColor={colors.hestiaOrange}>
+            <Avatar circular size={40} backgroundColor={colors.shiftlyOrange}>
               {userAvatar ? (
                 <Avatar.Image src={userAvatar} />
               ) : (
                 <Avatar.Fallback
-                  backgroundColor={colors.hestiaOrange}
+                  backgroundColor={colors.shiftlyOrange}
                   alignItems="center"
                   justifyContent="center"
                 >

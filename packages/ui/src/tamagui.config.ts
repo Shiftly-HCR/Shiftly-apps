@@ -1,9 +1,9 @@
 import { createTamagui, createTokens } from "tamagui";
 import { config as configDefault } from "@tamagui/config-default";
 import {
-  hestiaLight,
-  hestiaDark,
-  hestiaPremium,
+  shiftlyLight,
+  shiftlyDark,
+  shiftlyPremium,
   radius,
   spacing,
   colors,
@@ -12,19 +12,19 @@ import {
 // Tokens (spacing / radius / color)
 const tokens = createTokens({
   color: {
-    background: hestiaLight.background,
+    background: shiftlyLight.background,
     backgroundHover: "#f5f5f5",
     backgroundPress: "#f0f0f0",
     backgroundFocus: "#e0e0e0",
-    color: hestiaLight.color,
+    color: shiftlyLight.color,
     colorHover: "#333333",
     colorPress: "#666666",
     colorFocus: "#999999",
-    primary: hestiaLight.primary,
-    secondary: hestiaLight.secondary,
-    surface: hestiaLight.surface,
-    muted: hestiaLight.muted,
-    borderColor: hestiaLight.borderColor,
+    primary: shiftlyLight.primary,
+    secondary: shiftlyLight.secondary,
+    surface: shiftlyLight.surface,
+    muted: shiftlyLight.muted,
+    borderColor: shiftlyLight.borderColor,
     borderColorHover: "#d0d0d0",
     borderColorPress: "#c0c0c0",
     borderColorFocus: "#b0b0b0",
@@ -40,8 +40,8 @@ const tokens = createTokens({
     outlineColor: "#3b82f6",
     black: colors.black,
     white: colors.white,
-    primaryLight: hestiaLight.primaryLight,
-    gold: hestiaLight.gold,
+    primaryLight: shiftlyLight.primaryLight,
+    gold: shiftlyLight.gold,
   },
   radius: {
     $true: 8,
@@ -81,9 +81,9 @@ export const config = createTamagui({
   defaultTheme: "light",
   tokens,
   themes: {
-    light: hestiaLight,
-    dark: hestiaDark,
-    premium: hestiaPremium,
+    light: shiftlyLight,
+    dark: shiftlyDark,
+    premium: shiftlyPremium,
   },
 });
 

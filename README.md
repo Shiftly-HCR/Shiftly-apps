@@ -1,6 +1,6 @@
-# 🧱 Hestia Apps Monorepo
+# 🧱 shiftly Apps Monorepo
 
-**Hestia** est une plateforme SaaS de mise en relation entre **freelances du secteur Hôtellerie-Restauration (HCR)** et les **établissements** cherchant du renfort ponctuel.  
+**shiftly** est une plateforme SaaS de mise en relation entre **freelances du secteur Hôtellerie-Restauration (HCR)** et les **établissements** cherchant du renfort ponctuel.  
 Ce monorepo contient l’ensemble des applications **web**, **mobile**, et des **packages partagés** du projet.
 
 ---
@@ -24,7 +24,7 @@ Ce monorepo contient l’ensemble des applications **web**, **mobile**, et des *
 ## 📁 Structure du projet
 
 ```bash
-hestia-apps/
+shiftly-apps/
 ├─ apps/
 │ ├─ web/ # Application Next.js (interface web)
 │ └─ mobile/ # Application Expo (mobile)
@@ -59,8 +59,8 @@ hestia-apps/
 ### 2️⃣ Cloner le repo
 
 ```bash
-git clone https://github.com/Hestia/hestia-apps.git
-cd hestia-apps
+git clone https://github.com/shiftly/shiftly-apps.git
+cd shiftly-apps
 ```
 
 ### 3️⃣ Installer les dépendances
@@ -128,5 +128,5 @@ Les environnements spécifiques (.env.local, .env.production) sont ignorés par 
 
 ## 📄 Licence
 
-Projet interne **Hestia SAS** — tous droits réservés.  
-© 2025 – Hestia SAS.
+Projet interne **shiftly SAS** — tous droits réservés.  
+© 2025 – shiftly SAS.

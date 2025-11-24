@@ -3,7 +3,7 @@
 export default function PlaygroundSimplePage() {
   return (
     <div style={{ padding: "20px", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Hestia UI Playground - Version Simple</h1>
+      <h1>Shiftly UI Playground - Version Simple</h1>
 
       <div style={{ marginBottom: "40px" }}>
         <h2>Boutons</h2>

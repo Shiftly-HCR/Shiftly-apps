@@ -3,8 +3,8 @@
 import { YStack, XStack, Text, ScrollView, Image } from "tamagui";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Button } from "@hestia/ui";
-import { getMissionById, type Mission } from "@hestia/data";
+import { Button } from "@shiftly/ui";
+import { getMissionById, type Mission } from "@shiftly/data";
 import { AppLayout } from "../../../components/AppLayout";
 import dynamic from "next/dynamic";
 
@@ -427,7 +427,7 @@ export default function MissionDetailPage() {
                     ♥ Sauvegarder la mission
                   </Button>
 
-                  {/* Badge Hestia certifie */}
+                  {/* Badge Shiftly certifie */}
                   <XStack
                     backgroundColor="#D4F4DD"
                     borderRadius={8}
@@ -436,7 +436,7 @@ export default function MissionDetailPage() {
                     justifyContent="center"
                   >
                     <Text fontSize={14} color="#00A86B" fontWeight="600">
-                      ✓ Hestia certifie cette mission
+                      ✓ Shiftly certifie cette mission
                     </Text>
                   </XStack>
                 </YStack>

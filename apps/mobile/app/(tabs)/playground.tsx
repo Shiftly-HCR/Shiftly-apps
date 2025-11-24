@@ -11,11 +11,11 @@ import {
   MissionCard,
   FreelanceCard,
   StatCard,
-  useHestiaToast,
-} from "@hestia/ui";
+  useShiftlyToast,
+} from "@shiftly/ui";
 
 export default function PlaygroundScreen() {
-  const toast = useHestiaToast();
+  const toast = useShiftlyToast();
 
   return (
     <YStack flex={1} backgroundColor="white">
@@ -35,7 +35,7 @@ export default function PlaygroundScreen() {
               borderRadius={20}
             />
             <Text fontSize={18} fontWeight="600">
-              Hestia UI Playground
+              Shiftly UI Playground
             </Text>
           </XStack>
         </XStack>
@@ -288,7 +288,7 @@ export default function PlaygroundScreen() {
                   </Text>
                   <Text fontSize={14} color="#666666">
                     Utilisez BaseCard pour créer vos propres designs de cartes
-                    avec le style Hestia.
+                    avec le style Shiftly.
                   </Text>
                 </YStack>
               </BaseCard>

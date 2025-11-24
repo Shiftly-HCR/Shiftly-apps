@@ -1,5 +1,5 @@
 import { TamaguiProvider as TamaguiProviderBase } from "tamagui";
-import { config, ToastProvider, ToastViewport } from "@hestia/ui";
+import { config, ToastProvider, ToastViewport } from "@shiftly/ui";
 
 export function TamaguiProvider({ children }: { children: React.ReactNode }) {
   return (

@@ -55,12 +55,12 @@ export function SearchBar({
         width={44}
         height={44}
         borderRadius={22}
-        backgroundColor={colors.hestiaOrange}
+        backgroundColor={colors.shiftlyOrange}
         alignItems="center"
         justifyContent="center"
         cursor="pointer"
         hoverStyle={{
-          backgroundColor: colors.hestiaOrangeHover,
+          backgroundColor: colors.shiftlyOrangeHover,
         }}
         pressStyle={{
           scale: 0.95,

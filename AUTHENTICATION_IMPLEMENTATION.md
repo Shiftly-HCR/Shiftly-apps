@@ -1,10 +1,10 @@
-# Implémentation de l'authentification Hestia
+# Implémentation de l'authentification Shiftly
 
 ## ✅ Résumé de l'implémentation
 
-L'authentification a été mise en place avec succès pour l'application Hestia. Voici ce qui a été implémenté :
+L'authentification a été mise en place avec succès pour l'application Shiftly. Voici ce qui a été implémenté :
 
-### 📦 Package `@hestia/data`
+### 📦 Package `@shiftly/data`
 
 Le package contient maintenant toute la logique d'authentification réutilisable entre les applications web et mobile.
 
@@ -159,12 +159,12 @@ User → Bouton → signOut() → Supabase → Session supprimée → Redirectio
 
 ## 📱 Prochaines étapes pour l'app mobile
 
-Le package `@hestia/data` est déjà compatible React Native. Pour l'utiliser dans l'app mobile :
+Le package `@shiftly/data` est déjà compatible React Native. Pour l'utiliser dans l'app mobile :
 
 1. Ajouter la dépendance dans `apps/mobile/package.json` :
 
    ```json
-   "@hestia/data": "workspace:*"
+   "@shiftly/data": "workspace:*"
    ```
 
 2. Installer : `pnpm install`
@@ -188,6 +188,6 @@ Si vous rencontrez des problèmes, consultez `packages/data/SETUP.md` section "T
 
 ---
 
-**Auteur** : Implémentation réalisée pour Hestia  
+**Auteur** : Implémentation réalisée pour Shiftly  
 **Date** : Octobre 2025  
 **Version** : 1.0.0

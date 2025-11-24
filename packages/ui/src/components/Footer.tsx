@@ -76,7 +76,7 @@ export function Footer({
               width={32}
               height={32}
               borderRadius={16}
-              backgroundColor={colors.hestiaOrange}
+              backgroundColor={colors.shiftlyOrange}
               alignItems="center"
               justifyContent="center"
             >
@@ -85,7 +85,7 @@ export function Footer({
               </Text>
             </YStack>
             <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-              Hestia
+              Shiftly
             </Text>
           </XStack>
           <Text fontSize={14} color={colors.gray700} lineHeight={20}>
@@ -105,7 +105,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onHomeClick, "/home")}
             >
               Accueil
@@ -114,7 +114,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onMissionsClick, "/missions")}
             >
               Missions
@@ -123,7 +123,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onProfileClick, "/profile")}
             >
               Profil
@@ -132,7 +132,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onSubscriptionClick, "/subscription")}
             >
               Abonnement
@@ -148,7 +148,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onHelpClick, "/help")}
             >
               Aide
@@ -157,7 +157,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onContactClick, "/contact")}
             >
               Contact
@@ -166,7 +166,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onFaqClick, "/faq")}
             >
               FAQ
@@ -182,7 +182,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onTermsClick, "/terms")}
             >
               Conditions d'utilisation
@@ -191,7 +191,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onPrivacyClick, "/privacy")}
             >
               Politique de confidentialité
@@ -200,7 +200,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.hestiaOrange }}
+              hoverStyle={{ color: colors.shiftlyOrange }}
               onPress={() => handleNavigation(onLegalClick, "/legal")}
             >
               Mentions légales
@@ -219,7 +219,7 @@ export function Footer({
         alignItems="center"
       >
         <Text fontSize={12} color={colors.gray500}>
-          © {currentYear} Hestia. Tous droits réservés.
+          © {currentYear} Shiftly. Tous droits réservés.
         </Text>
       </XStack>
     </YStack>

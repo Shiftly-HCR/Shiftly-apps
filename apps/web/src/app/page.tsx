@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@hestia/data";
+import { getCurrentUser } from "@shiftly/data";
 import { YStack, Text } from "tamagui";
 
 export default function Home() {

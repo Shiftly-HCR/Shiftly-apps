@@ -10,7 +10,7 @@ import {
   DatePicker,
   TimePicker,
   colors,
-} from "@hestia/ui";
+} from "@shiftly/ui";
 import {
   createMission,
   uploadMissionImage,
@@ -18,7 +18,7 @@ import {
   geocodeAddress,
   reverseGeocode,
   debounce,
-} from "@hestia/data";
+} from "@shiftly/data";
 import { AppLayout } from "../../../components/AppLayout";
 import dynamic from "next/dynamic";
 
@@ -209,7 +209,7 @@ export default function CreateMissionPage() {
           width={currentStep >= step ? 60 : 40}
           height={4}
           backgroundColor={
-            currentStep >= step ? colors.hestiaOrange : colors.gray200
+            currentStep >= step ? colors.shiftlyOrange : colors.gray200
           }
           borderRadius={2}
         />
@@ -303,7 +303,7 @@ export default function CreateMissionPage() {
             Localisation sur la carte
           </Text>
           {isGeocoding && (
-            <Text fontSize={12} color={colors.hestiaOrange}>
+            <Text fontSize={12} color={colors.shiftlyOrange}>
               🔄 Mise à jour...
             </Text>
           )}

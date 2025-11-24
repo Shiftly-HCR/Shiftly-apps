@@ -1,10 +1,10 @@
 "use client";
 
 import { YStack, XStack, Text } from "tamagui";
-import { Button, Input } from "@hestia/ui";
+import { Button, Input } from "@shiftly/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signUp } from "@hestia/data";
+import { signUp } from "@shiftly/data";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -108,7 +108,7 @@ export default function RegisterPage() {
               textAlign="center"
               lineHeight={20}
             >
-              Rejoignez Hestia et commencez à gérer vos missions
+              Rejoignez Shiftly et commencez à gérer vos missions
             </Text>
           </YStack>
 

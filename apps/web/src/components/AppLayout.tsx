@@ -1,10 +1,10 @@
 "use client";
 
 import { YStack } from "tamagui";
-import { Navbar, Footer } from "@hestia/ui";
+import { Navbar, Footer } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getCurrentUser, signOut, getCurrentProfile } from "@hestia/data";
+import { getCurrentUser, signOut, getCurrentProfile } from "@shiftly/data";
 
 interface AppLayoutProps {
   children: React.ReactNode;

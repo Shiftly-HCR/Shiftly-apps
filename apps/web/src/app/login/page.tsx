@@ -1,10 +1,10 @@
 "use client";
 
 import { YStack, XStack, Text, Image } from "tamagui";
-import { Button, Input } from "@hestia/ui";
+import { Button, Input } from "@shiftly/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "@hestia/data";
+import { signIn } from "@shiftly/data";
 
 export default function LoginPage() {
   const router = useRouter();

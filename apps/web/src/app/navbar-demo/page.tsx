@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { YStack, Paragraph, H2, ScrollView } from "tamagui";
-import { Navbar } from "@hestia/ui";
+import { Navbar } from "@shiftly/ui";
 import { signOut } from "../../../../../packages/data/auth/auth";
 import { useRouter } from "next/navigation";
 

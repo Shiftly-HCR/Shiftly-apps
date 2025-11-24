@@ -1,5 +1,5 @@
 {
-  "name": "hestia-apps",
+  "name": "shiftly-apps",
   "private": true,
   "packageManager": "pnpm@10.18.3",
   "workspaces": [
@@ -8,8 +8,8 @@
   ],
   "scripts": {
     "dev": "turbo run dev --parallel",
-    "dev:web": "pnpm --filter @hestia/web dev",
-    "dev:mobile": "pnpm --filter @hestia/mobile start",
+    "dev:web": "pnpm --filter @shiftly/web dev",
+    "dev:mobile": "pnpm --filter @shiftly/mobile start",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

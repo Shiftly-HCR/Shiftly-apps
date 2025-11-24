@@ -1,6 +1,6 @@
-# @hestia/data
+# @shiftly/data
 
-Package de gestion des données et de l'authentification pour Hestia.
+Package de gestion des données et de l'authentification pour Shiftly.
 
 ## Contenu
 
@@ -17,7 +17,7 @@ Ce package fournit toutes les fonctions nécessaires pour gérer l'authentificat
 Inscrit un nouvel utilisateur.
 
 ```typescript
-import { signUp } from "@hestia/data";
+import { signUp } from "@shiftly/data";
 
 const result = await signUp({
   email: "user@example.com",
@@ -38,7 +38,7 @@ if (result.success) {
 Connecte un utilisateur existant.
 
 ```typescript
-import { signIn } from "@hestia/data";
+import { signIn } from "@shiftly/data";
 
 const result = await signIn({
   email: "user@example.com",
@@ -57,7 +57,7 @@ if (result.success) {
 Déconnecte l'utilisateur actuel.
 
 ```typescript
-import { signOut } from "@hestia/data";
+import { signOut } from "@shiftly/data";
 
 const result = await signOut();
 
@@ -71,7 +71,7 @@ if (result.success) {
 Récupère l'utilisateur actuellement connecté.
 
 ```typescript
-import { getCurrentUser } from "@hestia/data";
+import { getCurrentUser } from "@shiftly/data";
 
 const user = await getCurrentUser();
 
@@ -87,7 +87,7 @@ if (user) {
 Récupère la session actuelle.
 
 ```typescript
-import { getSession } from "@hestia/data";
+import { getSession } from "@shiftly/data";
 
 const session = await getSession();
 
@@ -101,7 +101,7 @@ if (session) {
 Connexion via Google OAuth.
 
 ```typescript
-import { signInWithGoogle } from "@hestia/data";
+import { signInWithGoogle } from "@shiftly/data";
 
 const result = await signInWithGoogle();
 ```
@@ -111,7 +111,7 @@ const result = await signInWithGoogle();
 Connexion via Facebook OAuth.
 
 ```typescript
-import { signInWithFacebook } from "@hestia/data";
+import { signInWithFacebook } from "@shiftly/data";
 
 const result = await signInWithFacebook();
 ```
@@ -121,7 +121,7 @@ const result = await signInWithFacebook();
 Envoie un email de réinitialisation de mot de passe.
 
 ```typescript
-import { resetPassword } from "@hestia/data";
+import { resetPassword } from "@shiftly/data";
 
 const result = await resetPassword("user@example.com");
 
@@ -141,7 +141,7 @@ Ce package gère les profils utilisateurs stockés dans la table `profiles` de S
 Récupère le profil de l'utilisateur actuellement connecté.
 
 ```typescript
-import { getCurrentProfile } from "@hestia/data";
+import { getCurrentProfile } from "@shiftly/data";
 
 const profile = await getCurrentProfile();
 
@@ -155,7 +155,7 @@ if (profile) {
 Récupère un profil par son ID utilisateur.
 
 ```typescript
-import { getProfileById } from "@hestia/data";
+import { getProfileById } from "@shiftly/data";
 
 const profile = await getProfileById("user-uuid-here");
 ```
@@ -165,7 +165,7 @@ const profile = await getProfileById("user-uuid-here");
 Met à jour le profil de l'utilisateur actuel.
 
 ```typescript
-import { updateProfile } from "@hestia/data";
+import { updateProfile } from "@shiftly/data";
 
 const result = await updateProfile({
   firstName: "Jean",
@@ -185,7 +185,7 @@ if (result.success) {
 Crée un nouveau profil (généralement appelé automatiquement lors de l'inscription).
 
 ```typescript
-import { createProfile } from "@hestia/data";
+import { createProfile } from "@shiftly/data";
 
 const result = await createProfile({
   userId: "user-uuid",
@@ -201,7 +201,7 @@ const result = await createProfile({
 Supprime le profil de l'utilisateur actuel.
 
 ```typescript
-import { deleteProfile } from "@hestia/data";
+import { deleteProfile } from "@shiftly/data";
 
 const result = await deleteProfile();
 
@@ -286,7 +286,7 @@ Pour lier l'authentification à la table `profiles` et créer automatiquement un
 Le client Supabase est exporté et peut être utilisé directement :
 
 ```typescript
-import { supabase } from "@hestia/data";
+import { supabase } from "@shiftly/data";
 
 // Utiliser le client directement pour des opérations personnalisées
 const { data, error } = await supabase.from("table_name").select("*");
@@ -301,7 +301,7 @@ const { data, error } = await supabase.from("table_name").select("*");
 ```json
 {
   "dependencies": {
-    "@hestia/data": "workspace:*"
+    "@shiftly/data": "workspace:*"
   }
 }
 ```
@@ -312,7 +312,7 @@ const { data, error } = await supabase.from("table_name").select("*");
 "use client";
 
 import { useState } from "react";
-import { signIn, getCurrentProfile } from "@hestia/data";
+import { signIn, getCurrentProfile } from "@shiftly/data";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -344,7 +344,7 @@ export default function LoginPage() {
 "use client";
 
 import { useState } from "react";
-import { signUp, getCurrentProfile } from "@hestia/data";
+import { signUp, getCurrentProfile } from "@shiftly/data";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
@@ -386,7 +386,7 @@ export default function RegisterPage() {
 Le package est également compatible avec React Native et Expo.
 
 ```tsx
-import { signIn } from "@hestia/data";
+import { signIn } from "@shiftly/data";
 import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
@@ -413,7 +413,7 @@ Pour protéger une page et rediriger les utilisateurs non connectés :
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@hestia/data";
+import { getCurrentUser } from "@shiftly/data";
 
 export default function ProtectedPage() {
   const router = useRouter();

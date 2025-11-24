@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, XStack, Text, Image } from "tamagui";
-import { Button, Input, ImagePicker } from "@hestia/ui";
+import { Button, Input, ImagePicker } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -9,8 +9,8 @@ import {
   updateProfile,
   uploadProfilePhoto,
   deleteProfilePhoto,
-} from "@hestia/data";
-import type { Profile } from "@hestia/data";
+} from "@shiftly/data";
+import type { Profile } from "@shiftly/data";
 import { AppLayout } from "../../components/AppLayout";
 
 export default function ProfilePage() {

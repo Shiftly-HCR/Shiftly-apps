@@ -1,8 +1,8 @@
-// Tokens & thèmes Hestia
+// Tokens & thèmes Shiftly
 export const colors = {
-  hestiaOrange: "#FF5900",
-  hestiaOrangeHover: "#E04F00",
-  hestiaGold: "#CC9933",
+  shiftlyOrange: "#FF5900",
+  shiftlyOrangeHover: "#E04F00",
+  shiftlyGold: "#CC9933",
   gray900: "#2B2B2B",
   gray700: "#6B7280",
   gray500: "#9CA3AF",
@@ -31,37 +31,37 @@ export const spacing = {
   8: 32,
 };
 
-export const hestiaLight = {
+export const shiftlyLight = {
   background: colors.white,
   backgroundLight: colors.backgroundLight,
   color: colors.gray900,
   colorSecondary: colors.gray700,
   colorTertiary: colors.gray500,
-  primary: colors.hestiaOrange,
-  primaryHover: colors.hestiaOrangeHover,
+  primary: colors.shiftlyOrange,
+  primaryHover: colors.shiftlyOrangeHover,
   primaryLight: "rgba(255, 89, 0, 0.1)",
   secondary: colors.gray900,
-  gold: colors.hestiaGold,
+  gold: colors.shiftlyGold,
   surface: colors.gray050,
   muted: colors.gray100,
   borderColor: colors.gray200,
   black: colors.black,
 };
 
-export const hestiaDark = {
+export const shiftlyDark = {
   background: "#121212",
   color: colors.white,
-  primary: colors.hestiaOrange,
+  primary: colors.shiftlyOrange,
   primaryLight: "rgba(255, 89, 0, 0.1)",
   secondary: colors.gray050,
-  gold: colors.hestiaGold,
+  gold: colors.shiftlyGold,
   surface: "#1B1B1B",
   muted: "#2A2A2A",
   borderColor: "#2A2A2A",
   black: colors.black,
 };
 
-export const hestiaPremium = {
-  ...hestiaLight,
-  primary: colors.hestiaGold,
+export const shiftlyPremium = {
+  ...shiftlyLight,
+  primary: colors.shiftlyGold,
 };

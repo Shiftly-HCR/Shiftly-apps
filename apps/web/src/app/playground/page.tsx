@@ -28,19 +28,19 @@ import {
   FreelanceCard,
   StatCard,
   MissionDetailCard,
-  useHestiaToast,
-} from "@hestia/ui";
+  useShiftlyToast,
+} from "@shiftly/ui";
 import { SearchBar } from "../../../../../packages/ui/src/components/web/SearchBar";
 import { BottomNavigation } from "../../../../../packages/ui/src/components/web/BottomNavigation";
 import { ProfileCard } from "../../../../../packages/ui/src/components/web/ProfileCard";
 
 export default function PlaygroundPage() {
-  const toast = useHestiaToast();
+  const toast = useShiftlyToast();
 
   return (
     <YStack flex={1} backgroundColor="$background">
       <Header
-        title="Hestia UI Playground"
+        title="Shiftly UI Playground"
         showAvatar={true}
         avatarUrl="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
       />
@@ -302,7 +302,7 @@ export default function PlaygroundPage() {
                   </Paragraph>
                   <Paragraph>
                     Utilisez BaseCard pour créer vos propres designs de cartes
-                    avec le style Hestia.
+                    avec le style Shiftly.
                   </Paragraph>
                 </YStack>
               </BaseCard>

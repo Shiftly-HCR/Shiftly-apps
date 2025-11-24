@@ -1,5 +1,5 @@
 {
-  "name": "@hestia/web",
+  "name": "@shiftly/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,8 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@hestia/data": "workspace:*",
-    "@hestia/ui": "workspace:*",
+    "@shiftly/data": "workspace:*",
+    "@shiftly/ui": "workspace:*",
     "@tamagui/animations-react-native": "^1.135.3",
     "@tamagui/config-default": "^1.135.3",
     "@tamagui/core": "^1.135.3",

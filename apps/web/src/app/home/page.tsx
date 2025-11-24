@@ -1,12 +1,12 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { Badge, Button, MissionCard, colors } from "@hestia/ui";
+import { Badge, Button, MissionCard, colors } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiMap, FiList } from "react-icons/fi";
 import { AppLayout } from "../../components/AppLayout";
-import { getPublishedMissions, type Mission } from "@hestia/data";
+import { getPublishedMissions, type Mission } from "@shiftly/data";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
@@ -160,7 +160,7 @@ export default function HomePage() {
 
               <Text
                 fontSize={13}
-                color={colors.hestiaOrange}
+                color={colors.shiftlyOrange}
                 fontWeight="600"
                 cursor="pointer"
                 textDecorationLine="underline"
@@ -176,20 +176,20 @@ export default function HomePage() {
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   backgroundColor={
-                    viewMode === "list" ? colors.hestiaOrange : colors.white
+                    viewMode === "list" ? colors.shiftlyOrange : colors.white
                   }
                   borderRadius="$3"
                   borderWidth={1}
                   borderColor={
-                    viewMode === "list" ? colors.hestiaOrange : colors.gray200
+                    viewMode === "list" ? colors.shiftlyOrange : colors.gray200
                   }
                   gap="$2"
                   alignItems="center"
                   cursor="pointer"
                   hoverStyle={{
-                    borderColor: colors.hestiaOrange,
+                    borderColor: colors.shiftlyOrange,
                     backgroundColor:
-                      viewMode === "list" ? colors.hestiaOrange : "#FFF4E6",
+                      viewMode === "list" ? colors.shiftlyOrange : "#FFF4E6",
                   }}
                   onPress={() => setViewMode("list")}
                 >
@@ -210,26 +210,26 @@ export default function HomePage() {
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   backgroundColor={
-                    viewMode === "map" ? colors.hestiaOrange : colors.white
+                    viewMode === "map" ? colors.shiftlyOrange : colors.white
                   }
                   borderRadius="$3"
                   borderWidth={1}
                   borderColor={
-                    viewMode === "map" ? colors.hestiaOrange : colors.gray200
+                    viewMode === "map" ? colors.shiftlyOrange : colors.gray200
                   }
                   gap="$2"
                   alignItems="center"
                   cursor="pointer"
                   hoverStyle={{
-                    borderColor: colors.hestiaOrange,
+                    borderColor: colors.shiftlyOrange,
                     backgroundColor:
-                      viewMode === "map" ? colors.hestiaOrange : "#FFF4E6",
+                      viewMode === "map" ? colors.shiftlyOrange : "#FFF4E6",
                   }}
                   onPress={() => setViewMode("map")}
                 >
                   <FiMap
                     size={16}
-                    color={viewMode === "map" ? "#fff" : colors.hestiaOrange}
+                    color={viewMode === "map" ? "#fff" : colors.shiftlyOrange}
                   />
                   <Text
                     fontSize={13}
