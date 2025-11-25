@@ -1,5 +1,5 @@
 import { YStack, XStack, Label, Text } from "tamagui";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../Button";
 
 interface RadioOption {
@@ -31,6 +31,13 @@ export const RadioGroup = ({
   orientation = "horizontal",
 }: RadioGroupProps) => {
   const [selectedValue, setSelectedValue] = useState(value);
+
+  // Synchroniser le state interne avec la prop value
+  useEffect(() => {
+    if (value !== undefined) {
+      setSelectedValue(value);
+    }
+  }, [value]);
 
   const handleSelect = (optionValue: string) => {
     if (disabled) return;

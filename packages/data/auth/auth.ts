@@ -6,6 +6,7 @@ export interface SignUpParams {
   password: string;
   firstName?: string;
   lastName?: string;
+  role?: "freelance" | "recruiter";
 }
 
 export interface SignInParams {
@@ -27,6 +28,7 @@ export async function signUp({
   password,
   firstName,
   lastName,
+  role = "recruiter",
 }: SignUpParams): Promise<AuthResponse> {
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -36,6 +38,7 @@ export async function signUp({
         data: {
           first_name: firstName,
           last_name: lastName,
+          role: role, // Stocker le rôle dans les métadonnées utilisateur
         },
       },
     });
@@ -49,13 +52,14 @@ export async function signUp({
 
     // Si l'utilisateur est créé, on crée aussi son profil
     // Note: Le trigger SQL devrait le faire automatiquement, mais on le fait aussi ici
-    // pour s'assurer que le profil existe immédiatement
+    // pour s'assurer que le profil existe immédiatement avec le bon rôle
     if (data.user) {
       const profileResult = await createProfile({
         userId: data.user.id,
         email,
         firstName,
         lastName,
+        role,
       });
 
       // On ne bloque pas l'inscription si le profil échoue (le trigger le créera)

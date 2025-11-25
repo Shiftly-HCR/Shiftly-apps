@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, XStack, Text } from "tamagui";
-import { Button, Input } from "@shiftly/ui";
+import { Button, Input, RadioGroup } from "@shiftly/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@shiftly/data";
@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [userType, setUserType] = useState<"freelance" | "recruiter">("recruiter");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,7 +22,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     // Validation
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword || !userType) {
       setError("Veuillez remplir tous les champs");
       setIsLoading(false);
       return;
@@ -44,6 +45,7 @@ export default function RegisterPage() {
       password,
       firstName,
       lastName,
+      role: userType,
     });
 
     if (result.success) {
@@ -128,6 +130,19 @@ export default function RegisterPage() {
                 </Text>
               </YStack>
             )}
+
+            {/* Type de compte */}
+            <RadioGroup
+              label="Type de compte"
+              options={[
+                { label: "Recruteur", value: "recruiter" },
+                { label: "Freelance", value: "freelance" },
+              ]}
+              value={userType}
+              onChange={(value) => setUserType(value as "freelance" | "recruiter")}
+              required
+              helperText="Sélectionnez votre type de compte"
+            />
 
             {/* Nom et Prénom */}
             <XStack gap="$3" width="100%">

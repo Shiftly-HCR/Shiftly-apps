@@ -8,7 +8,7 @@ BEGIN
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
     COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
-    'recruteur', -- Rôle par défaut (conforme à la contrainte profiles_role_check)
+    COALESCE(NEW.raw_user_meta_data->>'role', 'recruiter'), -- Rôle depuis les métadonnées ou 'recruiter' par défaut
     NOW(),
     NOW()
   );
