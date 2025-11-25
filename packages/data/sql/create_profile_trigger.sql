@@ -36,6 +36,15 @@ CREATE POLICY "Users can view their own profile"
   FOR SELECT
   USING (auth.uid() = id);
 
+-- Permet à tous les utilisateurs authentifiés de voir les profils freelances
+-- (pour permettre aux recruteurs de voir les freelances sur la page /freelance)
+DROP POLICY IF EXISTS "Anyone can view freelance profiles" ON public.profiles;
+CREATE POLICY "Anyone can view freelance profiles"
+  ON public.profiles
+  FOR SELECT
+  TO authenticated
+  USING (role = 'freelance');
+
 -- Permet aux utilisateurs de mettre à jour leur propre profil
 DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Users can update their own profile"
