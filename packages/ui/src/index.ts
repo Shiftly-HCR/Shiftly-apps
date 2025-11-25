@@ -15,4 +15,5 @@ export * from "./components/ProfileCard";
 export * from "./components/FormField";
 export * from "./components/Footer";
 export * from "./components/ImagePicker";
+export * from "./components/FreelanceFilters";
 export * from "./toast";

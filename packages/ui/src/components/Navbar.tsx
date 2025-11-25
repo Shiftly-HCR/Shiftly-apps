@@ -12,7 +12,7 @@ interface NavbarProps {
   onProfileClick?: () => void;
   onMissionsClick?: () => void;
   onSubscriptionClick?: () => void;
-  onHelpClick?: () => void;
+  onFreelanceClick?: () => void;
   onLogoutClick?: () => void;
 }
 
@@ -25,7 +25,7 @@ export function Navbar({
   onProfileClick,
   onMissionsClick,
   onSubscriptionClick,
-  onHelpClick,
+  onFreelanceClick,
   onLogoutClick,
 }: NavbarProps) {
   const handleHomeClick = () => {
@@ -141,9 +141,9 @@ export function Navbar({
             hoverStyle={{
               color: colors.shiftlyOrange,
             }}
-            onPress={onHelpClick}
+            onPress={onFreelanceClick}
           >
-            Aide
+            Freelance
           </Text>
           {onLogoutClick && (
             <Text

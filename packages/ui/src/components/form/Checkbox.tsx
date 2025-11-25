@@ -1,10 +1,11 @@
 import { YStack, XStack, Label, Text } from "tamagui";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface CheckboxProps {
   label?: string;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
+  onCheckedChange?: (checked: boolean) => void;
   error?: string;
   helperText?: string;
   disabled?: boolean;
@@ -14,17 +15,26 @@ export const Checkbox = ({
   label,
   checked = false,
   onChange,
+  onCheckedChange,
   error,
   helperText,
   disabled = false,
 }: CheckboxProps) => {
   const [isChecked, setIsChecked] = useState(checked);
 
+  // Synchroniser avec la prop checked si elle change
+  useEffect(() => {
+    if (checked !== undefined) {
+      setIsChecked(checked);
+    }
+  }, [checked]);
+
   const handleToggle = () => {
     if (disabled) return;
     const newValue = !isChecked;
     setIsChecked(newValue);
     onChange?.(newValue);
+    onCheckedChange?.(newValue);
   };
 
   return (

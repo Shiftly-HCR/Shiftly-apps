@@ -3,3 +3,5 @@ export * from "./auth";
 export * from "./profiles";
 export * from "./missions";
 export * from "./helpers";
+export * from "./freelance";
+export * from "./types/profile";

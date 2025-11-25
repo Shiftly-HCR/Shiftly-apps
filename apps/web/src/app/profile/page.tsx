@@ -12,6 +12,7 @@ import {
 } from "@shiftly/data";
 import type { Profile } from "@shiftly/data";
 import { AppLayout } from "../../components/AppLayout";
+import { FreelanceProfileForm } from "../../components/FreelanceProfileForm";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -406,6 +407,37 @@ export default function ProfilePage() {
             </XStack>
           )}
         </YStack>
+
+        {/* Section Freelance - Affichage conditionnel */}
+        {profile?.role === "freelance" ? (
+          <FreelanceProfileForm
+            onSave={async () => {
+              // Recharger le profil après sauvegarde
+              const updatedProfile = await getCurrentProfile();
+              if (updatedProfile) {
+                setProfile(updatedProfile);
+              }
+            }}
+          />
+        ) : (
+          <YStack
+            padding="$6"
+            backgroundColor="white"
+            borderRadius="$4"
+            borderWidth={1}
+            borderColor="#E5E5E5"
+            shadowColor="rgba(0, 0, 0, 0.1)"
+            shadowOffset={{ width: 0, height: 4 }}
+            shadowOpacity={1}
+            shadowRadius={12}
+            gap="$3"
+            alignItems="center"
+          >
+            <Text fontSize={16} color="#6B7280" textAlign="center">
+              Cette section est réservée aux freelances.
+            </Text>
+          </YStack>
+        )}
 
         {/* Informations supplémentaires */}
         <YStack
