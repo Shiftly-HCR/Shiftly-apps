@@ -84,3 +84,4 @@ export function useCachedFreelanceData(userId: string | null) {
   return { experiences, educations, isLoading, error };
 }
 
+
