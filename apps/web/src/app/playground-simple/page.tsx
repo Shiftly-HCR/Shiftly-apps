@@ -10,7 +10,7 @@ export default function PlaygroundSimplePage() {
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <button
             style={{
-              backgroundColor: "#f97316",
+              backgroundColor: "#782478",
               color: "white",
               padding: "12px 24px",
               border: "none",
@@ -23,9 +23,9 @@ export default function PlaygroundSimplePage() {
           <button
             style={{
               backgroundColor: "transparent",
-              color: "#f97316",
+              color: "#782478",
               padding: "12px 24px",
-              border: "2px solid #f97316",
+              border: "2px solid #782478",
               borderRadius: "8px",
               cursor: "pointer",
             }}
@@ -35,7 +35,7 @@ export default function PlaygroundSimplePage() {
           <button
             style={{
               backgroundColor: "transparent",
-              color: "#f97316",
+              color: "#782478",
               padding: "12px 24px",
               border: "none",
               borderRadius: "8px",
@@ -92,7 +92,7 @@ export default function PlaygroundSimplePage() {
               style={{
                 margin: "0 0 4px 0",
                 fontSize: "24px",
-                color: "#f97316",
+                color: "#782478",
               }}
             >
               €1,250.00
@@ -174,7 +174,7 @@ export default function PlaygroundSimplePage() {
           />
           <button
             style={{
-              backgroundColor: "#f97316",
+              backgroundColor: "#782478",
               color: "white",
               padding: "8px 16px",
               border: "none",
@@ -252,7 +252,7 @@ export default function PlaygroundSimplePage() {
               <span>💰</span>
               <span
                 style={{
-                  color: "#f97316",
+                  color: "#782478",
                   fontSize: "16px",
                   fontWeight: "600",
                 }}
@@ -262,7 +262,7 @@ export default function PlaygroundSimplePage() {
             </div>
             <button
               style={{
-                backgroundColor: "#f97316",
+                backgroundColor: "#782478",
                 color: "white",
                 padding: "12px 24px",
                 border: "none",
@@ -313,7 +313,7 @@ export default function PlaygroundSimplePage() {
               <span
                 style={{
                   fontSize: "18px",
-                  color: tab.id === "home" ? "#f97316" : "#6b7280",
+                  color: tab.id === "home" ? "#782478" : "#6b7280",
                 }}
               >
                 {tab.icon}
@@ -321,7 +321,7 @@ export default function PlaygroundSimplePage() {
               <span
                 style={{
                   fontSize: "12px",
-                  color: tab.id === "home" ? "#f97316" : "#6b7280",
+                  color: tab.id === "home" ? "#782478" : "#6b7280",
                   fontWeight: tab.id === "home" ? "600" : "400",
                 }}
               >

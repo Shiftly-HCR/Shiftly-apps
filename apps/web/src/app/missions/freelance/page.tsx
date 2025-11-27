@@ -61,7 +61,9 @@ export default function FreelanceMissionsPage() {
     });
   };
 
-  const getMissionStatus = (mission: Mission): "in_progress" | "completed" | "pending" => {
+  const getMissionStatus = (
+    mission: Mission
+  ): "in_progress" | "completed" | "pending" => {
     // Logique simplifiée - en production, utiliser une table de candidatures
     if (mission.status === "closed") return "completed";
     if (mission.status === "published") return "in_progress";
@@ -82,7 +84,7 @@ export default function FreelanceMissionsPage() {
   const getStatusColor = (status: "in_progress" | "completed" | "pending") => {
     switch (status) {
       case "in_progress":
-        return colors.shiftlyOrange;
+        return colors.shiftlyViolet;
       case "completed":
         return colors.gray500;
       case "pending":
@@ -110,7 +112,13 @@ export default function FreelanceMissionsPage() {
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={1400} width="100%" alignSelf="center" padding="$6" gap="$6">
+        <YStack
+          maxWidth={1400}
+          width="100%"
+          alignSelf="center"
+          padding="$6"
+          gap="$6"
+        >
           {/* En-tête */}
           <XStack
             alignItems="center"
@@ -142,10 +150,18 @@ export default function FreelanceMissionsPage() {
                     alignItems="center"
                     gap="$2"
                   >
-                    <Text fontSize={16} color={colors.gray700} textAlign="center">
+                    <Text
+                      fontSize={16}
+                      color={colors.gray700}
+                      textAlign="center"
+                    >
                       Aucune mission récente
                     </Text>
-                    <Text fontSize={14} color={colors.gray500} textAlign="center">
+                    <Text
+                      fontSize={14}
+                      color={colors.gray500}
+                      textAlign="center"
+                    >
                       Explorez les missions disponibles sur la page d'accueil
                     </Text>
                   </YStack>
@@ -165,7 +181,7 @@ export default function FreelanceMissionsPage() {
                           justifyContent="space-between"
                           cursor="pointer"
                           hoverStyle={{
-                            borderColor: colors.shiftlyOrange,
+                            borderColor: colors.shiftlyViolet,
                             shadowColor: "#000",
                             shadowOffset: { width: 0, height: 2 },
                             shadowOpacity: 0.1,
@@ -174,8 +190,16 @@ export default function FreelanceMissionsPage() {
                           onPress={() => router.push(`/missions/${mission.id}`)}
                         >
                           <YStack flex={1} gap="$2">
-                            <XStack gap="$2" alignItems="center" flexWrap="wrap">
-                              <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                            <XStack
+                              gap="$2"
+                              alignItems="center"
+                              flexWrap="wrap"
+                            >
+                              <Text
+                                fontSize={16}
+                                fontWeight="600"
+                                color={colors.gray900}
+                              >
                                 {mission.title}
                               </Text>
                               <XStack
@@ -196,7 +220,11 @@ export default function FreelanceMissionsPage() {
                             <Text fontSize={14} color={colors.gray500}>
                               Publiée le {formatDate(mission.created_at)}
                             </Text>
-                            <Text fontSize={14} color={colors.gray700} fontWeight="500">
+                            <Text
+                              fontSize={14}
+                              color={colors.gray700}
+                              fontWeight="500"
+                            >
                               {Math.floor(Math.random() * 20) + 5} Candidats
                             </Text>
                           </YStack>
@@ -226,8 +254,17 @@ export default function FreelanceMissionsPage() {
                     <Text fontSize={14} color={colors.gray700} fontWeight="600">
                       Missions actives
                     </Text>
-                    <Text fontSize={32} fontWeight="700" color={colors.gray900} marginTop="$2">
-                      {missions.filter((m) => getMissionStatus(m) === "in_progress").length}
+                    <Text
+                      fontSize={32}
+                      fontWeight="700"
+                      color={colors.gray900}
+                      marginTop="$2"
+                    >
+                      {
+                        missions.filter(
+                          (m) => getMissionStatus(m) === "in_progress"
+                        ).length
+                      }
                     </Text>
                   </YStack>
 
@@ -243,7 +280,12 @@ export default function FreelanceMissionsPage() {
                     <Text fontSize={14} color={colors.gray700} fontWeight="600">
                       Candidatures en attente
                     </Text>
-                    <Text fontSize={32} fontWeight="700" color={colors.shiftlyOrange} marginTop="$2">
+                    <Text
+                      fontSize={32}
+                      fontWeight="700"
+                      color={colors.shiftlyViolet}
+                      marginTop="$2"
+                    >
                       15
                     </Text>
                   </YStack>
@@ -260,7 +302,12 @@ export default function FreelanceMissionsPage() {
                     <Text fontSize={14} color={colors.gray700} fontWeight="600">
                       Taux de réussite
                     </Text>
-                    <Text fontSize={32} fontWeight="700" color={colors.gray900} marginTop="$2">
+                    <Text
+                      fontSize={32}
+                      fontWeight="700"
+                      color={colors.gray900}
+                      marginTop="$2"
+                    >
                       80%
                     </Text>
                   </YStack>
@@ -278,7 +325,9 @@ export default function FreelanceMissionsPage() {
                   </Text>
                   <XStack gap="$3" flexWrap="wrap">
                     {recommendedFreelances.map((freelance) => {
-                      const fullName = `${freelance.first_name || ""} ${freelance.last_name || ""}`.trim() || "Freelance";
+                      const fullName =
+                        `${freelance.first_name || ""} ${freelance.last_name || ""}`.trim() ||
+                        "Freelance";
                       return (
                         <YStack key={freelance.id} flex={1} minWidth={120}>
                           <FreelanceCard
@@ -288,8 +337,12 @@ export default function FreelanceMissionsPage() {
                             rating={freelance.note}
                             isOnline={false}
                             tags={freelance.skills?.slice(0, 2) || []}
-                            onPress={() => router.push(`/profile/${freelance.id}`)}
-                            onViewProfile={() => router.push(`/profile/${freelance.id}`)}
+                            onPress={() =>
+                              router.push(`/profile/${freelance.id}`)
+                            }
+                            onViewProfile={() =>
+                              router.push(`/profile/${freelance.id}`)
+                            }
                           />
                         </YStack>
                       );
@@ -308,7 +361,7 @@ export default function FreelanceMissionsPage() {
                 position="relative"
                 overflow="hidden"
                 style={{
-                  background: `linear-gradient(135deg, ${colors.shiftlyOrange} 0%, #FFB84D 100%)`,
+                  background: `linear-gradient(135deg, ${colors.shiftlyViolet} 0%, ${colors.shiftlyGold} 100%)`,
                 }}
               >
                 {/* Illustration de fond */}
@@ -339,7 +392,7 @@ export default function FreelanceMissionsPage() {
                   size="md"
                   onPress={() => router.push("/contact")}
                   backgroundColor={colors.white}
-                  color={colors.shiftlyOrange}
+                  color={colors.shiftlyViolet}
                   hoverStyle={{
                     backgroundColor: colors.gray100,
                   }}
@@ -354,4 +407,3 @@ export default function FreelanceMissionsPage() {
     </AppLayout>
   );
 }
-

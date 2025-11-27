@@ -17,7 +17,7 @@ export function ChatBubble({
     <XStack jc={isMe ? "flex-end" : "flex-start"} marginBottom="$3">
       <YStack
         maxWidth="80%"
-        bg={isMe ? "$orange9" : "$gray3"}
+        bg={isMe ? "$violet9" : "$gray3"}
         padding="$3"
         borderRadius="$4"
         brtl={isMe ? "$1" : "$4"}

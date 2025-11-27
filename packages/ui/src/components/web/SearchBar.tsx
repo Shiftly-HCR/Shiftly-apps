@@ -42,7 +42,7 @@ export function SearchBar({
         <button
           onClick={onSearch}
           style={{
-            backgroundColor: "#f97316",
+            backgroundColor: "#782478",
             color: "white",
             padding: "8px 16px",
             border: "none",

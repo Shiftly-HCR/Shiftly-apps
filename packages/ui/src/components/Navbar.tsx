@@ -67,20 +67,12 @@ export function Navbar({
           hoverStyle={{ opacity: 0.8 }}
           onPress={handleHomeClick}
         >
-          <YStack
-            width={32}
-            height={32}
-            borderRadius={16}
-            backgroundColor={colors.shiftlyOrange}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Image
-              source={{ uri: "/assets/images/logo.jpg" }}
-              width={18}
-              height={18}
-            />
-          </YStack>
+          <Image
+            source={{ uri: "/logo-shiftly.png" }}
+            width={40}
+            height={40}
+            borderRadius={20}
+          />
           <Text fontSize={20} fontWeight="700" color={colors.gray900}>
             Shiftly
           </Text>
@@ -103,7 +95,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.shiftlyOrange,
+              color: colors.shiftlyViolet,
             }}
             onPress={onProfileClick}
           >
@@ -115,7 +107,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.shiftlyOrange,
+              color: colors.shiftlyViolet,
             }}
             onPress={onMissionsClick}
           >
@@ -127,7 +119,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.shiftlyOrange,
+              color: colors.shiftlyViolet,
             }}
             onPress={onSubscriptionClick}
           >
@@ -139,7 +131,7 @@ export function Navbar({
             color={colors.gray900}
             cursor="pointer"
             hoverStyle={{
-              color: colors.shiftlyOrange,
+              color: colors.shiftlyViolet,
             }}
             onPress={onFreelanceClick}
           >
@@ -166,12 +158,12 @@ export function Navbar({
             hoverStyle={{ opacity: 0.8 }}
             onPress={onProfileClick}
           >
-            <Avatar circular size={40} backgroundColor={colors.shiftlyOrange}>
+            <Avatar circular size={40} backgroundColor={colors.shiftlyViolet}>
               {userAvatar ? (
                 <Avatar.Image src={userAvatar} />
               ) : (
                 <Avatar.Fallback
-                  backgroundColor={colors.shiftlyOrange}
+                  backgroundColor={colors.shiftlyViolet}
                   alignItems="center"
                   justifyContent="center"
                 >

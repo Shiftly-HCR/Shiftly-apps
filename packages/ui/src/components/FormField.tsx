@@ -41,7 +41,7 @@ export function FormField({
         size="$4"
         borderColor={error ? "$red8" : "$borderColor"}
         focusStyle={{
-          borderColor: error ? "$red10" : "$orange8",
+          borderColor: error ? "$red10" : "$violet8",
         }}
         numberOfLines={numberOfLines}
       />

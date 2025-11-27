@@ -3,7 +3,3 @@ export {
   getFreelanceExperiencesById,
   getFreelanceEducationsById,
 } from "./freelance";
-
-
-
-

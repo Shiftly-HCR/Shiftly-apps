@@ -1,5 +1,5 @@
 import React from "react";
-import { XStack, YStack, Text } from "tamagui";
+import { XStack, YStack, Text, Image } from "tamagui";
 import { colors } from "../theme";
 
 interface FooterProps {
@@ -72,18 +72,12 @@ export function Footer({
             hoverStyle={{ opacity: 0.8 }}
             onPress={() => handleNavigation(onHomeClick, "/home")}
           >
-            <YStack
-              width={32}
-              height={32}
-              borderRadius={16}
-              backgroundColor={colors.shiftlyOrange}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text fontSize={18} color={colors.white} fontWeight="700">
-                H
-              </Text>
-            </YStack>
+            <Image
+              source={{ uri: "/logo-shiftly.png" }}
+              width={40}
+              height={40}
+              borderRadius={20}
+            />
             <Text fontSize={18} fontWeight="700" color={colors.gray900}>
               Shiftly
             </Text>
@@ -105,7 +99,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onHomeClick, "/home")}
             >
               Accueil
@@ -114,7 +108,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onMissionsClick, "/missions")}
             >
               Missions
@@ -123,7 +117,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onProfileClick, "/profile")}
             >
               Profil
@@ -132,7 +126,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onSubscriptionClick, "/subscription")}
             >
               Abonnement
@@ -148,7 +142,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onHelpClick, "/help")}
             >
               Aide
@@ -157,7 +151,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onContactClick, "/contact")}
             >
               Contact
@@ -166,7 +160,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onFaqClick, "/faq")}
             >
               FAQ
@@ -182,7 +176,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onTermsClick, "/terms")}
             >
               Conditions d'utilisation
@@ -191,7 +185,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onPrivacyClick, "/privacy")}
             >
               Politique de confidentialité
@@ -200,7 +194,7 @@ export function Footer({
               fontSize={14}
               color={colors.gray700}
               cursor="pointer"
-              hoverStyle={{ color: colors.shiftlyOrange }}
+              hoverStyle={{ color: colors.shiftlyViolet }}
               onPress={() => handleNavigation(onLegalClick, "/legal")}
             >
               Mentions légales

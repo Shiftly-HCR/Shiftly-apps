@@ -42,7 +42,7 @@ export function ProfileCard({
 
           {rating && (
             <XStack alignItems="center" gap="$1">
-              <Star size="$1" color="$orange10" fill="$orange10" />
+              <Star size="$1" color="$violet10" fill="$violet10" />
               <Paragraph size="$3" color="$gray10">
                 {rating}/5
               </Paragraph>

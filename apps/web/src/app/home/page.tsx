@@ -350,7 +350,7 @@ export default function HomePage() {
 
               <Text
                 fontSize={13}
-                color={colors.shiftlyOrange}
+                color={colors.shiftlyViolet}
                 fontWeight="600"
                 cursor="pointer"
                 textDecorationLine="underline"
@@ -366,20 +366,22 @@ export default function HomePage() {
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   backgroundColor={
-                    viewMode === "list" ? colors.shiftlyOrange : colors.white
+                    viewMode === "list" ? colors.shiftlyViolet : colors.white
                   }
                   borderRadius="$3"
                   borderWidth={1}
                   borderColor={
-                    viewMode === "list" ? colors.shiftlyOrange : colors.gray200
+                    viewMode === "list" ? colors.shiftlyViolet : colors.gray200
                   }
                   gap="$2"
                   alignItems="center"
                   cursor="pointer"
                   hoverStyle={{
-                    borderColor: colors.shiftlyOrange,
+                    borderColor: colors.shiftlyViolet,
                     backgroundColor:
-                      viewMode === "list" ? colors.shiftlyOrange : "#FFF4E6",
+                      viewMode === "list"
+                        ? colors.shiftlyViolet
+                        : colors.shiftlyVioletLight,
                   }}
                   onPress={() => setViewMode("list")}
                 >
@@ -400,26 +402,28 @@ export default function HomePage() {
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   backgroundColor={
-                    viewMode === "map" ? colors.shiftlyOrange : colors.white
+                    viewMode === "map" ? colors.shiftlyViolet : colors.white
                   }
                   borderRadius="$3"
                   borderWidth={1}
                   borderColor={
-                    viewMode === "map" ? colors.shiftlyOrange : colors.gray200
+                    viewMode === "map" ? colors.shiftlyViolet : colors.gray200
                   }
                   gap="$2"
                   alignItems="center"
                   cursor="pointer"
                   hoverStyle={{
-                    borderColor: colors.shiftlyOrange,
+                    borderColor: colors.shiftlyViolet,
                     backgroundColor:
-                      viewMode === "map" ? colors.shiftlyOrange : "#FFF4E6",
+                      viewMode === "map"
+                        ? colors.shiftlyViolet
+                        : colors.shiftlyVioletLight,
                   }}
                   onPress={() => setViewMode("map")}
                 >
                   <FiMap
                     size={16}
-                    color={viewMode === "map" ? "#fff" : colors.shiftlyOrange}
+                    color={viewMode === "map" ? "#fff" : colors.shiftlyViolet}
                   />
                   <Text
                     fontSize={13}

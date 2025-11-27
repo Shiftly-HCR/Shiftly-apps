@@ -214,7 +214,7 @@ export default function CreateMissionPage() {
           width={currentStep >= step ? 60 : 40}
           height={4}
           backgroundColor={
-            currentStep >= step ? colors.shiftlyOrange : colors.gray200
+            currentStep >= step ? colors.shiftlyViolet : colors.gray200
           }
           borderRadius={2}
         />
@@ -308,7 +308,7 @@ export default function CreateMissionPage() {
             Localisation sur la carte
           </Text>
           {isGeocoding && (
-            <Text fontSize={12} color={colors.shiftlyOrange}>
+            <Text fontSize={12} color={colors.shiftlyViolet}>
               🔄 Mise à jour...
             </Text>
           )}

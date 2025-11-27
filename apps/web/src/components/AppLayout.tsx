@@ -79,9 +79,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         onFreelanceClick={() => router.push("/freelance")}
         onLogoutClick={handleLogout}
       />
-      <YStack flex={1}>
-        {children}
-      </YStack>
+      <YStack flex={1}>{children}</YStack>
       <Footer
         onHomeClick={() => router.push("/home")}
         onMissionsClick={() => router.push("/missions")}
@@ -97,4 +95,3 @@ export function AppLayout({ children }: AppLayoutProps) {
     </YStack>
   );
 }
-

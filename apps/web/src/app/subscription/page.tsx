@@ -21,7 +21,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     name: "Établissement",
     price: 50,
     description: "Pour les restaurants, hôtels et établissements HCR",
-    icon: <FiHome size={32} color={colors.shiftlyOrange} />,
+    icon: <FiHome size={32} color={colors.shiftlyViolet} />,
     features: [
       "Publication illimitée de missions",
       "Accès à tous les freelances",
@@ -36,7 +36,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     name: "Freelance Étudiant",
     price: 25,
     description: "Tarif préférentiel pour les étudiants",
-    icon: <FiUser size={32} color={colors.shiftlyOrange} />,
+    icon: <FiUser size={32} color={colors.shiftlyViolet} />,
     features: [
       "Accès à toutes les missions",
       "Profil visible pour les recruteurs",
@@ -52,7 +52,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     name: "Freelance Classique",
     price: 35,
     description: "Pour freelances et bénéficiaires Pôle Emploi",
-    icon: <FiBriefcase size={32} color={colors.shiftlyOrange} />,
+    icon: <FiBriefcase size={32} color={colors.shiftlyViolet} />,
     features: [
       "Accès à toutes les missions",
       "Profil visible pour les recruteurs",
@@ -126,7 +126,7 @@ export default function SubscriptionPage() {
                     zIndex={10}
                     paddingHorizontal="$4"
                     paddingVertical="$2"
-                    backgroundColor={colors.shiftlyOrange}
+                    backgroundColor={colors.shiftlyViolet}
                     borderRadius="$4"
                   >
                     <Text
@@ -147,7 +147,7 @@ export default function SubscriptionPage() {
                   gap="$5"
                   borderWidth={plan.popular ? 2 : 1}
                   borderColor={
-                    plan.popular ? colors.shiftlyOrange : colors.gray200
+                    plan.popular ? colors.shiftlyViolet : colors.gray200
                   }
                   backgroundColor={colors.white}
                   minHeight={600}
@@ -209,7 +209,7 @@ export default function SubscriptionPage() {
                           width={20}
                           height={20}
                           borderRadius={10}
-                          backgroundColor={colors.shiftlyOrange + "20"}
+                          backgroundColor={colors.shiftlyViolet + "20"}
                           alignItems="center"
                           justifyContent="center"
                           marginTop={2}
@@ -217,7 +217,7 @@ export default function SubscriptionPage() {
                         >
                           <FiCheck
                             size={14}
-                            color={colors.shiftlyOrange}
+                            color={colors.shiftlyViolet}
                             strokeWidth={3}
                           />
                         </YStack>

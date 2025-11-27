@@ -44,14 +44,14 @@ export function BottomNavigation({
               <span
                 style={{
                   fontSize: "18px",
-                  color: isActive ? "#f97316" : "#666",
+                  color: isActive ? "#782478" : "#666",
                 }}
               >
                 {tab.icon}
               </span>
               <YStack
                 size="$1"
-                backgroundColor={isActive ? "$orange10" : "transparent"}
+                backgroundColor={isActive ? "$violet10" : "transparent"}
                 borderRadius="$2"
               />
             </YStack>

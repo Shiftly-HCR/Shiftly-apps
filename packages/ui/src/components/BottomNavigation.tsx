@@ -43,10 +43,10 @@ export function BottomNavigation({
             borderWidth={0}
           >
             <YStack alignItems="center" gap="$1">
-              <Icon size="$1.5" color={isActive ? "$orange10" : "$gray10"} />
+              <Icon size="$1.5" color={isActive ? "$violet10" : "$gray10"} />
               <YStack
                 size="$1"
-                bg={isActive ? "$orange10" : "transparent"}
+                bg={isActive ? "$violet10" : "transparent"}
                 borderRadius="$2"
               />
             </YStack>

@@ -14,15 +14,15 @@ export function CreateMissionCard({ onPress }: CreateMissionCardProps) {
       borderRadius={12}
       borderWidth={2}
       borderStyle="dashed"
-      borderColor={colors.shiftlyOrange}
+      borderColor={colors.shiftlyViolet}
       alignItems="center"
       justifyContent="center"
       gap="$4"
       padding="$6"
       cursor="pointer"
       hoverStyle={{
-        backgroundColor: "#FFF4E6",
-        borderColor: colors.shiftlyOrangeHover,
+        backgroundColor: colors.shiftlyViolet + "10",
+        borderColor: colors.shiftlyVioletHover,
       }}
       pressStyle={{
         scale: 0.98,
@@ -34,11 +34,11 @@ export function CreateMissionCard({ onPress }: CreateMissionCardProps) {
         width={64}
         height={64}
         borderRadius={32}
-        backgroundColor="#FFF4E6"
+        backgroundColor={colors.shiftlyViolet + "10"}
         alignItems="center"
         justifyContent="center"
       >
-        <Text fontSize={32} color={colors.shiftlyOrange} fontWeight="700">
+        <Text fontSize={32} color={colors.shiftlyViolet} fontWeight="700">
           +
         </Text>
       </YStack>

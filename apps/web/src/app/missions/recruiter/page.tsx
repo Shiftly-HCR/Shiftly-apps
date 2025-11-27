@@ -90,7 +90,7 @@ export default function RecruiterMissionsPage() {
               <Text fontSize={14} color={colors.gray700} fontWeight="600">
                 Missions publiées
               </Text>
-              <Text fontSize={32} fontWeight="700" color={colors.shiftlyOrange}>
+              <Text fontSize={32} fontWeight="700" color={colors.shiftlyViolet}>
                 {missions.filter((m) => m.status === "published").length}
               </Text>
             </YStack>
@@ -121,10 +121,7 @@ export default function RecruiterMissionsPage() {
 
             <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
               {/* Carte de création */}
-              <YStack
-                width="calc(33.333% - 12px)"
-                minWidth={300}
-              >
+              <YStack width="calc(33.333% - 12px)" minWidth={300}>
                 <CreateMissionCard onPress={handleCreateMission} />
               </YStack>
 
@@ -153,7 +150,7 @@ export default function RecruiterMissionsPage() {
                     onPress={() => handleMissionClick(mission.id)}
                     onEdit={() => handleEditMission(mission.id)}
                   />
-                  
+
                   {/* Badge de statut */}
                   <YStack
                     position="absolute"
@@ -166,20 +163,20 @@ export default function RecruiterMissionsPage() {
                       mission.status === "published"
                         ? "#10B981"
                         : mission.status === "draft"
-                        ? colors.gray500
-                        : mission.status === "closed"
-                        ? "#EF4444"
-                        : colors.gray300
+                          ? colors.gray500
+                          : mission.status === "closed"
+                            ? "#EF4444"
+                            : colors.gray300
                     }
                   >
                     <Text fontSize={12} color={colors.white} fontWeight="600">
                       {mission.status === "published"
                         ? "Publié"
                         : mission.status === "draft"
-                        ? "Brouillon"
-                        : mission.status === "closed"
-                        ? "Fermé"
-                        : "Annulé"}
+                          ? "Brouillon"
+                          : mission.status === "closed"
+                            ? "Fermé"
+                            : "Annulé"}
                     </Text>
                   </YStack>
                 </YStack>
@@ -209,4 +206,3 @@ export default function RecruiterMissionsPage() {
     </AppLayout>
   );
 }
-

@@ -67,7 +67,7 @@ export default function LoginPage() {
             width={48}
             height={48}
             borderRadius={24}
-            backgroundColor="#FFF4E6"
+            backgroundColor={colors.shiftlyVioletLight}
             alignItems="center"
             justifyContent="center"
           >
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 </Text>
                 <Text
                   fontSize={14}
-                  color="#FF5900"
+                  color={colors.shiftlyViolet}
                   fontWeight="600"
                   cursor="pointer"
                   hoverStyle={{ textDecorationLine: "underline" }}
@@ -167,7 +167,7 @@ export default function LoginPage() {
             </Text>
             <Text
               fontSize={14}
-              color="#FF5900"
+              color={colors.shiftlyViolet}
               fontWeight="600"
               cursor="pointer"
               hoverStyle={{ textDecorationLine: "underline" }}

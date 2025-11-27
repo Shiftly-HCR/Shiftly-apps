@@ -61,7 +61,7 @@ export function MissionCard({
 
           <XStack alignItems="center" gap="$2">
             <span style={{ fontSize: "14px" }}>💰</span>
-            <Paragraph size="$4" fontWeight="600" color="$orange10">
+            <Paragraph size="$4" fontWeight="600" color="$violet10">
               {price}
             </Paragraph>
           </XStack>
@@ -69,7 +69,7 @@ export function MissionCard({
 
         {onApply && (
           <Button
-            backgroundColor="$orange9"
+            backgroundColor="$violet9"
             color="white"
             size="$4"
             onPress={onApply}

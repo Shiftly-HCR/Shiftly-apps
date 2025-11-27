@@ -174,7 +174,7 @@ export function MissionFilters({
                 left={`${((hourlyRate[0] - 15) / 85) * 100}%`}
                 width={`${((hourlyRate[1] - hourlyRate[0]) / 85) * 100}%`}
                 height={6}
-                backgroundColor={colors.shiftlyOrange}
+                backgroundColor={colors.shiftlyViolet}
                 borderRadius={3}
               />
             </YStack>
@@ -246,7 +246,7 @@ export function MissionFilters({
                 width={16}
                 height={16}
                 borderRadius={8}
-                backgroundColor={colors.shiftlyOrange}
+                backgroundColor={colors.shiftlyViolet}
                 borderWidth={2}
                 borderColor={colors.white}
                 shadowColor="#000"
@@ -261,7 +261,7 @@ export function MissionFilters({
                 width={16}
                 height={16}
                 borderRadius={8}
-                backgroundColor={colors.shiftlyOrange}
+                backgroundColor={colors.shiftlyViolet}
                 borderWidth={2}
                 borderColor={colors.white}
                 shadowColor="#000"

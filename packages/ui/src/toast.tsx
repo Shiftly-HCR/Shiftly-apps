@@ -118,9 +118,9 @@ export function ShiftlyToast() {
         return {
           bg: "#FFFFFF",
           textColor: "#2B2B2B",
-          iconBg: "#FF5900",
+          iconBg: "#782478",
           iconColor: "#FFFFFF",
-          progressColor: "#FF5900",
+          progressColor: "#782478",
           icon: "i",
         };
       default:

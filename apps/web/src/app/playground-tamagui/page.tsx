@@ -22,17 +22,17 @@ export default function PlaygroundTamaguiPage() {
           <YStack gap="$3">
             <H2>Boutons</H2>
             <XStack gap="$3" flexWrap="wrap">
-              <Button backgroundColor="$orange9" color="white">
+              <Button backgroundColor="$violet9" color="white">
                 Bouton Principal
               </Button>
               <Button
                 variant="outlined"
-                borderColor="$orange9"
-                color="$orange9"
+                borderColor="$violet9"
+                color="$violet9"
               >
                 Bouton Secondaire
               </Button>
-              <Button variant="ghost" color="$orange9">
+              <Button variant="ghost" color="$violet9">
                 Bouton Ghost
               </Button>
             </XStack>
@@ -69,7 +69,7 @@ export default function PlaygroundTamaguiPage() {
                   <Paragraph color="$gray10" size="$3">
                     Gains Totaux
                   </Paragraph>
-                  <H3 color="$orange10" size="$7">
+                  <H3 color="$violet10" size="$7">
                     €1,250.00
                   </H3>
                   <Paragraph color="$gray10" size="$2">
@@ -102,7 +102,7 @@ export default function PlaygroundTamaguiPage() {
                 placeholder="Rechercher une mission..."
                 size="$4"
               />
-              <Button size="$3" backgroundColor="$orange9" color="white">
+              <Button size="$3" backgroundColor="$violet9" color="white">
                 Rechercher
               </Button>
             </XStack>
@@ -155,14 +155,14 @@ export default function PlaygroundTamaguiPage() {
 
                   <XStack alignItems="center" gap="$2">
                     <span>💰</span>
-                    <Paragraph size="$4" fontWeight="600" color="$orange10">
+                    <Paragraph size="$4" fontWeight="600" color="$violet10">
                       120€/jour
                     </Paragraph>
                   </XStack>
                 </YStack>
 
                 <Button
-                  backgroundColor="$orange9"
+                  backgroundColor="$violet9"
                   color="white"
                   size="$4"
                   marginTop="$2"
@@ -206,7 +206,7 @@ export default function PlaygroundTamaguiPage() {
                     <span
                       style={{
                         fontSize: "18px",
-                        color: tab.id === "home" ? "#f97316" : "#6b7280",
+                        color: tab.id === "home" ? "#782478" : "#6b7280",
                       }}
                     >
                       {tab.icon}
@@ -214,7 +214,7 @@ export default function PlaygroundTamaguiPage() {
                     <span
                       style={{
                         fontSize: "12px",
-                        color: tab.id === "home" ? "#f97316" : "#6b7280",
+                        color: tab.id === "home" ? "#782478" : "#6b7280",
                         fontWeight: tab.id === "home" ? "600" : "400",
                       }}
                     >

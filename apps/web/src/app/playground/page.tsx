@@ -383,7 +383,7 @@ export default function PlaygroundPage() {
                 <XStack
                   paddingHorizontal="$4"
                   paddingVertical="$2.5"
-                  backgroundColor="#FF5900"
+                  backgroundColor={colors.shiftlyViolet}
                   borderRadius="$3"
                   cursor="pointer"
                   hoverStyle={{ opacity: 0.85 }}
@@ -402,7 +402,7 @@ export default function PlaygroundPage() {
                   paddingHorizontal="$4"
                   paddingVertical="$2.5"
                   backgroundColor="#FFE5D9"
-                  borderColor="#FF5900"
+                  borderColor={colors.shiftlyViolet}
                   borderWidth={1}
                   borderRadius="$3"
                   cursor="pointer"
@@ -416,7 +416,7 @@ export default function PlaygroundPage() {
                     })
                   }
                 >
-                  <Paragraph color="#FF5900" fontWeight="600" fontSize={14}>
+                  <Paragraph color={colors.shiftlyViolet} fontWeight="600" fontSize={14}>
                     Toast Long (5s)
                   </Paragraph>
                 </XStack>
@@ -451,7 +451,7 @@ export default function PlaygroundPage() {
                   paddingHorizontal="$4"
                   paddingVertical="$2.5"
                   backgroundColor="#FFE5D9"
-                  borderColor="#FF5900"
+                  borderColor={colors.shiftlyViolet}
                   borderWidth={1}
                   borderRadius="$3"
                   cursor="pointer"
@@ -466,7 +466,7 @@ export default function PlaygroundPage() {
                   }
                 >
                   <Paragraph fontSize={16}>💬</Paragraph>
-                  <Paragraph color="#FF5900" fontWeight="600" fontSize={14}>
+                  <Paragraph color={colors.shiftlyViolet} fontWeight="600" fontSize={14}>
                     Message
                   </Paragraph>
                 </XStack>

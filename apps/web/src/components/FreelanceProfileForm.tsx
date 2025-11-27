@@ -478,7 +478,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 key={skill}
                 paddingHorizontal="$3"
                 paddingVertical="$2"
-                backgroundColor="#FFF4E6"
+                backgroundColor={colors.shiftlyVioletLight}
                 borderRadius="$3"
                 alignItems="center"
                 gap="$2"
@@ -488,7 +488,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 </Text>
                 <Text
                   fontSize={16}
-                  color="#FF5900"
+                  color={colors.shiftlyViolet}
                   cursor="pointer"
                   onPress={() => handleRemoveSkill(skill)}
                 >

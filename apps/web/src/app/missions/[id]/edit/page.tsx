@@ -109,20 +109,23 @@ export default function EditMissionPage() {
   );
 
   // Géocodage inversé des coordonnées vers adresse
-  const handleMapClick = useCallback(async (lat: number, lng: number) => {
-    setLatitude(lat);
-    setLongitude(lng);
+  const handleMapClick = useCallback(
+    async (lat: number, lng: number) => {
+      setLatitude(lat);
+      setLongitude(lng);
 
-    setIsGeocoding(true);
-    const result = await reverseGeocode(lat, lng, mapboxToken);
-    setIsGeocoding(false);
+      setIsGeocoding(true);
+      const result = await reverseGeocode(lat, lng, mapboxToken);
+      setIsGeocoding(false);
 
-    if (result) {
-      setAddress(result.address);
-      setCity(result.city);
-      setPostalCode(result.postalCode);
-    }
-  }, [mapboxToken]);
+      if (result) {
+        setAddress(result.address);
+        setCity(result.city);
+        setPostalCode(result.postalCode);
+      }
+    },
+    [mapboxToken]
+  );
 
   // Initialiser les champs avec les données de la mission (depuis le cache)
   useEffect(() => {
@@ -311,7 +314,7 @@ export default function EditMissionPage() {
           height={8}
           borderRadius={4}
           backgroundColor={
-            currentStep >= step ? colors.shiftlyOrange : colors.gray200
+            currentStep >= step ? colors.shiftlyViolet : colors.gray200
           }
           animation="quick"
         />
@@ -407,7 +410,7 @@ export default function EditMissionPage() {
             Localisation sur la carte
           </Text>
           {isGeocoding && (
-            <Text fontSize={12} color={colors.shiftlyOrange}>
+            <Text fontSize={12} color={colors.shiftlyViolet}>
               🔄 Mise à jour...
             </Text>
           )}

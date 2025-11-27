@@ -38,4 +38,3 @@ export default function MissionsPage() {
   // Par défaut, afficher la page recruteur
   return <RecruiterMissionsPage />;
 }
-

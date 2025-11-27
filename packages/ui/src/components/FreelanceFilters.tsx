@@ -182,7 +182,7 @@ export function FreelanceFilters({
                 left={`${((hourlyRate[0] - 15) / 85) * 100}%`}
                 width={`${((hourlyRate[1] - hourlyRate[0]) / 85) * 100}%`}
                 height={6}
-                backgroundColor={colors.shiftlyOrange}
+                backgroundColor={colors.shiftlyViolet}
                 borderRadius={3}
               />
             </YStack>
@@ -254,7 +254,7 @@ export function FreelanceFilters({
                 width={16}
                 height={16}
                 borderRadius={8}
-                backgroundColor={colors.shiftlyOrange}
+                backgroundColor={colors.shiftlyViolet}
                 borderWidth={2}
                 borderColor={colors.white}
                 shadowColor="#000"
@@ -269,7 +269,7 @@ export function FreelanceFilters({
                 width={16}
                 height={16}
                 borderRadius={8}
-                backgroundColor={colors.shiftlyOrange}
+                backgroundColor={colors.shiftlyViolet}
                 borderWidth={2}
                 borderColor={colors.white}
                 shadowColor="#000"
@@ -297,21 +297,21 @@ export function FreelanceFilters({
                 paddingVertical="$2"
                 borderRadius="$3"
                 borderWidth={2}
-                borderColor={isSelected ? colors.shiftlyOrange : colors.gray200}
+                borderColor={isSelected ? colors.shiftlyViolet : colors.gray200}
                 backgroundColor={
-                  isSelected ? colors.shiftlyOrange + "20" : colors.white
+                  isSelected ? colors.shiftlyViolet + "20" : colors.white
                 }
                 cursor="pointer"
                 hoverStyle={{
-                  borderColor: colors.shiftlyOrange,
-                  backgroundColor: colors.shiftlyOrange + "20",
+                  borderColor: colors.shiftlyViolet,
+                  backgroundColor: colors.shiftlyViolet + "20",
                 }}
                 onPress={() => handleRatingClick(rating)}
               >
                 <Text
                   fontSize={14}
                   fontWeight={isSelected ? "600" : "400"}
-                  color={isSelected ? colors.shiftlyOrange : colors.gray700}
+                  color={isSelected ? colors.shiftlyViolet : colors.gray700}
                 >
                   {rating} ★
                 </Text>

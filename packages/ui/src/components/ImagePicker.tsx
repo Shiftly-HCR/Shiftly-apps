@@ -97,12 +97,12 @@ export function ImagePicker({
           justifyContent="center"
           overflow="hidden"
           borderWidth={2}
-          borderColor={preview ? colors.shiftlyOrange : colors.gray200}
+          borderColor={preview ? colors.shiftlyViolet : colors.gray200}
           cursor={disabled ? "not-allowed" : "pointer"}
           hoverStyle={
             !disabled
               ? {
-                  borderColor: colors.shiftlyOrange,
+                  borderColor: colors.shiftlyViolet,
                   opacity: 0.8,
                 }
               : {}

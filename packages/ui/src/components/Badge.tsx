@@ -48,7 +48,7 @@ const variantStyles = {
   warning: {
     bg: "#FFF7ED",
     color: "#C2410C",
-    borderColor: "#F97316",
+    borderColor: "#782478",
   },
   error: {
     bg: "#FEF2F2",
@@ -71,9 +71,9 @@ const variantStyles = {
     borderColor: "#EF4444",
   },
   inProgress: {
-    bg: "#FFF7ED",
-    color: "#EA580C",
-    borderColor: "#FF5900",
+    bg: "#F5F3FF",
+    color: "#782478",
+    borderColor: "#782478",
   },
   cancelled: {
     bg: "#F9FAFB",

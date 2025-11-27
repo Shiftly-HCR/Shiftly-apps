@@ -13,7 +13,7 @@ export function StatsCard({
   value,
   subtitle,
   icon,
-  color = "$orange10",
+  color = "$violet10",
 }: StatsCardProps) {
   return (
     <Card padding="$4" backgroundColor="$background" borderRadius="$4" borderWidth={1} borderColor="$borderColor">

@@ -253,7 +253,7 @@ export default function FreelancePage() {
 
               <Text
                 fontSize={13}
-                color={colors.shiftlyOrange}
+                color={colors.shiftlyViolet}
                 fontWeight="600"
                 cursor="pointer"
                 textDecorationLine="underline"
@@ -269,20 +269,22 @@ export default function FreelancePage() {
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   backgroundColor={
-                    viewMode === "grid" ? colors.shiftlyOrange : colors.white
+                    viewMode === "grid" ? colors.shiftlyViolet : colors.white
                   }
                   borderRadius="$3"
                   borderWidth={1}
                   borderColor={
-                    viewMode === "grid" ? colors.shiftlyOrange : colors.gray200
+                    viewMode === "grid" ? colors.shiftlyViolet : colors.gray200
                   }
                   gap="$2"
                   alignItems="center"
                   cursor="pointer"
                   hoverStyle={{
-                    borderColor: colors.shiftlyOrange,
+                    borderColor: colors.shiftlyViolet,
                     backgroundColor:
-                      viewMode === "grid" ? colors.shiftlyOrange : "#FFF4E6",
+                      viewMode === "grid"
+                        ? colors.shiftlyViolet
+                        : colors.shiftlyVioletLight,
                   }}
                   onPress={() => setViewMode("grid")}
                 >
@@ -296,20 +298,22 @@ export default function FreelancePage() {
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   backgroundColor={
-                    viewMode === "list" ? colors.shiftlyOrange : colors.white
+                    viewMode === "list" ? colors.shiftlyViolet : colors.white
                   }
                   borderRadius="$3"
                   borderWidth={1}
                   borderColor={
-                    viewMode === "list" ? colors.shiftlyOrange : colors.gray200
+                    viewMode === "list" ? colors.shiftlyViolet : colors.gray200
                   }
                   gap="$2"
                   alignItems="center"
                   cursor="pointer"
                   hoverStyle={{
-                    borderColor: colors.shiftlyOrange,
+                    borderColor: colors.shiftlyViolet,
                     backgroundColor:
-                      viewMode === "list" ? colors.shiftlyOrange : "#FFF4E6",
+                      viewMode === "list"
+                        ? colors.shiftlyViolet
+                        : colors.shiftlyVioletLight,
                   }}
                   onPress={() => setViewMode("list")}
                 >
@@ -368,7 +372,7 @@ export default function FreelancePage() {
                         borderColor={colors.gray200}
                         cursor="pointer"
                         hoverStyle={{
-                          borderColor: colors.shiftlyOrange,
+                          borderColor: colors.shiftlyViolet,
                           shadowColor: "#000",
                           shadowOffset: { width: 0, height: 2 },
                           shadowOpacity: 0.1,
@@ -383,7 +387,7 @@ export default function FreelancePage() {
                               width={60}
                               height={60}
                               borderRadius={30}
-                              backgroundColor={colors.shiftlyOrange}
+                              backgroundColor={colors.shiftlyViolet}
                               alignItems="center"
                               justifyContent="center"
                               overflow="hidden"
