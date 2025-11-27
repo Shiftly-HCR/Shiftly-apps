@@ -7,7 +7,8 @@ export const colors = {
   shiftlyMarron: "#503342",
   shiftlyGris: "#bdaaa1",
   shiftlyGold: "#CC9933",
-  white: "#fcfaf7",
+  white: "#FFFFFF", // Blanc pur pour un rendu neutre
+  whiteViolet: "#FAF8FC", // Blanc avec teinte violette subtile (optionnel)
   gray900: "#2B2B2B",
   gray700: "#6B7280",
   gray500: "#9CA3AF",
