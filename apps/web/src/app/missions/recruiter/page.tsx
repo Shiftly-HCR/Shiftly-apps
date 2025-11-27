@@ -1,27 +1,14 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MissionCard, CreateMissionCard, colors } from "@shiftly/ui";
-import { getRecruiterMissions, type Mission } from "@shiftly/data";
 import { AppLayout } from "../../../components/AppLayout";
+import { useRecruiterMissions } from "../../../hooks";
 
 export default function RecruiterMissionsPage() {
   const router = useRouter();
-  const [missions, setMissions] = useState<Mission[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Charger les missions du recruteur
-  useEffect(() => {
-    const loadMissions = async () => {
-      const recruiterMissions = await getRecruiterMissions();
-      setMissions(recruiterMissions);
-      setIsLoading(false);
-    };
-
-    loadMissions();
-  }, []);
+  const { missions, isLoading } = useRecruiterMissions();
 
   const handleCreateMission = () => {
     router.push("/missions/create");

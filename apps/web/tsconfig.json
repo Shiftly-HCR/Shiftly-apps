@@ -20,6 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@shiftly/core": ["../../packages/core"],
       "@shiftly/data": ["../../packages/data"],
       "@shiftly/ui": ["../../packages/ui/src"]
     }

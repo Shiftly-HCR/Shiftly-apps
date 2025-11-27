@@ -4,7 +4,9 @@ import { YStack } from "tamagui";
 import { Navbar, Footer } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getCurrentUser, signOut, getCurrentProfile } from "@shiftly/data";
+import { useCurrentUser, useCurrentProfile } from "../hooks";
+import { useSessionContext } from "../providers/SessionProvider";
+import { signOut } from "@shiftly/data";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,37 +15,32 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
-  const [user, setUser] = useState<any>(null);
-  const [userAvatar, setUserAvatar] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading: isLoadingUser } = useCurrentUser();
+  const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
+  const { clear } = useSessionContext();
+  const isLoading = isLoadingUser || isLoadingProfile;
 
-  // Vérifier l'authentification au chargement
+  // Rediriger vers login si pas d'utilisateur
   useEffect(() => {
-    const checkAuth = async () => {
-      const currentUser = await getCurrentUser();
-
-      if (!currentUser) {
-        router.push("/login");
-      } else {
-        setUser(currentUser);
-        
-        // Charger le profil pour obtenir la photo
-        const profile = await getCurrentProfile();
-        if (profile?.photo_url) {
-          setUserAvatar(profile.photo_url);
-        }
-      }
-
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, [router]);
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, isLoading, router]);
 
   const handleLogout = async () => {
-    const result = await signOut();
+    try {
+      // Déconnecter de Supabase
+      const result = await signOut();
 
-    if (result.success) {
+      if (result.success) {
+        // Vider le cache
+        await clear();
+        router.push("/login");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      // Vider le cache même en cas d'erreur
+      await clear();
       router.push("/login");
     }
   };
@@ -69,11 +66,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         searchValue={searchValue}
         onSearch={setSearchValue}
         userName={
+          profile?.first_name ||
           user?.user_metadata?.first_name ||
           user?.email?.split("@")[0] ||
           "Utilisateur"
         }
-        userAvatar={userAvatar}
+        userAvatar={profile?.photo_url || ""}
         onHomeClick={() => router.push("/home")}
         onProfileClick={() => router.push("/profile")}
         onMissionsClick={() => router.push("/missions")}

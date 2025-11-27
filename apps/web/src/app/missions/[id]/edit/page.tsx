@@ -22,6 +22,7 @@ import {
   debounce,
 } from "@shiftly/data";
 import { AppLayout } from "../../../../components/AppLayout";
+import { useRecruiterMissions } from "../../../../hooks";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
@@ -48,6 +49,7 @@ type Step = 1 | 2 | 3 | 4;
 
 export default function EditMissionPage() {
   const router = useRouter();
+  const { refresh } = useRecruiterMissions();
   const params = useParams();
   const missionId = params.id as string;
 
@@ -247,6 +249,9 @@ export default function EditMissionPage() {
         }
       }
 
+      // Rafraîchir le cache des missions
+      await refresh();
+
       // Rediriger vers la page de la mission
       router.push(`/missions/${missionId}`);
     } catch (err) {
@@ -264,6 +269,8 @@ export default function EditMissionPage() {
     const result = await deleteMission(missionId);
 
     if (result.success) {
+      // Rafraîchir le cache des missions
+      await refresh();
       router.push("/missions");
     } else {
       setError(result.error || "Erreur lors de la suppression");

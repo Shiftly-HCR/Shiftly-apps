@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@shiftly/core": "workspace:*",
     "@shiftly/data": "workspace:*",
     "@shiftly/ui": "workspace:*",
     "@tamagui/animations-react-native": "^1.135.3",

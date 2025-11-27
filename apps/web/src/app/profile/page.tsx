@@ -5,19 +5,17 @@ import { Button, Input, ImagePicker } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  getCurrentProfile,
   updateProfile,
   uploadProfilePhoto,
   deleteProfilePhoto,
 } from "@shiftly/data";
-import type { Profile } from "@shiftly/data";
+import { useCurrentProfile } from "../../hooks";
 import { AppLayout } from "../../components/AppLayout";
 import { FreelanceProfileForm } from "../../components/FreelanceProfileForm";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { profile, isLoading, refresh } = useCurrentProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -32,26 +30,17 @@ export default function ProfilePage() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
-  // Charger le profil au montage du composant
+  // Initialiser les champs du formulaire avec le profil
   useEffect(() => {
-    const loadProfile = async () => {
-      const userProfile = await getCurrentProfile();
-      
-      if (userProfile) {
-        setProfile(userProfile);
-        setFirstName(userProfile.first_name || "");
-        setLastName(userProfile.last_name || "");
-        setEmail(userProfile.email || "");
-        setPhone(userProfile.phone || "");
-        setBio(userProfile.bio || "");
-        setPhotoUrl(userProfile.photo_url || null);
-      }
-
-      setIsLoading(false);
-    };
-
-    loadProfile();
-  }, []);
+    if (profile) {
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
+      setEmail(profile.email || "");
+      setPhone(profile.phone || "");
+      setBio(profile.bio || "");
+      setPhotoUrl(profile.photo_url || null);
+    }
+  }, [profile]);
 
   const handleSave = async () => {
     setError("");
@@ -68,7 +57,8 @@ export default function ProfilePage() {
     });
 
     if (result.success) {
-      setProfile(result.profile || null);
+      // Rafraîchir le cache
+      await refresh();
       setSuccess("Profil mis à jour avec succès !");
       setIsEditing(false);
     } else {
@@ -90,11 +80,8 @@ export default function ProfilePage() {
       setPhotoUrl(uploadResult.url || null);
       setSuccess("Photo mise à jour avec succès !");
       
-      // Recharger le profil pour mettre à jour les données
-      const updatedProfile = await getCurrentProfile();
-      if (updatedProfile) {
-        setProfile(updatedProfile);
-      }
+      // Rafraîchir le cache
+      await refresh();
     } else {
       setError(uploadResult.error || "Erreur lors de l'upload de la photo");
     }
@@ -113,11 +100,8 @@ export default function ProfilePage() {
       setPhotoUrl(null);
       setSuccess("Photo supprimée avec succès !");
       
-      // Recharger le profil pour mettre à jour les données
-      const updatedProfile = await getCurrentProfile();
-      if (updatedProfile) {
-        setProfile(updatedProfile);
-      }
+      // Rafraîchir le cache
+      await refresh();
     } else {
       setError(result.error || "Erreur lors de la suppression de la photo");
     }
@@ -412,11 +396,8 @@ export default function ProfilePage() {
         {profile?.role === "freelance" ? (
           <FreelanceProfileForm
             onSave={async () => {
-              // Recharger le profil après sauvegarde
-              const updatedProfile = await getCurrentProfile();
-              if (updatedProfile) {
-                setProfile(updatedProfile);
-              }
+              // Rafraîchir le cache après sauvegarde
+              await refresh();
             }}
           />
         ) : (

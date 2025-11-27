@@ -9,32 +9,28 @@ import { AppLayout } from "../../../components/AppLayout";
 import {
   getPublishedMissions,
   getPublishedFreelances,
-  getCurrentProfile,
   type Mission,
   type FreelanceProfile,
 } from "@shiftly/data";
+import { useCurrentProfile } from "../../../hooks";
 
 export default function FreelanceMissionsPage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
+  const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [recommendedFreelances, setRecommendedFreelances] = useState<
     FreelanceProfile[]
   >([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const isLoading = isLoadingProfile || isLoadingData;
 
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true);
-      const [userProfile, publishedMissions, freelances] = await Promise.all([
-        getCurrentProfile(),
+      setIsLoadingData(true);
+      const [publishedMissions, freelances] = await Promise.all([
         getPublishedMissions(),
         getPublishedFreelances(),
       ]);
-
-      if (userProfile) {
-        setProfile(userProfile);
-      }
 
       // Simuler des missions récentes pour le freelance
       // En production, il faudrait une table de candidatures
@@ -43,7 +39,7 @@ export default function FreelanceMissionsPage() {
       // Prendre les 3 premiers freelances comme recommandations
       setRecommendedFreelances(freelances.slice(0, 3));
 
-      setIsLoading(false);
+      setIsLoadingData(false);
     };
 
     loadData();

@@ -5,9 +5,11 @@ import { Button, Input } from "@shiftly/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@shiftly/data";
+import { useSessionContext } from "../../providers/SessionProvider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { refresh } = useSessionContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,6 +28,8 @@ export default function LoginPage() {
     const result = await signIn({ email, password });
 
     if (result.success) {
+      // Rafraîchir le cache après connexion
+      await refresh();
       router.push("/home");
     } else {
       setError(result.error || "Une erreur est survenue");

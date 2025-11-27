@@ -4,29 +4,35 @@ import { YStack, XStack, Text } from "tamagui";
 import { Button, Input, DatePicker, Checkbox } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import type {
-  FreelanceProfile,
   FreelanceExperience,
   FreelanceEducation,
   LinkedInProfileData,
 } from "@shiftly/data";
 import {
-  getFreelanceProfile,
   updateFreelanceProfile,
-  getFreelanceExperiences,
-  getFreelanceEducations,
   upsertFreelanceExperience,
   upsertFreelanceEducation,
   deleteFreelanceExperience,
   deleteFreelanceEducation,
   syncLinkedInData,
 } from "@shiftly/data";
+import { useFreelanceData } from "../hooks/useFreelanceData";
 
 interface FreelanceProfileFormProps {
   onSave?: () => void;
 }
 
 export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    freelanceProfile,
+    experiences: cachedExperiences,
+    educations: cachedEducations,
+    isLoading,
+    refreshProfile,
+    refreshExperiences,
+    refreshEducations,
+  } = useFreelanceData();
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -52,37 +58,21 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
   // Formations
   const [educations, setEducations] = useState<FreelanceEducation[]>([]);
 
-  // Charger les données au montage
+  // Initialiser les champs avec les données du cache
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const profile = await getFreelanceProfile();
-      const exps = await getFreelanceExperiences();
-      const edus = await getFreelanceEducations();
-
-      if (profile) {
-        setFirstName(profile.first_name || "");
-        setLastName(profile.last_name || "");
-        setEmail(profile.email || "");
-        setPhone(profile.phone || "");
-        setHeadline(profile.headline || "");
-        setLocation(profile.location || "");
-        setSummary(profile.summary || "");
-        setSkills(profile.skills || []);
-      }
-
-      setExperiences(exps);
-      setEducations(edus);
-    } catch (err) {
-      console.error("Erreur lors du chargement:", err);
-    } finally {
-      setIsLoading(false);
+    if (freelanceProfile) {
+      setFirstName(freelanceProfile.first_name || "");
+      setLastName(freelanceProfile.last_name || "");
+      setEmail(freelanceProfile.email || "");
+      setPhone(freelanceProfile.phone || "");
+      setHeadline(freelanceProfile.headline || "");
+      setLocation(freelanceProfile.location || "");
+      setSummary(freelanceProfile.summary || "");
+      setSkills(freelanceProfile.skills || []);
     }
-  };
+    setExperiences(cachedExperiences);
+    setEducations(cachedEducations);
+  }, [freelanceProfile, cachedExperiences, cachedEducations]);
 
   const handleImportLinkedIn = async () => {
     if (!linkedInUrl.trim()) {
@@ -150,8 +140,10 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
         );
       }
 
-      // Recharger les données
-      await loadData();
+      // Rafraîchir le cache
+      await refreshProfile();
+      await refreshExperiences();
+      await refreshEducations();
 
       setSuccess(
         "Profil LinkedIn importé avec succès ! Les données ont été pré-remplies dans le formulaire."
@@ -299,6 +291,11 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           end_date: edu.end_date,
         });
       }
+
+      // Rafraîchir le cache
+      await refreshProfile();
+      await refreshExperiences();
+      await refreshEducations();
 
       setSuccess("Profil mis à jour avec succès !");
       onSave?.();

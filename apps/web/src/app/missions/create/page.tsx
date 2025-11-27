@@ -20,6 +20,7 @@ import {
   debounce,
 } from "@shiftly/data";
 import { AppLayout } from "../../../components/AppLayout";
+import { useRecruiterMissions } from "../../../hooks";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
@@ -46,6 +47,7 @@ type Step = 1 | 2 | 3 | 4;
 
 export default function CreateMissionPage() {
   const router = useRouter();
+  const { refresh } = useRecruiterMissions();
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -191,6 +193,9 @@ export default function CreateMissionPage() {
       if (missionImage && missionResult.mission) {
         await uploadMissionImage(missionResult.mission.id, missionImage);
       }
+
+      // Rafraîchir le cache des missions
+      await refresh();
 
       // Redirection vers la liste des missions
       router.push("/missions");
