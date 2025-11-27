@@ -15,6 +15,8 @@ interface MissionCardProps {
   showButton?: boolean;
   buttonText?: string;
   onEdit?: () => void; // Callback pour le bouton "Modifier" (mode recruteur)
+  onManageCandidates?: () => void; // Callback pour le bouton "Gérer les candidatures" (mode recruteur)
+  missionId?: string; // ID de la mission pour le lien vers le dashboard
 }
 
 export const MissionCard = ({
@@ -29,6 +31,8 @@ export const MissionCard = ({
   showButton = true,
   buttonText = "Voir la mission",
   onEdit,
+  onManageCandidates,
+  missionId,
 }: MissionCardProps) => {
   return (
     <BaseCard
@@ -114,36 +118,53 @@ export const MissionCard = ({
         </XStack>
 
         {/* Boutons */}
-        {onEdit ? (
-          // Mode recruteur : afficher bouton "Modifier"
-          <XStack gap="$2" width="100%">
-            <YStack flex={1}>
-              <Button
-                variant="outline"
-                size="md"
-                width="100%"
-                onPress={(e: any) => {
-                  e?.stopPropagation();
-                  onPress?.();
-                }}
-              >
-                Voir
-              </Button>
-            </YStack>
-            <YStack flex={1}>
+        {onEdit || onManageCandidates ? (
+          // Mode recruteur : afficher boutons "Modifier" et/ou "Gérer les candidatures"
+          <YStack gap="$2" width="100%">
+            {onManageCandidates && (
               <Button
                 variant="primary"
                 size="md"
                 width="100%"
                 onPress={(e: any) => {
                   e?.stopPropagation();
-                  onEdit();
+                  onManageCandidates();
                 }}
               >
-                Modifier
+                Gérer les candidatures
               </Button>
-            </YStack>
-          </XStack>
+            )}
+            {onEdit && (
+              <XStack gap="$2" width="100%">
+                <YStack flex={1}>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    width="100%"
+                    onPress={(e: any) => {
+                      e?.stopPropagation();
+                      onPress?.();
+                    }}
+                  >
+                    Voir
+                  </Button>
+                </YStack>
+                <YStack flex={1}>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    width="100%"
+                    onPress={(e: any) => {
+                      e?.stopPropagation();
+                      onEdit();
+                    }}
+                  >
+                    Modifier
+                  </Button>
+                </YStack>
+              </XStack>
+            )}
+          </YStack>
         ) : showButton ? (
           // Mode public : afficher bouton "Voir la mission"
           <Button variant="primary" size="md" width="100%" onPress={onPress}>

@@ -22,6 +22,10 @@ export default function RecruiterMissionsPage() {
     router.push(`/missions/${missionId}/edit`);
   };
 
+  const handleManageCandidates = (missionId: string) => {
+    router.push(`/missions/${missionId}/candidates`);
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -147,8 +151,10 @@ export default function RecruiterMissionsPage() {
                     }
                     priceUnit="/ heure"
                     image={mission.image_url}
+                    missionId={mission.id}
                     onPress={() => handleMissionClick(mission.id)}
                     onEdit={() => handleEditMission(mission.id)}
+                    onManageCandidates={() => handleManageCandidates(mission.id)}
                   />
 
                   {/* Badge de statut */}
