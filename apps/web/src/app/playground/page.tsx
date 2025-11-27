@@ -29,6 +29,7 @@ import {
   StatCard,
   MissionDetailCard,
   useShiftlyToast,
+  colors,
 } from "@shiftly/ui";
 import { SearchBar } from "../../../../../packages/ui/src/components/web/SearchBar";
 import { BottomNavigation } from "../../../../../packages/ui/src/components/web/BottomNavigation";

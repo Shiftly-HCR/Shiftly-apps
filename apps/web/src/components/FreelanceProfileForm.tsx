@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, XStack, Text } from "tamagui";
-import { Button, Input, DatePicker, Checkbox } from "@shiftly/ui";
+import { Button, Input, DatePicker, Checkbox, colors } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import type {
   FreelanceExperience,
@@ -317,7 +317,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
   }
 
   return (
-    <YStack gap="$4" width="100%">
+    <YStack gap="$4" style={{ width: "100%" }}>
       {/* Messages */}
       {error && (
         <YStack

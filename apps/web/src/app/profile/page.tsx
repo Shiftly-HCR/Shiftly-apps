@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, XStack, Text, Image } from "tamagui";
-import { Button, Input, ImagePicker } from "@shiftly/ui";
+import { Button, Input, ImagePicker, colors } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -141,7 +141,7 @@ export default function ProfilePage() {
   return (
     <AppLayout>
       <YStack flex={1} alignItems="center" padding="$4" paddingVertical="$8">
-        <YStack maxWidth={800} width="100%" gap="$4">
+        <YStack maxWidth={800} gap="$4" style={{ width: "100%" }}>
           {/* En-tête */}
           <YStack
             padding="$6"
@@ -293,7 +293,7 @@ export default function ProfilePage() {
             </XStack>
 
             {/* Nom et Prénom */}
-            <XStack gap="$3" width="100%">
+            <XStack gap="$3" style={{ width: "100%" }}>
               <YStack flex={1}>
                 <Input
                   label="Prénom"

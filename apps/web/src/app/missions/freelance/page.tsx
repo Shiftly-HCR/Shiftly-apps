@@ -1,45 +1,55 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { Button, FreelanceCard, colors } from "@shiftly/ui";
+import { Button, MissionCard, colors } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiArrowRight, FiHeadphones } from "react-icons/fi";
 import { AppLayout } from "../../../components/AppLayout";
-import {
-  getPublishedMissions,
-  getPublishedFreelances,
-  type Mission,
-  type FreelanceProfile,
-} from "@shiftly/data";
+import { getPublishedMissions, type Mission } from "@shiftly/data";
 import { useCurrentProfile } from "../../../hooks";
 
 export default function FreelanceMissionsPage() {
   const router = useRouter();
   const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
   const [missions, setMissions] = useState<Mission[]>([]);
-  const [recommendedFreelances, setRecommendedFreelances] = useState<
-    FreelanceProfile[]
-  >([]);
+  const [recommendedMissions, setRecommendedMissions] = useState<Mission[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const isLoading = isLoadingProfile || isLoadingData;
 
   useEffect(() => {
     const loadData = async () => {
-      setIsLoadingData(true);
-      const [publishedMissions, freelances] = await Promise.all([
-        getPublishedMissions(),
-        getPublishedFreelances(),
-      ]);
+      try {
+        setIsLoadingData(true);
+        const publishedMissions = await getPublishedMissions();
 
-      // Simuler des missions récentes pour le freelance
-      // En production, il faudrait une table de candidatures
-      setMissions(publishedMissions.slice(0, 3));
+        // Simuler des missions récentes pour le freelance
+        // En production, il faudrait une table de candidatures
+        // Prendre seulement 2 missions pour les missions récentes pour laisser de la place aux recommandations
+        const recentMissions = publishedMissions.slice(0, 2);
+        setMissions(recentMissions);
 
-      // Prendre les 3 premiers freelances comme recommandations
-      setRecommendedFreelances(freelances.slice(0, 3));
+        // Prendre les missions suivantes comme recommandations (sauf celles déjà affichées)
+        // Filtrer les missions déjà affichées et prendre jusqu'à 3 missions recommandées
+        const recentMissionIds = new Set(recentMissions.map((m) => m.id));
+        let recommended = publishedMissions
+          .filter((m) => !recentMissionIds.has(m.id))
+          .slice(0, 3);
 
-      setIsLoadingData(false);
+        // Si aucune mission recommandée n'est disponible (toutes sont dans les missions récentes),
+        // afficher toutes les missions disponibles comme recommandations
+        if (recommended.length === 0 && publishedMissions.length > 0) {
+          recommended = publishedMissions.slice(0, 3);
+        }
+
+        setRecommendedMissions(recommended);
+      } catch (error) {
+        console.error("Erreur lors du chargement des missions:", error);
+        setMissions([]);
+        setRecommendedMissions([]);
+      } finally {
+        setIsLoadingData(false);
+      }
     };
 
     loadData();
@@ -317,39 +327,93 @@ export default function FreelanceMissionsPage() {
 
             {/* Colonne droite */}
             <YStack width={400} flexShrink={0} gap="$6">
-              {/* Freelances recommandés */}
-              {recommendedFreelances.length > 0 && (
-                <YStack gap="$4">
-                  <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-                    Freelances recommandés
-                  </Text>
-                  <XStack gap="$3" flexWrap="wrap">
-                    {recommendedFreelances.map((freelance) => {
-                      const fullName =
-                        `${freelance.first_name || ""} ${freelance.last_name || ""}`.trim() ||
-                        "Freelance";
+              {/* Missions recommandées */}
+              <YStack gap="$4">
+                <Text fontSize={20} fontWeight="700" color={colors.gray900}>
+                  Missions recommandées
+                </Text>
+                {recommendedMissions.length > 0 ? (
+                  <YStack gap="$3">
+                    {recommendedMissions.map((mission) => {
+                      const formatDateRange = () => {
+                        if (!mission.start_date && !mission.end_date) {
+                          return "";
+                        }
+
+                        const formatOptions: Intl.DateTimeFormatOptions = {
+                          day: "numeric",
+                          month: "short",
+                        };
+
+                        if (mission.start_date && mission.end_date) {
+                          const start = new Date(
+                            mission.start_date
+                          ).toLocaleDateString("fr-FR", formatOptions);
+                          const end = new Date(
+                            mission.end_date
+                          ).toLocaleDateString("fr-FR", formatOptions);
+                          return `Du ${start} au ${end}`;
+                        }
+                        if (mission.start_date) {
+                          const start = new Date(
+                            mission.start_date
+                          ).toLocaleDateString("fr-FR", formatOptions);
+                          return `Le ${start}`;
+                        }
+                        return "";
+                      };
+
+                      const formatTimeRange = () => {
+                        if (mission.start_time && mission.end_time) {
+                          return `${mission.start_time} - ${mission.end_time}`;
+                        }
+                        if (mission.start_time) {
+                          return mission.start_time;
+                        }
+                        return "";
+                      };
+
                       return (
-                        <YStack key={freelance.id} flex={1} minWidth={120}>
-                          <FreelanceCard
-                            name={fullName}
-                            subtitle={freelance.headline || freelance.bio}
-                            avatar={freelance.photo_url}
-                            rating={freelance.note}
-                            isOnline={false}
-                            tags={freelance.skills?.slice(0, 2) || []}
-                            onPress={() =>
-                              router.push(`/profile/${freelance.id}`)
-                            }
-                            onViewProfile={() =>
-                              router.push(`/profile/${freelance.id}`)
-                            }
-                          />
-                        </YStack>
+                        <MissionCard
+                          key={mission.id}
+                          title={mission.title}
+                          date={formatDateRange()}
+                          time={formatTimeRange()}
+                          price={
+                            mission.hourly_rate
+                              ? `${mission.hourly_rate}€`
+                              : "À négocier"
+                          }
+                          priceUnit="/ heure"
+                          image={mission.image_url}
+                          isPremium={mission.is_urgent}
+                          onPress={() => router.push(`/missions/${mission.id}`)}
+                          showButton={true}
+                          buttonText="Voir la mission"
+                        />
                       );
                     })}
-                  </XStack>
-                </YStack>
-              )}
+                  </YStack>
+                ) : (
+                  <YStack
+                    padding="$6"
+                    backgroundColor={colors.white}
+                    borderRadius={12}
+                    borderWidth={1}
+                    borderColor={colors.gray200}
+                    alignItems="center"
+                    gap="$2"
+                  >
+                    <Text
+                      fontSize={14}
+                      color={colors.gray500}
+                      textAlign="center"
+                    >
+                      Aucune mission recommandée pour le moment
+                    </Text>
+                  </YStack>
+                )}
+              </YStack>
 
               {/* Besoin d'aide ? */}
               <YStack

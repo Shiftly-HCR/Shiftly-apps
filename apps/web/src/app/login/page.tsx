@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, XStack, Text, Image } from "tamagui";
-import { Button, Input } from "@shiftly/ui";
+import { Button, Input, colors } from "@shiftly/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@shiftly/data";
@@ -49,8 +49,8 @@ export default function LoginPage() {
     >
       <YStack
         maxWidth={440}
-        width="100%"
         padding="$6"
+        style={{ width: "100%" }}
         backgroundColor="white"
         borderRadius="$4"
         borderWidth={1}
@@ -95,7 +95,7 @@ export default function LoginPage() {
           </YStack>
 
           {/* Formulaire */}
-          <YStack gap="$4" width="100%">
+          <YStack gap="$4" style={{ width: "100%" }}>
             {/* Message d'erreur */}
             {error && (
               <YStack
@@ -122,7 +122,7 @@ export default function LoginPage() {
             />
 
             {/* Mot de passe */}
-            <YStack gap="$2" width="100%">
+            <YStack gap="$2" flex={1}>
               <XStack justifyContent="space-between" alignItems="center">
                 <Text fontSize={14} fontWeight="600" color="#2B2B2B">
                   Mot de passe

@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, XStack, Text } from "tamagui";
-import { Button, Input, RadioGroup } from "@shiftly/ui";
+import { Button, Input, RadioGroup, colors } from "@shiftly/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@shiftly/data";
@@ -69,8 +69,8 @@ export default function RegisterPage() {
     >
       <YStack
         maxWidth={440}
-        width="100%"
         padding="$6"
+        style={{ width: "100%" }}
         backgroundColor="white"
         borderRadius="$4"
         borderWidth={1}
@@ -115,7 +115,7 @@ export default function RegisterPage() {
           </YStack>
 
           {/* Formulaire */}
-          <YStack gap="$4" width="100%">
+          <YStack gap="$4" style={{ width: "100%" }}>
             {/* Message d'erreur */}
             {error && (
               <YStack
