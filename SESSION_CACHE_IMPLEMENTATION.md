@@ -475,13 +475,141 @@ Pour utiliser le cache dans un nouveau composant :
 
 ---
 
+## 🔄 Cache global enrichi (v2)
+
+### Nouveaux caches ajoutés
+
+Le cache a été enrichi pour inclure **tous les profils et missions chargés**, pas seulement ceux de l'utilisateur :
+
+```typescript
+interface SessionCache {
+  // ... données utilisateur existantes ...
+
+  // Cache global des profils (indexés par ID)
+  profilesCache: Record<string, Profile | FreelanceProfile>;
+
+  // Cache global des missions (indexées par ID)
+  missionsCache: Record<string, Mission>;
+
+  // Cache global des expériences freelance (indexées par user_id)
+  freelanceExperiencesCache: Record<string, FreelanceExperience[]>;
+
+  // Cache global des formations freelance (indexées par user_id)
+  freelanceEducationsCache: Record<string, FreelanceEducation[]>;
+}
+```
+
+### Séparation cache utilisateur / cache global
+
+**Cache utilisateur** (données personnelles) :
+
+- `profile` : Profil de l'utilisateur actuel
+- `freelanceProfile` : Profil freelance de l'utilisateur
+- `freelanceExperiences` : Expériences de l'utilisateur
+- `freelanceEducations` : Formations de l'utilisateur
+- `recruiterMissions` : Missions de l'utilisateur recruteur
+
+**Cache global** (tous les profils/missions chargés) :
+
+- `profilesCache` : Tous les profils chargés (pour navigation rapide)
+- `missionsCache` : Toutes les missions chargées
+- `freelanceExperiencesCache` : Expériences de tous les freelances consultés
+- `freelanceEducationsCache` : Formations de tous les freelances consultés
+
+### Nouveaux hooks avec cache
+
+**`useCachedProfile(profileId)`** :
+
+- Vérifie d'abord `profilesCache[profileId]`
+- Si absent, charge depuis Supabase et met en cache
+- Retourne `{ profile, isLoading, error }`
+
+**`useCachedMission(missionId)`** :
+
+- Vérifie d'abord `missionsCache[missionId]`
+- Si absent, charge depuis Supabase et met en cache
+- Retourne `{ mission, isLoading, error }`
+
+**`useCachedFreelanceData(userId)`** :
+
+- Vérifie d'abord les caches d'expériences et formations
+- Si absent, charge depuis Supabase et met en cache
+- Retourne `{ experiences, educations, isLoading, error }`
+
+### Méthodes de cache dans SessionProvider
+
+```typescript
+// Mettre en cache des profils
+cacheProfiles(profiles: (Profile | FreelanceProfile)[]): void
+
+// Mettre en cache des missions
+cacheMissions(missions: Mission[]): void
+
+// Récupérer depuis le cache
+getProfileFromCache(profileId: string): Profile | FreelanceProfile | null
+getMissionFromCache(missionId: string): Mission | null
+getFreelanceExperiencesFromCache(userId: string): FreelanceExperience[]
+getFreelanceEducationsFromCache(userId: string): FreelanceEducation[]
+```
+
+### Pages refactorisées pour utiliser le cache global
+
+**`apps/web/src/app/freelance/page.tsx`** :
+
+- Charge `getPublishedFreelances()` une fois
+- Met tous les profils en cache via `cacheProfiles()`
+- Navigation suivante : 0 requête (depuis le cache)
+
+**`apps/web/src/app/home/page.tsx`** :
+
+- Charge `getPublishedMissions()` une fois
+- Met toutes les missions en cache via `cacheMissions()`
+- Navigation suivante : 0 requête (depuis le cache)
+
+**`apps/web/src/app/profile/[id]/page.tsx`** :
+
+- Utilise `useCachedProfile()` et `useCachedFreelanceData()`
+- Première visite : 1-2 requêtes
+- Visite suivante : 0 requête (depuis le cache)
+
+**`apps/web/src/app/missions/[id]/page.tsx`** :
+
+- Utilise `useCachedMission()`
+- Première visite : 1 requête
+- Visite suivante : 0 requête (depuis le cache)
+
+**`apps/web/src/app/missions/[id]/edit/page.tsx`** :
+
+- Utilise `useCachedMission()` pour charger la mission
+- Évite les requêtes redondantes
+
+### Impact supplémentaire
+
+**Avant l'enrichissement** :
+
+- Première visite : ~6-8 requêtes
+- Navigation : 0 requête (cache utilisateur uniquement)
+- Consultation profil/mission : 1-2 requêtes à chaque fois
+
+**Après l'enrichissement** :
+
+- Première visite : ~6-8 requêtes
+- Navigation : 0 requête (cache utilisateur + global)
+- Consultation profil/mission : **0 requête** si déjà chargé (depuis le cache global)
+
+**Réduction totale** : **95-98% des requêtes Supabase**
+
+---
+
 ## 🎓 Conclusion
 
 Le système de cache de session permet de :
 
-- ✅ Réduire drastiquement les requêtes Supabase
+- ✅ Réduire drastiquement les requêtes Supabase (95-98%)
 - ✅ Améliorer les performances (données instantanées depuis le cache)
 - ✅ Garder les données à jour via l'invalidation après mutations
+- ✅ Mettre en cache tous les profils et missions consultés
+- ✅ Séparer cache utilisateur (données personnelles) et cache global (navigation)
 - ✅ Être réutilisable pour l'application mobile
 - ✅ Faciliter le debug avec l'instrumentation
 

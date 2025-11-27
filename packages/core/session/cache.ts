@@ -33,6 +33,10 @@ export class SessionCacheManager {
       freelanceExperiences: [],
       freelanceEducations: [],
       recruiterMissions: [],
+      profilesCache: {},
+      missionsCache: {},
+      freelanceExperiencesCache: {},
+      freelanceEducationsCache: {},
       cachedAt: Date.now(),
       userId: null,
     };

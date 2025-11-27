@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { FiMap, FiList } from "react-icons/fi";
 import { AppLayout } from "../../components/AppLayout";
 import { getPublishedMissions, type Mission } from "@shiftly/data";
+import { useSessionContext } from "../../providers/SessionProvider";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
@@ -70,16 +71,30 @@ export default function HomePage() {
   const [filters, setFilters] = useState<MissionFiltersState>({});
 
   // Charger les missions publiées depuis Supabase
+  const { cacheMissions, cache } = useSessionContext();
+
   useEffect(() => {
     const loadMissions = async () => {
       setIsLoading(true);
-      const publishedMissions = await getPublishedMissions();
-      setMissions(publishedMissions);
-      setIsLoading(false);
+      try {
+        // Toujours charger depuis Supabase car la liste peut changer
+        // (nouvelles missions, missions mises à jour, etc.)
+        const publishedMissions = await getPublishedMissions();
+        setMissions(publishedMissions);
+
+        // Mettre toutes les missions en cache pour les prochaines navigations
+        if (publishedMissions.length > 0) {
+          cacheMissions(publishedMissions);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des missions:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadMissions();
-  }, []);
+  }, [cacheMissions]);
 
   // Formater les dates pour l'affichage
   const formatDate = (startDate?: string, endDate?: string) => {
@@ -159,7 +174,11 @@ export default function HomePage() {
       }
 
       // Filtre par plage de dates
-      if (filters.dateRange && filters.dateRange !== "all" && mission.start_date) {
+      if (
+        filters.dateRange &&
+        filters.dateRange !== "all" &&
+        mission.start_date
+      ) {
         const missionDate = new Date(mission.start_date);
         const now = new Date();
         now.setHours(0, 0, 0, 0);
@@ -224,8 +243,8 @@ export default function HomePage() {
     }
     if (filters.dateRange && filters.dateRange !== "all") {
       const dateLabel =
-        dateRangeOptions.find((opt) => opt.value === filters.dateRange)?.label ||
-        filters.dateRange;
+        dateRangeOptions.find((opt) => opt.value === filters.dateRange)
+          ?.label || filters.dateRange;
       tags.push(dateLabel);
     }
     if (filters.hourlyRateMin || filters.hourlyRateMax) {
@@ -424,53 +443,53 @@ export default function HomePage() {
             {/* Grille de missions OU Carte */}
             <YStack flex={1} gap="$4">
               {filteredMissions.length === 0 ? (
-              <YStack
-                padding="$8"
-                alignItems="center"
-                justifyContent="center"
-                gap="$4"
-              >
-                <Text fontSize={18} color={colors.gray700} textAlign="center">
-                  Aucune mission disponible pour le moment
-                </Text>
-                <Text fontSize={14} color={colors.gray500} textAlign="center">
-                  Revenez plus tard pour découvrir de nouvelles opportunités
-                </Text>
-              </YStack>
+                <YStack
+                  padding="$8"
+                  alignItems="center"
+                  justifyContent="center"
+                  gap="$4"
+                >
+                  <Text fontSize={18} color={colors.gray700} textAlign="center">
+                    Aucune mission disponible pour le moment
+                  </Text>
+                  <Text fontSize={14} color={colors.gray500} textAlign="center">
+                    Revenez plus tard pour découvrir de nouvelles opportunités
+                  </Text>
+                </YStack>
               ) : viewMode === "list" ? (
                 <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
                   {filteredMissions.map((mission) => (
-                  <YStack
-                    key={mission.id}
-                    width="calc(33.333% - 12px)"
-                    minWidth={300}
-                    position="relative"
-                    cursor="pointer"
-                    onPress={() => router.push(`/missions/${mission.id}`)}
-                  >
-                    {isNewMission(mission.created_at) && (
-                      <YStack
-                        position="absolute"
-                        top={12}
-                        left={12}
-                        zIndex={10}
-                      >
-                        <Badge variant="new" size="sm">
-                          Nouveau
-                        </Badge>
-                      </YStack>
-                    )}
-                    <MissionCard
-                      title={mission.title}
-                      date={formatDate(mission.start_date, mission.end_date)}
-                      price={
-                        mission.hourly_rate
-                          ? `${mission.hourly_rate}€`
-                          : "À négocier"
-                      }
-                      priceUnit="/ heure"
-                      image={mission.image_url}
-                    />
+                    <YStack
+                      key={mission.id}
+                      width="calc(33.333% - 12px)"
+                      minWidth={300}
+                      position="relative"
+                      cursor="pointer"
+                      onPress={() => router.push(`/missions/${mission.id}`)}
+                    >
+                      {isNewMission(mission.created_at) && (
+                        <YStack
+                          position="absolute"
+                          top={12}
+                          left={12}
+                          zIndex={10}
+                        >
+                          <Badge variant="new" size="sm">
+                            Nouveau
+                          </Badge>
+                        </YStack>
+                      )}
+                      <MissionCard
+                        title={mission.title}
+                        date={formatDate(mission.start_date, mission.end_date)}
+                        price={
+                          mission.hourly_rate
+                            ? `${mission.hourly_rate}€`
+                            : "À négocier"
+                        }
+                        priceUnit="/ heure"
+                        image={mission.image_url}
+                      />
                     </YStack>
                   ))}
                 </XStack>

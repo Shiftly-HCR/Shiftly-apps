@@ -2,16 +2,10 @@
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, Badge, colors } from "@shiftly/ui";
-import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { AppLayout } from "../../../components/AppLayout";
-import {
-  getFreelanceProfileById,
-  getFreelanceExperiencesById,
-  type FreelanceProfile,
-  type FreelanceExperience,
-} from "@shiftly/data";
 import { FiCheck, FiMessageCircle, FiBookmark } from "react-icons/fi";
+import { useCachedProfile, useCachedFreelanceData } from "../../../hooks";
 
 type TabType = "overview" | "availability" | "reviews" | "documents";
 
@@ -20,31 +14,12 @@ export default function FreelanceProfilePage() {
   const params = useParams();
   const freelanceId = params?.id as string;
 
-  const [profile, setProfile] = useState<FreelanceProfile | null>(null);
-  const [experiences, setExperiences] = useState<FreelanceExperience[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { profile, isLoading: isLoadingProfile } = useCachedProfile(freelanceId);
+  const { experiences, isLoading: isLoadingExperiences } =
+    useCachedFreelanceData(freelanceId);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!freelanceId) return;
-
-      setIsLoading(true);
-      const [freelanceProfile, freelanceExperiences] = await Promise.all([
-        getFreelanceProfileById(freelanceId),
-        getFreelanceExperiencesById(freelanceId),
-      ]);
-
-      if (freelanceProfile) {
-        setProfile(freelanceProfile);
-        setExperiences(freelanceExperiences);
-      }
-
-      setIsLoading(false);
-    };
-
-    loadProfile();
-  }, [freelanceId]);
+  const isLoading = isLoadingProfile || isLoadingExperiences;
 
   if (isLoading) {
     return (

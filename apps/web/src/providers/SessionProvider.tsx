@@ -14,6 +14,13 @@ import {
   type SessionCacheState,
   type SessionCacheConfig,
 } from "@shiftly/core";
+import type {
+  Profile,
+  FreelanceProfile,
+  FreelanceExperience,
+  FreelanceEducation,
+  Mission,
+} from "@shiftly/data";
 
 interface SessionContextValue extends SessionCacheState {
   refresh: () => Promise<void>;
@@ -23,19 +30,33 @@ interface SessionContextValue extends SessionCacheState {
   refreshFreelanceEducations: () => Promise<void>;
   refreshRecruiterMissions: () => Promise<void>;
   getRequestCount: () => number;
+  // Méthodes de cache global
+  getProfileFromCache: (profileId: string) => Profile | FreelanceProfile | null;
+  cacheProfiles: (profiles: (Profile | FreelanceProfile)[]) => void;
+  getMissionFromCache: (missionId: string) => Mission | null;
+  cacheMissions: (missions: Mission[]) => void;
+  getFreelanceExperiencesFromCache: (userId: string) => FreelanceExperience[];
+  getFreelanceEducationsFromCache: (userId: string) => FreelanceEducation[];
+  cacheFreelanceExperiences: (
+    userId: string,
+    experiences: FreelanceExperience[]
+  ) => void;
+  cacheFreelanceEducations: (
+    userId: string,
+    educations: FreelanceEducation[]
+  ) => void;
 }
 
-const SessionContext = createContext<SessionContextValue | undefined>(undefined);
+const SessionContext = createContext<SessionContextValue | undefined>(
+  undefined
+);
 
 interface SessionProviderProps {
   children: ReactNode;
   config?: SessionCacheConfig;
 }
 
-export function SessionProvider({
-  children,
-  config,
-}: SessionProviderProps) {
+export function SessionProvider({ children, config }: SessionProviderProps) {
   const [state, setState] = useState<SessionCacheState>({
     cache: null,
     isLoading: true,
@@ -44,9 +65,7 @@ export function SessionProvider({
   });
 
   // Créer le service de cache (une seule instance)
-  const [cacheService] = useState(() =>
-    createSessionCacheService(config)
-  );
+  const [cacheService] = useState(() => createSessionCacheService(config));
 
   /**
    * Charge la session depuis le cache ou Supabase
@@ -136,6 +155,92 @@ export function SessionProvider({
     return cacheService.getRequestCount();
   }, [cacheService]);
 
+  /**
+   * Récupère un profil depuis le cache
+   */
+  const getProfileFromCache = useCallback(
+    (profileId: string) => {
+      return cacheService.getProfileFromCache(profileId);
+    },
+    [cacheService]
+  );
+
+  /**
+   * Met en cache des profils
+   */
+  const cacheProfiles = useCallback(
+    (profiles: (Profile | FreelanceProfile)[]) => {
+      cacheService.cacheProfiles(profiles);
+      // Recharger l'état pour mettre à jour l'UI
+      loadSession(false);
+    },
+    [cacheService, loadSession]
+  );
+
+  /**
+   * Récupère une mission depuis le cache
+   */
+  const getMissionFromCache = useCallback(
+    (missionId: string) => {
+      return cacheService.getMissionFromCache(missionId);
+    },
+    [cacheService]
+  );
+
+  /**
+   * Met en cache des missions
+   */
+  const cacheMissions = useCallback(
+    (missions: Mission[]) => {
+      cacheService.cacheMissions(missions);
+      // Recharger l'état pour mettre à jour l'UI
+      loadSession(false);
+    },
+    [cacheService, loadSession]
+  );
+
+  /**
+   * Récupère les expériences d'un freelance depuis le cache
+   */
+  const getFreelanceExperiencesFromCache = useCallback(
+    (userId: string) => {
+      return cacheService.getFreelanceExperiencesFromCache(userId);
+    },
+    [cacheService]
+  );
+
+  /**
+   * Récupère les formations d'un freelance depuis le cache
+   */
+  const getFreelanceEducationsFromCache = useCallback(
+    (userId: string) => {
+      return cacheService.getFreelanceEducationsFromCache(userId);
+    },
+    [cacheService]
+  );
+
+  /**
+   * Met en cache les expériences d'un freelance
+   */
+  const cacheFreelanceExperiences = useCallback(
+    (userId: string, experiences: FreelanceExperience[]) => {
+      cacheService.cacheFreelanceExperiences(userId, experiences);
+      loadSession(false);
+    },
+    [cacheService, loadSession]
+  );
+
+  /**
+   * Met en cache les formations d'un freelance
+   */
+  const cacheFreelanceEducations = useCallback(
+    (userId: string, educations: FreelanceEducation[]) => {
+      cacheService.cacheFreelanceEducations(userId, educations);
+      loadSession(false);
+    },
+    [cacheService, loadSession]
+  );
+
   // Charger la session au montage
   useEffect(() => {
     // Ne charger que si pas encore initialisé pour éviter les doubles chargements
@@ -153,6 +258,14 @@ export function SessionProvider({
     refreshFreelanceEducations,
     refreshRecruiterMissions,
     getRequestCount,
+    getProfileFromCache,
+    cacheProfiles,
+    getMissionFromCache,
+    cacheMissions,
+    getFreelanceExperiencesFromCache,
+    getFreelanceEducationsFromCache,
+    cacheFreelanceExperiences,
+    cacheFreelanceEducations,
   };
 
   return (
@@ -172,4 +285,3 @@ export function useSessionContext(): SessionContextValue {
   }
   return context;
 }
-

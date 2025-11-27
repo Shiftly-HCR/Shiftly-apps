@@ -15,16 +15,28 @@ export interface SessionCache {
   session: Session | null;
   user: User | null;
 
-  // Profil utilisateur
+  // Profil utilisateur (données personnelles)
   profile: Profile | null;
 
-  // Données spécifiques au rôle freelance
+  // Données spécifiques au rôle freelance (utilisateur actuel)
   freelanceProfile: FreelanceProfile | null;
   freelanceExperiences: FreelanceExperience[];
   freelanceEducations: FreelanceEducation[];
 
-  // Missions (pour recruteurs ou autres rôles)
+  // Missions (pour recruteurs ou autres rôles - utilisateur actuel)
   recruiterMissions: Mission[];
+
+  // Cache global des profils (tous les profils chargés, indexés par ID)
+  profilesCache: Record<string, Profile | FreelanceProfile>;
+
+  // Cache global des missions (toutes les missions chargées, indexées par ID)
+  missionsCache: Record<string, Mission>;
+
+  // Cache global des expériences freelance (indexées par user_id)
+  freelanceExperiencesCache: Record<string, FreelanceExperience[]>;
+
+  // Cache global des formations freelance (indexées par user_id)
+  freelanceEducationsCache: Record<string, FreelanceEducation[]>;
 
   // Métadonnées du cache
   cachedAt: number; // Timestamp de la dernière mise à jour

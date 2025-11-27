@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { FiGrid, FiList } from "react-icons/fi";
 import { AppLayout } from "../../components/AppLayout";
 import { getPublishedFreelances, type FreelanceProfile } from "@shiftly/data";
+import { useSessionContext } from "../../providers/SessionProvider";
 
 const positionOptions = [
   { label: "Tous les postes", value: "all" },
@@ -37,22 +38,35 @@ const locationOptions = [
 
 export default function FreelancePage() {
   const router = useRouter();
+  const { cacheProfiles, cache } = useSessionContext();
   const [freelances, setFreelances] = useState<FreelanceProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<FreelanceFiltersState>({});
 
-  // Charger les freelances depuis Supabase
+  // Charger les freelances depuis Supabase (et les mettre en cache)
   useEffect(() => {
     const loadFreelances = async () => {
       setIsLoading(true);
-      const publishedFreelances = await getPublishedFreelances();
-      setFreelances(publishedFreelances);
-      setIsLoading(false);
+      try {
+        // Toujours charger depuis Supabase car la liste peut changer
+        // (nouvelles inscriptions, profils mis à jour, etc.)
+        const publishedFreelances = await getPublishedFreelances();
+        setFreelances(publishedFreelances);
+
+        // Mettre tous les profils en cache pour les prochaines navigations
+        if (publishedFreelances.length > 0) {
+          cacheProfiles(publishedFreelances);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des freelances:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadFreelances();
-  }, []);
+  }, [cacheProfiles]);
 
   // Filtrer les freelances selon les critères
   const filteredFreelances = useMemo(() => {

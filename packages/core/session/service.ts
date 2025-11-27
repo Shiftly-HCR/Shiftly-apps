@@ -6,14 +6,24 @@ import {
 } from "@shiftly/data";
 import {
   getCurrentProfile,
+  getProfileById,
   type Profile,
 } from "@shiftly/data";
 import {
   getFreelanceProfile,
   getFreelanceExperiences,
   getFreelanceEducations,
+  getFreelanceExperiencesById,
+  getFreelanceEducationsById,
+  type FreelanceProfile,
+  type FreelanceExperience,
+  type FreelanceEducation,
 } from "@shiftly/data";
-import { getRecruiterMissions, type Mission } from "@shiftly/data";
+import {
+  getRecruiterMissions,
+  getMissionById,
+  type Mission,
+} from "@shiftly/data";
 
 /**
  * Service central de gestion de la session cache
@@ -117,7 +127,29 @@ export class SessionCacheService {
       // 5. Mettre à jour le timestamp
       emptyCache.cachedAt = Date.now();
 
-      // 6. Sauvegarder dans le cache
+      // 6. Mettre en cache les données de l'utilisateur dans les caches globaux
+      if (emptyCache.profile) {
+        emptyCache.profilesCache[emptyCache.profile.id] = emptyCache.profile;
+      }
+      if (emptyCache.freelanceProfile) {
+        emptyCache.profilesCache[emptyCache.freelanceProfile.id] =
+          emptyCache.freelanceProfile;
+      }
+      if (emptyCache.freelanceExperiences.length > 0 && emptyCache.userId) {
+        emptyCache.freelanceExperiencesCache[emptyCache.userId] =
+          emptyCache.freelanceExperiences;
+      }
+      if (emptyCache.freelanceEducations.length > 0 && emptyCache.userId) {
+        emptyCache.freelanceEducationsCache[emptyCache.userId] =
+          emptyCache.freelanceEducations;
+      }
+      if (emptyCache.recruiterMissions.length > 0) {
+        emptyCache.recruiterMissions.forEach((mission) => {
+          emptyCache.missionsCache[mission.id] = mission;
+        });
+      }
+
+      // 7. Sauvegarder dans le cache
       this.cacheManager.write(emptyCache);
 
       if (process.env.NODE_ENV === "development") {
@@ -183,14 +215,30 @@ export class SessionCacheService {
       const profile = await getCurrentProfile();
       if (profile) {
         this.cacheManager.update({ profile });
+        
+        // Mettre à jour le cache global des profils
+        const updatedCache = this.cacheManager.read();
+        if (updatedCache && profile) {
+          updatedCache.profilesCache[profile.id] = profile;
+          this.cacheManager.write(updatedCache);
+        }
 
         // Si c'est un freelance, rafraîchir aussi le profil freelance
         if (profile.role === "freelance") {
           this.incrementRequestCounter();
           const freelanceProfile = await getFreelanceProfile();
-          this.cacheManager.update({
-            freelanceProfile: freelanceProfile || null,
-          });
+          if (freelanceProfile) {
+            this.cacheManager.update({
+              freelanceProfile: freelanceProfile || null,
+            });
+            
+            // Mettre à jour le cache global
+            const updatedCache2 = this.cacheManager.read();
+            if (updatedCache2 && freelanceProfile) {
+              updatedCache2.profilesCache[freelanceProfile.id] = freelanceProfile;
+              this.cacheManager.write(updatedCache2);
+            }
+          }
         }
       }
     } catch (error) {
@@ -214,6 +262,13 @@ export class SessionCacheService {
       this.incrementRequestCounter();
       const experiences = await getFreelanceExperiences();
       this.cacheManager.update({ freelanceExperiences: experiences });
+      
+      // Mettre à jour le cache global
+      const updatedCache = this.cacheManager.read();
+      if (updatedCache && experiences.length > 0) {
+        updatedCache.freelanceExperiencesCache[current.userId] = experiences;
+        this.cacheManager.write(updatedCache);
+      }
     } catch (error) {
       console.error(
         "[SessionCache] Erreur lors du rafraîchissement des expériences:",
@@ -235,6 +290,13 @@ export class SessionCacheService {
       this.incrementRequestCounter();
       const educations = await getFreelanceEducations();
       this.cacheManager.update({ freelanceEducations: educations });
+      
+      // Mettre à jour le cache global
+      const updatedCache = this.cacheManager.read();
+      if (updatedCache && educations.length > 0) {
+        updatedCache.freelanceEducationsCache[current.userId] = educations;
+        this.cacheManager.write(updatedCache);
+      }
     } catch (error) {
       console.error(
         "[SessionCache] Erreur lors du rafraîchissement des formations:",
@@ -256,12 +318,129 @@ export class SessionCacheService {
       this.incrementRequestCounter();
       const missions = await getRecruiterMissions();
       this.cacheManager.update({ recruiterMissions: missions });
+      
+      // Mettre à jour le cache global des missions
+      const updatedCache = this.cacheManager.read();
+      if (updatedCache) {
+        missions.forEach((mission) => {
+          updatedCache.missionsCache[mission.id] = mission;
+        });
+        this.cacheManager.write(updatedCache);
+      }
     } catch (error) {
       console.error(
         "[SessionCache] Erreur lors du rafraîchissement des missions:",
         error
       );
     }
+  }
+
+  /**
+   * Récupère un profil depuis le cache ou null si non trouvé
+   */
+  getProfileFromCache(profileId: string): Profile | FreelanceProfile | null {
+    const cached = this.cacheManager.read();
+    if (!cached) {
+      return null;
+    }
+    return cached.profilesCache[profileId] || null;
+  }
+
+  /**
+   * Met en cache un profil (ou plusieurs)
+   */
+  cacheProfiles(profiles: (Profile | FreelanceProfile)[]): void {
+    const current = this.cacheManager.read();
+    if (!current) {
+      return;
+    }
+
+    profiles.forEach((profile) => {
+      current.profilesCache[profile.id] = profile;
+    });
+
+    this.cacheManager.write(current);
+  }
+
+  /**
+   * Récupère une mission depuis le cache ou null si non trouvée
+   */
+  getMissionFromCache(missionId: string): Mission | null {
+    const cached = this.cacheManager.read();
+    if (!cached) {
+      return null;
+    }
+    return cached.missionsCache[missionId] || null;
+  }
+
+  /**
+   * Met en cache une mission (ou plusieurs)
+   */
+  cacheMissions(missions: Mission[]): void {
+    const current = this.cacheManager.read();
+    if (!current) {
+      return;
+    }
+
+    missions.forEach((mission) => {
+      current.missionsCache[mission.id] = mission;
+    });
+
+    this.cacheManager.write(current);
+  }
+
+  /**
+   * Récupère les expériences d'un freelance depuis le cache
+   */
+  getFreelanceExperiencesFromCache(userId: string): FreelanceExperience[] {
+    const cached = this.cacheManager.read();
+    if (!cached) {
+      return [];
+    }
+    return cached.freelanceExperiencesCache[userId] || [];
+  }
+
+  /**
+   * Récupère les formations d'un freelance depuis le cache
+   */
+  getFreelanceEducationsFromCache(userId: string): FreelanceEducation[] {
+    const cached = this.cacheManager.read();
+    if (!cached) {
+      return [];
+    }
+    return cached.freelanceEducationsCache[userId] || [];
+  }
+
+  /**
+   * Met en cache les expériences d'un freelance
+   */
+  cacheFreelanceExperiences(
+    userId: string,
+    experiences: FreelanceExperience[]
+  ): void {
+    const current = this.cacheManager.read();
+    if (!current) {
+      return;
+    }
+
+    current.freelanceExperiencesCache[userId] = experiences;
+    this.cacheManager.write(current);
+  }
+
+  /**
+   * Met en cache les formations d'un freelance
+   */
+  cacheFreelanceEducations(
+    userId: string,
+    educations: FreelanceEducation[]
+  ): void {
+    const current = this.cacheManager.read();
+    if (!current) {
+      return;
+    }
+
+    current.freelanceEducationsCache[userId] = educations;
+    this.cacheManager.write(current);
   }
 }
 

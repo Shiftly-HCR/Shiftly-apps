@@ -90,6 +90,31 @@ export async function getFreelanceExperiencesById(
 }
 
 /**
+ * Récupère les formations d'un freelance par son ID
+ */
+export async function getFreelanceEducationsById(
+  userId: string
+): Promise<FreelanceEducation[]> {
+  try {
+    const { data, error } = await supabase
+      .from("freelance_educations")
+      .select("*")
+      .eq("user_id", userId)
+      .order("start_date", { ascending: false, nullsFirst: false });
+
+    if (error) {
+      console.error("Erreur lors de la récupération des formations:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error("Erreur lors de la récupération des formations:", err);
+    return [];
+  }
+}
+
+/**
  * Met à jour le profil freelance
  */
 export async function updateFreelanceProfile(

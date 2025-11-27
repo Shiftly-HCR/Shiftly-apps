@@ -12,7 +12,6 @@ import {
   colors,
 } from "@shiftly/ui";
 import {
-  getMissionById,
   updateMission,
   uploadMissionImage,
   deleteMission,
@@ -22,7 +21,7 @@ import {
   debounce,
 } from "@shiftly/data";
 import { AppLayout } from "../../../../components/AppLayout";
-import { useRecruiterMissions } from "../../../../hooks";
+import { useRecruiterMissions, useCachedMission } from "../../../../hooks";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
@@ -52,12 +51,14 @@ export default function EditMissionPage() {
   const { refresh } = useRecruiterMissions();
   const params = useParams();
   const missionId = params.id as string;
+  const { mission: cachedMission, isLoading: isLoadingMission } =
+    useCachedMission(missionId);
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
-  const [mission, setMission] = useState<Mission | null>(null);
+  const isLoading = isLoadingMission;
+  const mission = cachedMission;
 
   // Étape 1: Infos générales
   const [title, setTitle] = useState("");
@@ -123,43 +124,27 @@ export default function EditMissionPage() {
     }
   }, [mapboxToken]);
 
-  // Charger les données de la mission
+  // Initialiser les champs avec les données de la mission (depuis le cache)
   useEffect(() => {
-    const loadMission = async () => {
-      if (!missionId) return;
+    if (!mission) return;
 
-      setIsLoading(true);
-      const missionData = await getMissionById(missionId);
-
-      if (!missionData) {
-        setError("Mission introuvable");
-        setIsLoading(false);
-        return;
-      }
-
-      // Remplir les champs avec les données existantes
-      setMission(missionData);
-      setTitle(missionData.title);
-      setDescription(missionData.description || "");
-      setSkills(missionData.skills?.join(", ") || "");
-      setAddress(missionData.address || "");
-      setCity(missionData.city || "");
-      setPostalCode(missionData.postal_code || "");
-      setLatitude(missionData.latitude || 48.8566);
-      setLongitude(missionData.longitude || 2.3522);
-      setStartDate(missionData.start_date || "");
-      setEndDate(missionData.end_date || "");
-      setStartTime(missionData.start_time || "");
-      setEndTime(missionData.end_time || "");
-      setHourlyRate(missionData.hourly_rate?.toString() || "");
-      setExistingImageUrl(missionData.image_url || "");
-      setImagePreview(missionData.image_url || "");
-
-      setIsLoading(false);
-    };
-
-    loadMission();
-  }, [missionId]);
+    // Remplir les champs avec les données existantes
+    setTitle(mission.title);
+    setDescription(mission.description || "");
+    setSkills(mission.skills?.join(", ") || "");
+    setAddress(mission.address || "");
+    setCity(mission.city || "");
+    setPostalCode(mission.postal_code || "");
+    setLatitude(mission.latitude || 48.8566);
+    setLongitude(mission.longitude || 2.3522);
+    setStartDate(mission.start_date || "");
+    setEndDate(mission.end_date || "");
+    setStartTime(mission.start_time || "");
+    setEndTime(mission.end_time || "");
+    setHourlyRate(mission.hourly_rate?.toString() || "");
+    setExistingImageUrl(mission.image_url || "");
+    setImagePreview(mission.image_url || "");
+  }, [mission]);
 
   // Effet pour déclencher le géocodage quand l'adresse change (sauf au chargement initial)
   useEffect(() => {

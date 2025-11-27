@@ -4,7 +4,8 @@ import { YStack, XStack, Text, ScrollView, Image } from "tamagui";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@shiftly/ui";
-import { getMissionById, type Mission } from "@shiftly/data";
+import { type Mission } from "@shiftly/data";
+import { useCachedMission } from "../../../hooks";
 import { AppLayout } from "../../../components/AppLayout";
 import dynamic from "next/dynamic";
 
@@ -31,21 +32,7 @@ export default function MissionDetailPage() {
   const params = useParams();
   const missionId = params.id as string;
 
-  const [mission, setMission] = useState<Mission | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadMission = async () => {
-      if (!missionId) return;
-
-      setIsLoading(true);
-      const missionData = await getMissionById(missionId);
-      setMission(missionData);
-      setIsLoading(false);
-    };
-
-    loadMission();
-  }, [missionId]);
+  const { mission, isLoading } = useCachedMission(missionId);
 
   if (isLoading) {
     return (
