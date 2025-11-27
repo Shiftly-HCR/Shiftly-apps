@@ -1,8 +1,15 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { Badge, Button, MissionCard, colors } from "@shiftly/ui";
-import { useState, useEffect } from "react";
+import {
+  Badge,
+  Button,
+  MissionCard,
+  MissionFilters,
+  type MissionFiltersState,
+  colors,
+} from "@shiftly/ui";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FiMap, FiList } from "react-icons/fi";
 import { AppLayout } from "../../components/AppLayout";
@@ -27,17 +34,40 @@ const Map = dynamic(() => import("../../components/Map"), {
   ),
 });
 
+const positionOptions = [
+  { label: "Tous les postes", value: "all" },
+  { label: "Serveur", value: "serveur" },
+  { label: "Barman", value: "barman" },
+  { label: "Chef de cuisine", value: "chef" },
+  { label: "Commis de cuisine", value: "commis" },
+  { label: "Réceptionniste", value: "receptionniste" },
+  { label: "Manager", value: "manager" },
+];
+
+const locationOptions = [
+  { label: "Partout", value: "all" },
+  { label: "Paris", value: "paris" },
+  { label: "Lyon", value: "lyon" },
+  { label: "Marseille", value: "marseille" },
+  { label: "Toulouse", value: "toulouse" },
+  { label: "Nice", value: "nice" },
+  { label: "Bordeaux", value: "bordeaux" },
+];
+
+const dateRangeOptions = [
+  { label: "Toutes les dates", value: "all" },
+  { label: "Aujourd'hui", value: "today" },
+  { label: "Cette semaine", value: "this_week" },
+  { label: "Ce mois", value: "this_month" },
+  { label: "Dans 3 mois", value: "next_3_months" },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [activeFilters, setActiveFilters] = useState([
-    "Serveur",
-    "Paris",
-    "Disponible demain",
-    "Rémunération 18€/heure",
-  ]);
+  const [filters, setFilters] = useState<MissionFiltersState>({});
 
   // Charger les missions publiées depuis Supabase
   useEffect(() => {
@@ -89,12 +119,153 @@ export default function HomePage() {
     return diffInHours <= 48;
   };
 
-  const removeFilter = (filter: string) => {
-    setActiveFilters(activeFilters.filter((f) => f !== filter));
+  // Filtrer les missions selon les critères
+  const filteredMissions = useMemo(() => {
+    return missions.filter((mission) => {
+      // Filtre par position (skills)
+      if (filters.position && filters.position !== "all") {
+        const skills = mission.skills?.join(" ").toLowerCase() || "";
+        const title = mission.title?.toLowerCase() || "";
+        if (
+          !skills.includes(filters.position.toLowerCase()) &&
+          !title.includes(filters.position.toLowerCase())
+        ) {
+          return false;
+        }
+      }
+
+      // Filtre par localisation
+      if (filters.location && filters.location !== "all") {
+        const city = mission.city?.toLowerCase() || "";
+        const address = mission.address?.toLowerCase() || "";
+        if (
+          !city.includes(filters.location.toLowerCase()) &&
+          !address.includes(filters.location.toLowerCase())
+        ) {
+          return false;
+        }
+      }
+
+      // Filtre par taux horaire
+      if (filters.hourlyRateMin && mission.hourly_rate) {
+        if (mission.hourly_rate < filters.hourlyRateMin) {
+          return false;
+        }
+      }
+      if (filters.hourlyRateMax && mission.hourly_rate) {
+        if (mission.hourly_rate > filters.hourlyRateMax) {
+          return false;
+        }
+      }
+
+      // Filtre par plage de dates
+      if (filters.dateRange && filters.dateRange !== "all" && mission.start_date) {
+        const missionDate = new Date(mission.start_date);
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        switch (filters.dateRange) {
+          case "today":
+            const today = new Date(now);
+            if (
+              missionDate.getTime() < today.getTime() ||
+              missionDate.getTime() > today.getTime() + 24 * 60 * 60 * 1000
+            ) {
+              return false;
+            }
+            break;
+          case "this_week":
+            const weekEnd = new Date(now);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+            if (missionDate.getTime() > weekEnd.getTime()) {
+              return false;
+            }
+            break;
+          case "this_month":
+            const monthEnd = new Date(now);
+            monthEnd.setMonth(monthEnd.getMonth() + 1);
+            if (missionDate.getTime() > monthEnd.getTime()) {
+              return false;
+            }
+            break;
+          case "next_3_months":
+            const threeMonthsEnd = new Date(now);
+            threeMonthsEnd.setMonth(threeMonthsEnd.getMonth() + 3);
+            if (missionDate.getTime() > threeMonthsEnd.getTime()) {
+              return false;
+            }
+            break;
+        }
+      }
+
+      // Filtre par urgent
+      if (filters.urgent && !mission.is_urgent) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [missions, filters]);
+
+  // Générer les tags de filtres actifs pour l'affichage
+  const activeFilterTags = useMemo(() => {
+    const tags: string[] = [];
+    if (filters.position && filters.position !== "all") {
+      const positionLabel =
+        positionOptions.find((opt) => opt.value === filters.position)?.label ||
+        filters.position;
+      tags.push(positionLabel);
+    }
+    if (filters.location && filters.location !== "all") {
+      const locationLabel =
+        locationOptions.find((opt) => opt.value === filters.location)?.label ||
+        filters.location;
+      tags.push(locationLabel);
+    }
+    if (filters.dateRange && filters.dateRange !== "all") {
+      const dateLabel =
+        dateRangeOptions.find((opt) => opt.value === filters.dateRange)?.label ||
+        filters.dateRange;
+      tags.push(dateLabel);
+    }
+    if (filters.hourlyRateMin || filters.hourlyRateMax) {
+      const min = filters.hourlyRateMin || 15;
+      const max = filters.hourlyRateMax || 100;
+      tags.push(`${min}€ - ${max}€ / heure`);
+    }
+    if (filters.urgent) {
+      tags.push("Urgent");
+    }
+    return tags;
+  }, [filters]);
+
+  const removeFilter = (tag: string) => {
+    // Trouver quel filtre correspond au tag
+    const positionMatch = positionOptions.find((opt) => opt.label === tag);
+    const locationMatch = locationOptions.find((opt) => opt.label === tag);
+    const dateMatch = dateRangeOptions.find((opt) => opt.label === tag);
+    const rateMatch = tag.match(/(\d+)€ - (\d+)€ \/ heure/);
+    const urgentMatch = tag === "Urgent";
+
+    if (positionMatch) {
+      setFilters({ ...filters, position: undefined });
+    } else if (locationMatch) {
+      setFilters({ ...filters, location: undefined });
+    } else if (dateMatch) {
+      setFilters({ ...filters, dateRange: undefined });
+    } else if (rateMatch) {
+      setFilters({
+        ...filters,
+        hourlyRateMin: undefined,
+        hourlyRateMax: undefined,
+      });
+    } else if (urgentMatch) {
+      setFilters({ ...filters, urgent: undefined });
+    }
   };
 
   const clearAllFilters = () => {
-    setActiveFilters([]);
+    setFilters({});
   };
 
   if (isLoading) {
@@ -119,8 +290,8 @@ export default function HomePage() {
       {/* Contenu principal */}
       <ScrollView flex={1}>
         <YStack maxWidth={1400} width="100%" alignSelf="center" padding="$6">
-          {/* Filtres actifs */}
-          {activeFilters.length > 0 && (
+          {/* Filtres actifs et vue */}
+          {activeFilterTags.length > 0 && (
             <XStack
               paddingVertical="$4"
               gap="$3"
@@ -131,9 +302,9 @@ export default function HomePage() {
                 Filtres actifs:
               </Text>
 
-              {activeFilters.map((filter) => (
+              {activeFilterTags.map((tag) => (
                 <XStack
-                  key={filter}
+                  key={tag}
                   paddingHorizontal="$3"
                   paddingVertical="$1.5"
                   backgroundColor={colors.white}
@@ -144,14 +315,14 @@ export default function HomePage() {
                   alignItems="center"
                 >
                   <Text fontSize={13} color={colors.gray900} fontWeight="500">
-                    {filter}
+                    {tag}
                   </Text>
                   <Text
                     fontSize={16}
                     color={colors.gray700}
                     cursor="pointer"
                     hoverStyle={{ color: "#EF4444" }}
-                    onPress={() => removeFilter(filter)}
+                    onPress={() => removeFilter(tag)}
                   >
                     ✕
                   </Text>
@@ -243,9 +414,16 @@ export default function HomePage() {
             </XStack>
           )}
 
-          {/* Grille de missions OU Carte */}
-          <YStack gap="$4" marginTop="$4">
-            {missions.length === 0 ? (
+          {/* Contenu principal avec filtres */}
+          <XStack gap="$6" alignItems="flex-start" marginTop="$4">
+            {/* Sidebar des filtres */}
+            <YStack flexShrink={0}>
+              <MissionFilters filters={filters} onFiltersChange={setFilters} />
+            </YStack>
+
+            {/* Grille de missions OU Carte */}
+            <YStack flex={1} gap="$4">
+              {filteredMissions.length === 0 ? (
               <YStack
                 padding="$8"
                 alignItems="center"
@@ -259,9 +437,9 @@ export default function HomePage() {
                   Revenez plus tard pour découvrir de nouvelles opportunités
                 </Text>
               </YStack>
-            ) : viewMode === "list" ? (
-              <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
-                {missions.map((mission) => (
+              ) : viewMode === "list" ? (
+                <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
+                  {filteredMissions.map((mission) => (
                   <YStack
                     key={mission.id}
                     width="calc(33.333% - 12px)"
@@ -293,28 +471,29 @@ export default function HomePage() {
                       priceUnit="/ heure"
                       image={mission.image_url}
                     />
-                  </YStack>
-                ))}
-              </XStack>
-            ) : (
-              <Map
-                latitude={48.8566}
-                longitude={2.3522}
-                zoom={11}
-                height={600}
-                markers={missions
-                  .filter((m) => m.latitude && m.longitude)
-                  .map((mission) => ({
-                    id: mission.id,
-                    latitude: mission.latitude!,
-                    longitude: mission.longitude!,
-                    title: mission.title,
-                    onClick: () => router.push(`/missions/${mission.id}`),
-                  }))}
-                interactive={true}
-              />
-            )}
-          </YStack>
+                    </YStack>
+                  ))}
+                </XStack>
+              ) : (
+                <Map
+                  latitude={48.8566}
+                  longitude={2.3522}
+                  zoom={11}
+                  height={600}
+                  markers={filteredMissions
+                    .filter((m) => m.latitude && m.longitude)
+                    .map((mission) => ({
+                      id: mission.id,
+                      latitude: mission.latitude!,
+                      longitude: mission.longitude!,
+                      title: mission.title,
+                      onClick: () => router.push(`/missions/${mission.id}`),
+                    }))}
+                  interactive={true}
+                />
+              )}
+            </YStack>
+          </XStack>
         </YStack>
       </ScrollView>
     </AppLayout>
