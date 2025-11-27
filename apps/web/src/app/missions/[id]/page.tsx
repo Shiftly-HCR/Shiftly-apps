@@ -3,7 +3,7 @@
 import { YStack, XStack, Text, ScrollView, Image } from "tamagui";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Button } from "@shiftly/ui";
+import { Button, colors } from "@shiftly/ui";
 import { type Mission } from "@shiftly/data";
 import { useCachedMission } from "../../../hooks";
 import { AppLayout } from "../../../components/AppLayout";
@@ -114,7 +114,7 @@ export default function MissionDetailPage() {
             <Text fontSize={32} fontWeight="bold" color="#000" flex={1}>
               {mission.title}
             </Text>
-            <Text fontSize={32} fontWeight="bold" color="#FF6B35">
+            <Text fontSize={32} fontWeight="bold" color={colors.shiftlyViolet}>
               {mission.hourly_rate}€/h
             </Text>
           </XStack>
@@ -195,7 +195,7 @@ export default function MissionDetailPage() {
                 {/* Dates avec icône calendrier */}
                 <XStack gap="$3" alignItems="center">
                   <YStack
-                    backgroundColor="#FFF4F0"
+                    backgroundColor={colors.shiftlyVioletLight}
                     borderRadius={8}
                     padding="$3"
                     alignItems="center"
@@ -203,7 +203,11 @@ export default function MissionDetailPage() {
                     minWidth={70}
                     minHeight={70}
                   >
-                    <Text fontSize={28} fontWeight="bold" color="#FF6B35">
+                    <Text
+                      fontSize={28}
+                      fontWeight="bold"
+                      color={colors.shiftlyViolet}
+                    >
                       {mission.start_date
                         ? new Date(mission.start_date).getDate()
                         : "17"}
@@ -384,7 +388,7 @@ export default function MissionDetailPage() {
                 <Text
                   fontSize={32}
                   fontWeight="bold"
-                  color="#FF6B35"
+                  color={colors.shiftlyViolet}
                   marginBottom="$4"
                 >
                   {mission.hourly_rate}€/h
@@ -465,7 +469,11 @@ export default function MissionDetailPage() {
                       Nom de l'établissement
                     </Text>
                     <XStack alignItems="center" gap="$1" marginTop="$1">
-                      <Text fontSize={14} color="#FF6B35" fontWeight="600">
+                      <Text
+                        fontSize={14}
+                        color={colors.shiftlyViolet}
+                        fontWeight="600"
+                      >
                         ★ 4.5
                       </Text>
                       <Text fontSize={12} color="#999">
