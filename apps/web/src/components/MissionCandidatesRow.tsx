@@ -2,6 +2,7 @@
 
 import { XStack, YStack, Text, Image } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
+import { useRouter } from "next/navigation";
 import { SimpleCheckbox } from "./SimpleCheckbox";
 import { type MissionApplicationWithProfile, type ApplicationStatus } from "@shiftly/data";
 
@@ -26,10 +27,16 @@ export function MissionCandidatesRow({
   getStatusColor,
   formatDate,
 }: MissionCandidatesRowProps) {
+  const router = useRouter();
+  
   const profileName = application.profile
     ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() ||
       "Nom non renseigné"
     : `Utilisateur ${application.user_id.substring(0, 8)}`;
+
+  const handleNameClick = () => {
+    router.push(`/profile/${application.user_id}`);
+  };
 
   const availableStatuses: ApplicationStatus[] =
     application.status === "pending"
@@ -89,7 +96,16 @@ export function MissionCandidatesRow({
           </YStack>
         )}
         <YStack>
-          <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+          <Text
+            fontSize={14}
+            fontWeight="600"
+            color={colors.shiftlyViolet}
+            cursor="pointer"
+            hoverStyle={{
+              textDecorationLine: "underline",
+            }}
+            onPress={handleNameClick}
+          >
             {profileName}
           </Text>
           <Text fontSize={12} color={colors.gray500}>

@@ -23,16 +23,8 @@ export default function FreelanceProfilePage() {
     experiences,
     educations,
     isLoading: isLoadingExperiences,
-    error: freelanceDataError,
   } = useCachedFreelanceData(freelanceId);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
-
-  // Debug logs
-  console.log("📄 ProfilePage - freelanceId:", freelanceId);
-  console.log("📄 ProfilePage - experiences:", experiences);
-  console.log("📄 ProfilePage - educations:", educations);
-  console.log("📄 ProfilePage - isLoadingExperiences:", isLoadingExperiences);
-  console.log("📄 ProfilePage - freelanceDataError:", freelanceDataError);
 
   const isLoading = isLoadingProfile || isLoadingExperiences;
 
