@@ -426,6 +426,8 @@ export default function MissionDetailPage() {
                       {applications.map((application) => {
                         const getStatusLabel = (status: ApplicationStatus) => {
                           switch (status) {
+                            case "pending":
+                              return "En attente";
                             case "applied":
                               return "Candidature reçue";
                             case "shortlisted":
@@ -443,6 +445,8 @@ export default function MissionDetailPage() {
 
                         const getStatusColor = (status: ApplicationStatus) => {
                           switch (status) {
+                            case "pending":
+                              return "#3B82F6";
                             case "applied":
                               return "#3B82F6";
                             case "shortlisted":
@@ -469,6 +473,8 @@ export default function MissionDetailPage() {
 
                         const getAvailableStatuses = (currentStatus: ApplicationStatus): ApplicationStatus[] => {
                           switch (currentStatus) {
+                            case "pending":
+                              return ["shortlisted", "rejected", "accepted"];
                             case "applied":
                               return ["shortlisted", "rejected"];
                             case "shortlisted":
@@ -561,33 +567,44 @@ export default function MissionDetailPage() {
                               </YStack>
                             )}
 
-                            {availableStatuses.length > 0 && (
-                              <XStack gap="$2" flexWrap="wrap">
-                                {availableStatuses.map((status) => (
-                                  <Button
-                                    key={status}
-                                    variant="outline"
-                                    size="sm"
-                                    onPress={() => handleStatusChange(status)}
-                                    disabled={isUpdatingStatus}
-                                    backgroundColor={
-                                      status === "accepted"
-                                        ? "#10B981"
-                                        : status === "rejected"
-                                        ? "#EF4444"
-                                        : undefined
-                                    }
-                                    color={
-                                      status === "accepted" || status === "rejected"
-                                        ? "white"
-                                        : undefined
-                                    }
-                                  >
-                                    {getStatusLabel(status)}
-                                  </Button>
-                                ))}
-                              </XStack>
-                            )}
+                            {(() => {
+                              const availableStatuses: ApplicationStatus[] =
+                                application.status === "pending"
+                                  ? ["shortlisted", "rejected", "accepted"]
+                                  : application.status === "applied"
+                                    ? ["shortlisted", "rejected"]
+                                    : application.status === "shortlisted"
+                                      ? ["accepted", "rejected"]
+                                      : [];
+                              
+                              return availableStatuses.length > 0 ? (
+                                <XStack gap="$2" flexWrap="wrap">
+                                  {availableStatuses.map((status) => (
+                                    <Button
+                                      key={status}
+                                      variant="outline"
+                                      size="sm"
+                                      onPress={() => handleStatusChange(status)}
+                                      disabled={isUpdatingStatus}
+                                      backgroundColor={
+                                        status === "accepted"
+                                          ? "#10B981"
+                                          : status === "rejected"
+                                            ? "#EF4444"
+                                            : undefined
+                                      }
+                                      color={
+                                        status === "accepted" || status === "rejected"
+                                          ? "white"
+                                          : undefined
+                                      }
+                                    >
+                                      {getStatusLabel(status)}
+                                    </Button>
+                                  ))}
+                                </XStack>
+                              ) : null;
+                            })()}
 
                             <Text fontSize={11} color="#999">
                               Candidature envoyée le{" "}

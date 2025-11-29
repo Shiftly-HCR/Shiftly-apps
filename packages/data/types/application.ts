@@ -6,7 +6,8 @@
  * Statuts possibles d'une candidature
  */
 export type ApplicationStatus =
-  | "applied" // Candidature envoyée
+  | "pending" // En attente de traitement par le recruteur
+  | "applied" // Candidature envoyée (déprécié, utiliser "pending")
   | "shortlisted" // Présélectionné
   | "rejected" // Refusé
   | "accepted" // Accepté
@@ -74,4 +75,3 @@ export interface UpdateApplicationParams {
   status?: ApplicationStatus;
   cover_letter?: string;
 }
-

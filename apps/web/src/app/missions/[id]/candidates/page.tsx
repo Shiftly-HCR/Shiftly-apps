@@ -48,6 +48,8 @@ export default function MissionCandidatesPage() {
 
   const getStatusLabel = (status: ApplicationStatus) => {
     switch (status) {
+      case "pending":
+        return "En attente";
       case "applied":
         return "Reçu";
       case "shortlisted":
@@ -65,6 +67,8 @@ export default function MissionCandidatesPage() {
 
   const getStatusColor = (status: ApplicationStatus) => {
     switch (status) {
+      case "pending":
+        return colors.shiftlyViolet;
       case "applied":
         return colors.shiftlyViolet;
       case "shortlisted":

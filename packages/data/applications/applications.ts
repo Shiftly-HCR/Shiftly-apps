@@ -44,7 +44,7 @@ export async function createApplication(
       .insert({
         mission_id: params.mission_id,
         user_id: user.id,
-        status: "applied",
+        status: "pending",
         cover_letter: params.cover_letter || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

@@ -32,11 +32,13 @@ export function MissionCandidatesRow({
     : `Utilisateur ${application.user_id.substring(0, 8)}`;
 
   const availableStatuses: ApplicationStatus[] =
-    application.status === "applied"
-      ? ["shortlisted", "rejected"]
-      : application.status === "shortlisted"
-        ? ["accepted", "rejected"]
-        : [];
+    application.status === "pending"
+      ? ["shortlisted", "rejected", "accepted"]
+      : application.status === "applied"
+        ? ["shortlisted", "rejected"]
+        : application.status === "shortlisted"
+          ? ["accepted", "rejected"]
+          : [];
 
   return (
     <XStack

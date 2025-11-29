@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.mission_applications (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   
   -- Statut de la candidature
-  status TEXT NOT NULL DEFAULT 'applied' CHECK (status IN ('applied', 'shortlisted', 'rejected', 'accepted', 'withdrawn')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'applied', 'shortlisted', 'rejected', 'accepted', 'withdrawn')),
   
   -- Message de motivation optionnel
   cover_letter TEXT,
@@ -108,6 +108,6 @@ EXECUTE FUNCTION update_mission_applications_updated_at();
 COMMENT ON TABLE public.mission_applications IS 'Table contenant toutes les candidatures des freelances aux missions';
 COMMENT ON COLUMN public.mission_applications.mission_id IS 'ID de la mission à laquelle le freelance postule';
 COMMENT ON COLUMN public.mission_applications.user_id IS 'ID du freelance qui postule';
-COMMENT ON COLUMN public.mission_applications.status IS 'Statut de la candidature: applied (candidature envoyée), shortlisted (présélectionné), rejected (refusé), accepted (accepté), withdrawn (retiré)';
+COMMENT ON COLUMN public.mission_applications.status IS 'Statut de la candidature: pending (en attente de traitement), applied (candidature envoyée - déprécié), shortlisted (présélectionné), rejected (refusé), accepted (accepté), withdrawn (retiré)';
 COMMENT ON COLUMN public.mission_applications.cover_letter IS 'Message de motivation optionnel du freelance';
 

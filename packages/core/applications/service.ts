@@ -262,8 +262,11 @@ function getValidStatusTransitions(
   currentStatus: ApplicationStatus
 ): ApplicationStatus[] {
   switch (currentStatus) {
+    case "pending":
+      // Depuis "pending", le recruteur peut passer à shortlisted, rejected, ou accepted
+      return ["shortlisted", "rejected", "accepted"];
     case "applied":
-      // Depuis "applied", on peut aller vers shortlisted, rejected, ou withdrawn
+      // Depuis "applied" (ancien statut, pour compatibilité), on peut aller vers shortlisted, rejected, ou withdrawn
       return ["shortlisted", "rejected", "withdrawn"];
     case "shortlisted":
       // Depuis "shortlisted", on peut aller vers accepted, rejected, ou withdrawn

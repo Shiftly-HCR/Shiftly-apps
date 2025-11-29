@@ -74,7 +74,7 @@ export function MissionCandidatesFilters({
 
       {/* Filtres de statut */}
       <XStack gap="$2" flexWrap="wrap">
-        {(["all", "applied", "shortlisted", "accepted"] as const).map(
+        {(["all", "pending", "shortlisted", "accepted"] as const).map(
           (filter) => (
             <Button
               key={filter}
@@ -84,8 +84,8 @@ export function MissionCandidatesFilters({
             >
               {filter === "all"
                 ? "Tous"
-                : filter === "applied"
-                  ? "Reçu"
+                : filter === "pending"
+                  ? "En attente"
                   : filter === "shortlisted"
                     ? "Shortlist"
                     : "Confirmés"}
