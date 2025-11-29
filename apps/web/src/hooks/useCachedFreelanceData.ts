@@ -41,19 +41,17 @@ export function useCachedFreelanceData(userId: string | null) {
       const cachedExperiences = getFreelanceExperiencesFromCache(userId);
       const cachedEducations = getFreelanceEducationsFromCache(userId);
 
-      if (cachedExperiences.length > 0 || cachedEducations.length > 0) {
-        setExperiences(cachedExperiences);
-        setEducations(cachedEducations);
-        setIsLoading(false);
-        return;
-      }
-
-      // 2. Si pas dans le cache, charger depuis Supabase
+      // Toujours charger depuis Supabase pour avoir les données à jour
+      // Le cache est utilisé comme fallback si la requête échoue
       try {
         const [loadedExperiences, loadedEducations] = await Promise.all([
           getFreelanceExperiencesById(userId),
           getFreelanceEducationsById(userId),
         ]);
+
+        console.log("📊 Données chargées pour userId:", userId);
+        console.log("📊 Expériences:", loadedExperiences);
+        console.log("📊 Formations:", loadedEducations);
 
         setExperiences(loadedExperiences);
         setEducations(loadedEducations);
@@ -61,11 +59,22 @@ export function useCachedFreelanceData(userId: string | null) {
         // Mettre en cache
         if (loadedExperiences.length > 0) {
           cacheFreelanceExperiences(userId, loadedExperiences);
+        } else {
+          // Mettre en cache même si vide pour éviter de recharger inutilement
+          cacheFreelanceExperiences(userId, []);
         }
         if (loadedEducations.length > 0) {
           cacheFreelanceEducations(userId, loadedEducations);
+        } else {
+          // Mettre en cache même si vide pour éviter de recharger inutilement
+          cacheFreelanceEducations(userId, []);
         }
       } catch (err: any) {
+        // En cas d'erreur, utiliser le cache s'il existe
+        if (cachedExperiences.length > 0 || cachedEducations.length > 0) {
+          setExperiences(cachedExperiences);
+          setEducations(cachedEducations);
+        }
         setError(err.message || "Erreur lors du chargement des données");
       } finally {
         setIsLoading(false);

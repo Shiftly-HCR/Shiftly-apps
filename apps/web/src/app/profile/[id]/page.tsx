@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, Badge, colors } from "@shiftly/ui";
 import { useRouter, useParams } from "next/navigation";
 import { AppLayout } from "../../../components/AppLayout";
 import { FiCheck, FiMessageCircle, FiBookmark } from "react-icons/fi";
 import { useCachedProfile, useCachedFreelanceData } from "../../../hooks";
+import { FreelanceExperiences } from "../../../components/FreelanceExperiences";
+import { FreelanceEducations } from "../../../components/FreelanceEducations";
 
 type TabType = "overview" | "availability" | "reviews" | "documents";
 
@@ -16,9 +19,20 @@ export default function FreelanceProfilePage() {
 
   const { profile, isLoading: isLoadingProfile } =
     useCachedProfile(freelanceId);
-  const { experiences, isLoading: isLoadingExperiences } =
-    useCachedFreelanceData(freelanceId);
+  const {
+    experiences,
+    educations,
+    isLoading: isLoadingExperiences,
+    error: freelanceDataError,
+  } = useCachedFreelanceData(freelanceId);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
+
+  // Debug logs
+  console.log("📄 ProfilePage - freelanceId:", freelanceId);
+  console.log("📄 ProfilePage - experiences:", experiences);
+  console.log("📄 ProfilePage - educations:", educations);
+  console.log("📄 ProfilePage - isLoadingExperiences:", isLoadingExperiences);
+  console.log("📄 ProfilePage - freelanceDataError:", freelanceDataError);
 
   const isLoading = isLoadingProfile || isLoadingExperiences;
 
@@ -60,14 +74,6 @@ export default function FreelanceProfilePage() {
     const firstName = profile.first_name || "";
     const lastName = profile.last_name || "";
     return `${firstName} ${lastName}`.trim() || "Freelance";
-  };
-
-  const formatDate = (date?: string) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("fr-FR", {
-      year: "numeric",
-      month: "short",
-    });
   };
 
   const tabs = [
@@ -272,85 +278,10 @@ export default function FreelanceProfilePage() {
                   )}
 
                   {/* Expériences */}
-                  {experiences.length > 0 && (
-                    <YStack gap="$3">
-                      <Text
-                        fontSize={20}
-                        fontWeight="700"
-                        color={colors.gray900}
-                      >
-                        Expériences
-                      </Text>
-                      <YStack gap="$4" position="relative" paddingLeft="$4">
-                        {/* Ligne verticale */}
-                        <YStack
-                          position="absolute"
-                          left={8}
-                          top={0}
-                          bottom={0}
-                          width={2}
-                          backgroundColor={colors.shiftlyViolet}
-                        />
+                  <FreelanceExperiences experiences={experiences} />
 
-                        {experiences.map((exp, index) => (
-                          <XStack
-                            key={exp.id || index}
-                            gap="$3"
-                            alignItems="flex-start"
-                          >
-                            {/* Icône */}
-                            <YStack
-                              width={16}
-                              height={16}
-                              borderRadius={8}
-                              backgroundColor={colors.shiftlyViolet}
-                              borderWidth={2}
-                              borderColor={colors.white}
-                              marginTop={2}
-                              flexShrink={0}
-                              zIndex={10}
-                            />
-
-                            {/* Contenu */}
-                            <YStack flex={1} gap="$1">
-                              <Text
-                                fontSize={18}
-                                fontWeight="600"
-                                color={colors.gray900}
-                              >
-                                {exp.title}
-                              </Text>
-                              <Text
-                                fontSize={16}
-                                color={colors.gray700}
-                                fontWeight="500"
-                              >
-                                {exp.company}
-                                {exp.location && `, ${exp.location}`}
-                              </Text>
-                              <Text fontSize={14} color={colors.gray500}>
-                                {formatDate(exp.start_date)}
-                                {exp.end_date
-                                  ? ` - ${formatDate(exp.end_date)}`
-                                  : exp.is_current
-                                    ? " - Aujourd'hui"
-                                    : ""}
-                              </Text>
-                              {exp.description && (
-                                <Text
-                                  fontSize={14}
-                                  color={colors.gray700}
-                                  marginTop="$2"
-                                >
-                                  {exp.description}
-                                </Text>
-                              )}
-                            </YStack>
-                          </XStack>
-                        ))}
-                      </YStack>
-                    </YStack>
-                  )}
+                  {/* Formations */}
+                  <FreelanceEducations educations={educations || []} />
                 </YStack>
               )}
 

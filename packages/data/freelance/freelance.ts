@@ -71,6 +71,7 @@ export async function getFreelanceExperiencesById(
   userId: string
 ): Promise<FreelanceExperience[]> {
   try {
+    console.log("🔍 getFreelanceExperiencesById - userId:", userId);
     const { data, error } = await supabase
       .from("freelance_experiences")
       .select("*")
@@ -78,13 +79,14 @@ export async function getFreelanceExperiencesById(
       .order("start_date", { ascending: false, nullsFirst: false });
 
     if (error) {
-      console.error("Erreur lors de la récupération des expériences:", error);
+      console.error("❌ Erreur lors de la récupération des expériences:", error);
       return [];
     }
 
+    console.log("✅ getFreelanceExperiencesById - données récupérées:", data);
     return data || [];
   } catch (err) {
-    console.error("Erreur lors de la récupération des expériences:", err);
+    console.error("❌ Erreur lors de la récupération des expériences:", err);
     return [];
   }
 }
@@ -96,6 +98,7 @@ export async function getFreelanceEducationsById(
   userId: string
 ): Promise<FreelanceEducation[]> {
   try {
+    console.log("🔍 getFreelanceEducationsById - userId:", userId);
     const { data, error } = await supabase
       .from("freelance_educations")
       .select("*")
@@ -103,13 +106,14 @@ export async function getFreelanceEducationsById(
       .order("start_date", { ascending: false, nullsFirst: false });
 
     if (error) {
-      console.error("Erreur lors de la récupération des formations:", error);
+      console.error("❌ Erreur lors de la récupération des formations:", error);
       return [];
     }
 
+    console.log("✅ getFreelanceEducationsById - données récupérées:", data);
     return data || [];
   } catch (err) {
-    console.error("Erreur lors de la récupération des formations:", err);
+    console.error("❌ Erreur lors de la récupération des formations:", err);
     return [];
   }
 }
