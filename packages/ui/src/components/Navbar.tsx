@@ -1,5 +1,6 @@
 import React from "react";
 import { XStack, YStack, Text, Avatar, Image } from "tamagui";
+import { LogOut } from "lucide-react";
 import { SearchBar } from "./SearchBar";
 import { colors } from "../theme";
 
@@ -13,6 +14,7 @@ interface NavbarProps {
   onMissionsClick?: () => void;
   onSubscriptionClick?: () => void;
   onFreelanceClick?: () => void;
+  onMessagingClick?: () => void;
   onLogoutClick?: () => void;
 }
 
@@ -26,6 +28,7 @@ export function Navbar({
   onMissionsClick,
   onSubscriptionClick,
   onFreelanceClick,
+  onMessagingClick,
   onLogoutClick,
 }: NavbarProps) {
   const handleHomeClick = () => {
@@ -137,20 +140,18 @@ export function Navbar({
           >
             Freelance
           </Text>
-          {onLogoutClick && (
-            <Text
-              fontSize={14}
-              fontWeight="600"
-              color={colors.gray900}
-              cursor="pointer"
-              hoverStyle={{
-                color: "#EF4444",
-              }}
-              onPress={onLogoutClick}
-            >
-              Déconnexion
-            </Text>
-          )}
+          <Text
+            fontSize={14}
+            fontWeight="600"
+            color={colors.gray900}
+            cursor="pointer"
+            hoverStyle={{
+              color: colors.shiftlyViolet,
+            }}
+            onPress={onMessagingClick}
+          >
+            Messagerie
+          </Text>
 
           {/* Avatar utilisateur */}
           <XStack
@@ -179,6 +180,18 @@ export function Navbar({
               )}
             </Avatar>
           </XStack>
+
+          {/* Icône de déconnexion */}
+          {onLogoutClick && (
+            <XStack
+              cursor="pointer"
+              hoverStyle={{ opacity: 0.8 }}
+              onPress={onLogoutClick}
+              padding="$2"
+            >
+              <LogOut size={20} color="#EF4444" />
+            </XStack>
+          )}
         </XStack>
       </XStack>
     </YStack>
