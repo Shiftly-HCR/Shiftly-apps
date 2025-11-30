@@ -5,9 +5,11 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button, colors } from "@shiftly/ui";
 import { type Mission } from "@shiftly/data";
-import { useCachedMission, useApplyToMission, useCheckApplication, useCurrentProfile, useMissionApplications, useUpdateApplicationStatus } from "../../../hooks";
+import { useCachedMission, useApplyToMission, useCheckApplication, useCurrentProfile, useMissionApplications, useUpdateApplicationStatus, useUserApplications } from "../../../hooks";
+import { useMissionChat } from "../../../hooks/useMissionChat";
 import type { ApplicationStatus } from "@shiftly/data";
 import { AppLayout } from "../../../components/AppLayout";
+import { ChatThread, MessageInput } from "../../../components/chat";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
@@ -46,7 +48,28 @@ export default function MissionDetailPage() {
   );
   const { updateStatus, isLoading: isUpdatingStatus } = useUpdateApplicationStatus();
   
+  // Pour les freelances : récupérer leurs candidatures pour vérifier le statut
+  const { applications: userApplications } = useUserApplications();
+  const freelanceApplication = userApplications.find(app => app.mission_id === missionId);
+  const isFreelanceAccepted = freelanceApplication?.status === "accepted";
+  
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [selectedFreelanceId, setSelectedFreelanceId] = useState<string | null>(null);
+  
+  // Déterminer le freelance avec qui chatter (pour recruteur) ou utiliser l'ID du freelance connecté
+  const chatFreelanceId = isRecruiter && isMissionOwner 
+    ? selectedFreelanceId || (applications.find(app => app.status === "accepted")?.user_id || null)
+    : (profile?.role === "freelance" && isFreelanceAccepted ? profile.id : null);
+  
+  // Vérifier si le freelance peut chatter (doit être accepté)
+  const canFreelanceChat = profile?.role === "freelance" && isFreelanceAccepted;
+  
+  // Initialiser le chat si les conditions sont remplies
+  const chat = useMissionChat(
+    missionId && (isRecruiter || canFreelanceChat) ? missionId : null,
+    mission?.recruiter_id || null,
+    chatFreelanceId
+  );
 
   // Gérer l'affichage du message de succès
   useEffect(() => {
@@ -619,6 +642,161 @@ export default function MissionDetailPage() {
                           </YStack>
                         );
                       })}
+                    </YStack>
+                  )}
+                </YStack>
+              )}
+
+              {/* Section Messagerie pour les recruteurs */}
+              {isRecruiter && isMissionOwner && (
+                <YStack
+                  backgroundColor="white"
+                  borderRadius={12}
+                  padding="$5"
+                  shadowColor="#000"
+                  shadowOffset={{ width: 0, height: 2 }}
+                  shadowOpacity={0.1}
+                  shadowRadius={8}
+                  gap="$4"
+                >
+                  <Text fontSize={18} fontWeight="bold" color="#000">
+                    Messagerie
+                  </Text>
+                  
+                  {/* Liste des freelances acceptés pour chatter */}
+                  {applications.filter(app => app.status === "accepted").length > 0 ? (
+                    <YStack gap="$3">
+                      {applications
+                        .filter(app => app.status === "accepted")
+                        .map((application) => {
+                          const profileName = application.profile
+                            ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() || "Nom non renseigné"
+                            : "Utilisateur inconnu";
+                          const isSelected = selectedFreelanceId === application.user_id;
+
+                          return (
+                            <Button
+                              key={application.id}
+                              variant={isSelected ? "primary" : "outline"}
+                              size="sm"
+                              onPress={() => setSelectedFreelanceId(application.user_id)}
+                            >
+                              💬 {profileName}
+                            </Button>
+                          );
+                        })}
+                    </YStack>
+                  ) : (
+                    <Text fontSize={14} color="#666">
+                      Aucun freelance accepté pour le moment
+                    </Text>
+                  )}
+
+                  {/* Chat avec le freelance sélectionné */}
+                  {selectedFreelanceId && chat.canAccess && (
+                    <YStack
+                      borderWidth={1}
+                      borderColor="#E5E7EB"
+                      borderRadius={8}
+                      height={500}
+                      overflow="hidden"
+                      marginTop="$3"
+                    >
+                      <YStack
+                        backgroundColor="#F9FAFB"
+                        padding="$3"
+                        borderBottomWidth={1}
+                        borderBottomColor="#E5E7EB"
+                      >
+                        <Text fontSize={14} fontWeight="600" color="#000">
+                          Conversation avec {chat.senderNames.get(selectedFreelanceId) || "Freelance"}
+                        </Text>
+                      </YStack>
+                      
+                      <ChatThread
+                        messages={chat.messages}
+                        currentUserId={chat.currentUserId || ""}
+                        senderNames={chat.senderNames}
+                        isLoading={chat.isLoading}
+                      />
+                      
+                      <MessageInput
+                        onSend={async (content) => {
+                          const success = await chat.sendMessage(content);
+                          if (success) {
+                            chat.markAsRead();
+                          }
+                        }}
+                        isSending={chat.isSending}
+                      />
+                    </YStack>
+                  )}
+                </YStack>
+              )}
+
+              {/* Section Messagerie pour les freelances acceptés */}
+              {profile?.role === "freelance" && canFreelanceChat && mission && (
+                <YStack
+                  backgroundColor="white"
+                  borderRadius={12}
+                  padding="$5"
+                  shadowColor="#000"
+                  shadowOffset={{ width: 0, height: 2 }}
+                  shadowOpacity={0.1}
+                  shadowRadius={8}
+                  gap="$4"
+                >
+                  <Text fontSize={18} fontWeight="bold" color="#000">
+                    Messagerie
+                  </Text>
+                  
+                  {chat.canAccess ? (
+                    <YStack
+                      borderWidth={1}
+                      borderColor="#E5E7EB"
+                      borderRadius={8}
+                      height={500}
+                      overflow="hidden"
+                    >
+                      <YStack
+                        backgroundColor="#F9FAFB"
+                        padding="$3"
+                        borderBottomWidth={1}
+                        borderBottomColor="#E5E7EB"
+                      >
+                        <Text fontSize={14} fontWeight="600" color="#000">
+                          Conversation avec {chat.senderNames.get(mission.recruiter_id) || "Recruteur"}
+                        </Text>
+                      </YStack>
+                      
+                      <ChatThread
+                        messages={chat.messages}
+                        currentUserId={chat.currentUserId || ""}
+                        senderNames={chat.senderNames}
+                        isLoading={chat.isLoading}
+                      />
+                      
+                      <MessageInput
+                        onSend={async (content) => {
+                          const success = await chat.sendMessage(content);
+                          if (success) {
+                            chat.markAsRead();
+                          }
+                        }}
+                        isSending={chat.isSending}
+                      />
+                    </YStack>
+                  ) : chat.isLoading ? (
+                    <YStack padding="$4" alignItems="center">
+                      <Text fontSize={14} color="#666">
+                        Initialisation de la conversation...
+                      </Text>
+                    </YStack>
+                  ) : (
+                    <YStack padding="$4" alignItems="center" gap="$2">
+                      <Text fontSize={14} color="#666">
+                        {chat.error || "Impossible d'accéder à la conversation"}
+                      </Text>
                     </YStack>
                   )}
                 </YStack>

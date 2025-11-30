@@ -7,3 +7,5 @@ export * from "./freelance";
 export * from "./types/profile";
 export * from "./applications";
 export * from "./types/application";
+export * from "./messages";
+export * from "./types/message";

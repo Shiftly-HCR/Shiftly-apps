@@ -11,4 +11,5 @@ export * from "./useMissionApplications";
 export * from "./useUserApplications";
 export * from "./useUpdateApplicationStatus";
 export * from "./useCheckApplication";
+export * from "./useMissionChat";
 
