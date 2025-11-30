@@ -56,12 +56,12 @@ export function Navbar({
     >
       <XStack
         alignItems="center"
-        gap="$6"
         maxWidth={1400}
         width="100%"
         alignSelf="center"
+        justifyContent="space-between"
       >
-        {/* Logo */}
+        {/* Logo - Tout à gauche */}
         <XStack
           alignItems="center"
           gap="$2"
@@ -81,8 +81,13 @@ export function Navbar({
           </Text>
         </XStack>
 
-        {/* Barre de recherche */}
-        <YStack flex={1} maxWidth={600}>
+        {/* Barre de recherche - Au centre */}
+        <YStack
+          flex={1}
+          maxWidth={600}
+          alignItems="center"
+          justifyContent="center"
+        >
           <SearchBar
             value={searchValue}
             onChangeText={onSearch}
@@ -90,7 +95,7 @@ export function Navbar({
           />
         </YStack>
 
-        {/* Menu navigation */}
+        {/* Menu navigation + Avatar + Logout - Tout à droite */}
         <XStack alignItems="center" gap="$5" flexShrink={0}>
           <Text
             fontSize={14}
