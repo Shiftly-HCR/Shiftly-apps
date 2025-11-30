@@ -1,15 +1,14 @@
 "use client";
 
-import { YStack, XStack, Text, ScrollView } from "tamagui";
+import { YStack, XStack, Text } from "tamagui";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, colors } from "@shiftly/ui";
+import { colors } from "@shiftly/ui";
 import { AppLayout } from "../../components/AppLayout";
 import { listUserConversations, useChat } from "@shiftly/data";
 import type { ConversationWithDetails } from "@shiftly/data";
-import { ChatThread, MessageInput } from "../../components/chat";
+import { ConversationsList, ConversationView } from "../../components/chat";
 import { useCurrentProfile } from "../../hooks";
-import { getProfileById } from "@shiftly/data";
 
 export default function MessageriePage() {
   const router = useRouter();
@@ -156,176 +155,29 @@ export default function MessageriePage() {
       <YStack flex={1} backgroundColor={colors.backgroundLight}>
         <XStack flex={1} height="100%">
           {/* Liste des conversations */}
-          <YStack
-            width={350}
-            borderRightWidth={1}
-            borderRightColor={colors.gray200}
-            backgroundColor={colors.white}
-            $sm={{ width: "100%", borderRightWidth: 0 }}
-          >
-            {/* En-tête */}
-            <YStack
-              padding="$4"
-              borderBottomWidth={1}
-              borderBottomColor={colors.gray200}
-            >
-              <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-                Messagerie
-              </Text>
-            </YStack>
-
-            {/* Liste */}
-            <ScrollView flex={1}>
-              {isLoadingConversations ? (
-                <YStack padding="$4" alignItems="center">
-                  <Text fontSize={14} color={colors.gray700}>
-                    Chargement...
-                  </Text>
-                </YStack>
-              ) : conversations.length === 0 ? (
-                <YStack padding="$4" alignItems="center" gap="$2">
-                  <Text fontSize={14} color={colors.gray700} textAlign="center">
-                    Aucune conversation pour le moment
-                  </Text>
-                  <Text fontSize={12} color={colors.gray500} textAlign="center">
-                    Les conversations apparaîtront ici une fois que vous aurez
-                    commencé à échanger avec quelqu'un
-                  </Text>
-                </YStack>
-              ) : (
-                <YStack>
-                  {conversations.map((conversation) => {
-                    const isSelected =
-                      conversation.id === selectedConversationId;
-                    const otherName = getOtherParticipantName(conversation);
-                    const lastMessage = conversation.last_message;
-
-                    return (
-                      <XStack
-                        key={conversation.id}
-                        padding="$4"
-                        borderBottomWidth={1}
-                        borderBottomColor={colors.gray200}
-                        backgroundColor={
-                          isSelected ? colors.gray050 : "transparent"
-                        }
-                        cursor="pointer"
-                        hoverStyle={{
-                          backgroundColor: colors.gray050,
-                        }}
-                        onPress={() =>
-                          setSelectedConversationId(conversation.id)
-                        }
-                      >
-                        <YStack flex={1} gap="$1">
-                          <XStack
-                            justifyContent="space-between"
-                            alignItems="center"
-                          >
-                            <Text
-                              fontSize={14}
-                              fontWeight="600"
-                              color={colors.gray900}
-                            >
-                              {otherName}
-                            </Text>
-                            {lastMessage && (
-                              <Text fontSize={11} color={colors.gray500}>
-                                {formatLastMessageTime(lastMessage.created_at)}
-                              </Text>
-                            )}
-                          </XStack>
-                          {conversation.mission && (
-                            <Text fontSize={12} color={colors.gray700}>
-                              {conversation.mission.title}
-                            </Text>
-                          )}
-                          {lastMessage && (
-                            <Text
-                              fontSize={12}
-                              color={colors.gray700}
-                              numberOfLines={1}
-                            >
-                              {lastMessage.content}
-                            </Text>
-                          )}
-                          {conversation.unread_count &&
-                            conversation.unread_count > 0 && (
-                              <XStack
-                                alignSelf="flex-start"
-                                backgroundColor={colors.shiftlyViolet}
-                                borderRadius={10}
-                                paddingHorizontal="$2"
-                                paddingVertical="$1"
-                              >
-                                <Text
-                                  fontSize={10}
-                                  fontWeight="600"
-                                  color={colors.white}
-                                >
-                                  {conversation.unread_count}
-                                </Text>
-                              </XStack>
-                            )}
-                        </YStack>
-                      </XStack>
-                    );
-                  })}
-                </YStack>
-              )}
-            </ScrollView>
-          </YStack>
+          <ConversationsList
+            conversations={conversations}
+            selectedConversationId={selectedConversationId}
+            onSelectConversation={setSelectedConversationId}
+            getOtherParticipantName={getOtherParticipantName}
+            formatTime={formatLastMessageTime}
+            isLoading={isLoadingConversations}
+          />
 
           {/* Conversation sélectionnée */}
           {selectedConversationId && selectedConversation ? (
-            <YStack flex={1} backgroundColor={colors.white}>
-              {/* En-tête de la conversation */}
-              <YStack
-                padding="$4"
-                borderBottomWidth={1}
-                borderBottomColor={colors.gray200}
-                backgroundColor={colors.white}
-              >
-                <XStack alignItems="center" justifyContent="space-between">
-                  <YStack>
-                    <Text fontSize={16} fontWeight="600" color={colors.gray900}>
-                      {getOtherParticipantName(selectedConversation)}
-                    </Text>
-                    {selectedConversation.mission && (
-                      <Text fontSize={12} color={colors.gray700}>
-                        {selectedConversation.mission.title}
-                      </Text>
-                    )}
-                  </YStack>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onPress={() => setSelectedConversationId(null)}
-                  >
-                    Fermer
-                  </Button>
-                </XStack>
-              </YStack>
-
-              {/* Messages */}
-              <ChatThread
-                messages={chat.messages}
-                currentUserId={profile?.id || ""}
-                senderNames={senderNames}
-                isLoading={chat.isLoading}
-              />
-
-              {/* Input */}
-              <MessageInput
-                onSend={async (content) => {
-                  const success = await chat.sendMessage(content);
-                  if (success) {
-                    chat.markAsRead();
-                  }
-                }}
-                isSending={chat.isSending}
-              />
-            </YStack>
+            <ConversationView
+              conversation={selectedConversation}
+              messages={chat.messages}
+              currentUserId={profile?.id || ""}
+              senderNames={senderNames}
+              isLoading={chat.isLoading}
+              isSending={chat.isSending}
+              onSendMessage={chat.sendMessage}
+              onMarkAsRead={chat.markAsRead}
+              onClose={() => setSelectedConversationId(null)}
+              getOtherParticipantName={getOtherParticipantName}
+            />
           ) : (
             <YStack
               flex={1}
