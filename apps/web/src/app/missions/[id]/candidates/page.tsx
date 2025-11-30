@@ -282,6 +282,8 @@ export default function MissionCandidatesPage() {
                   getStatusLabel={getStatusLabel}
                   getStatusColor={getStatusColor}
                   formatDate={formatDate}
+                  missionId={missionId}
+                  recruiterId={mission?.recruiter_id}
                 />
               )}
             </YStack>

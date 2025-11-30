@@ -14,6 +14,8 @@ interface MissionCandidatesListProps {
   getStatusLabel: (status: ApplicationStatus) => string;
   getStatusColor: (status: ApplicationStatus) => string;
   formatDate: (dateString?: string) => string;
+  missionId?: string;
+  recruiterId?: string;
 }
 
 export function MissionCandidatesList({
@@ -25,6 +27,8 @@ export function MissionCandidatesList({
   getStatusLabel,
   getStatusColor,
   formatDate,
+  missionId,
+  recruiterId,
 }: MissionCandidatesListProps) {
   if (applications.length === 0) {
     return (
@@ -77,7 +81,7 @@ export function MissionCandidatesList({
             NOTE
           </Text>
         </XStack>
-        <XStack width={80} alignItems="center">
+        <XStack width={120} alignItems="center">
           <Text fontSize={14} fontWeight="600" color={colors.gray700}>
             ACTIONS
           </Text>
@@ -99,6 +103,8 @@ export function MissionCandidatesList({
             getStatusLabel={getStatusLabel}
             getStatusColor={getStatusColor}
             formatDate={formatDate}
+            missionId={missionId}
+            recruiterId={recruiterId}
           />
         ))}
       </YStack>

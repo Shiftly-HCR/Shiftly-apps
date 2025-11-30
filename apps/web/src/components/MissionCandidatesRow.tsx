@@ -3,8 +3,10 @@
 import { XStack, YStack, Text, Image } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
+import { FiMessageCircle } from "react-icons/fi";
 import { SimpleCheckbox } from "./SimpleCheckbox";
 import { type MissionApplicationWithProfile, type ApplicationStatus } from "@shiftly/data";
+import { openConversation } from "../utils/chatService";
 
 interface MissionCandidatesRowProps {
   application: MissionApplicationWithProfile;
@@ -15,6 +17,8 @@ interface MissionCandidatesRowProps {
   getStatusLabel: (status: ApplicationStatus) => string;
   getStatusColor: (status: ApplicationStatus) => string;
   formatDate: (dateString?: string) => string;
+  missionId?: string;
+  recruiterId?: string;
 }
 
 export function MissionCandidatesRow({
@@ -26,6 +30,8 @@ export function MissionCandidatesRow({
   getStatusLabel,
   getStatusColor,
   formatDate,
+  missionId,
+  recruiterId,
 }: MissionCandidatesRowProps) {
   const router = useRouter();
   
@@ -141,7 +147,35 @@ export function MissionCandidatesRow({
       </XStack>
 
       {/* Actions */}
-      <XStack width={80} alignItems="center" justifyContent="flex-end">
+      <XStack width={120} alignItems="center" justifyContent="flex-end" gap="$2">
+        {/* Bouton de messagerie */}
+        {missionId && recruiterId && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={async () => {
+              const result = await openConversation(
+                {
+                  missionId,
+                  recruiterId,
+                  freelanceId: application.user_id,
+                },
+                (conversationId) => {
+                  router.push(`/messagerie?conversationId=${conversationId}`);
+                }
+              );
+
+              if (!result.success) {
+                alert(result.error || "Erreur lors de l'ouverture de la conversation");
+              }
+            }}
+            disabled={isUpdating}
+          >
+            <FiMessageCircle size={18} color={colors.shiftlyViolet} />
+          </Button>
+        )}
+        
+        {/* Menu d'actions */}
         {availableStatuses.length > 0 ? (
           <YStack position="relative">
             <Button

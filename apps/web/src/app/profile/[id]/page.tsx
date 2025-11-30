@@ -6,9 +6,14 @@ import { Button, Badge, colors } from "@shiftly/ui";
 import { useRouter, useParams } from "next/navigation";
 import { AppLayout } from "../../../components/AppLayout";
 import { FiCheck, FiMessageCircle, FiBookmark } from "react-icons/fi";
-import { useCachedProfile, useCachedFreelanceData } from "../../../hooks";
+import {
+  useCachedProfile,
+  useCachedFreelanceData,
+  useCurrentProfile,
+} from "../../../hooks";
 import { FreelanceExperiences } from "../../../components/FreelanceExperiences";
 import { FreelanceEducations } from "../../../components/FreelanceEducations";
+import { navigateToMessaging } from "../../../utils/chatService";
 
 type TabType = "overview" | "availability" | "reviews" | "documents";
 
@@ -24,6 +29,7 @@ export default function FreelanceProfilePage() {
     educations,
     isLoading: isLoadingExperiences,
   } = useCachedFreelanceData(freelanceId);
+  const { profile: currentProfile } = useCurrentProfile();
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   const isLoading = isLoadingProfile || isLoadingExperiences;
@@ -360,8 +366,7 @@ export default function FreelanceProfilePage() {
                 variant="secondary"
                 size="md"
                 onPress={() => {
-                  // TODO: Implémenter le chat
-                  console.log("Démarrer un chat");
+                  navigateToMessaging(router);
                 }}
                 width="100%"
               >

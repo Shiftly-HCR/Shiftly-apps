@@ -5,11 +5,20 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button, colors } from "@shiftly/ui";
 import { type Mission } from "@shiftly/data";
-import { useCachedMission, useApplyToMission, useCheckApplication, useCurrentProfile, useMissionApplications, useUpdateApplicationStatus, useUserApplications } from "../../../hooks";
+import {
+  useCachedMission,
+  useApplyToMission,
+  useCheckApplication,
+  useCurrentProfile,
+  useMissionApplications,
+  useUpdateApplicationStatus,
+  useUserApplications,
+} from "../../../hooks";
 import { useMissionChat } from "../../../hooks/useMissionChat";
 import type { ApplicationStatus } from "@shiftly/data";
 import { AppLayout } from "../../../components/AppLayout";
 import { ChatThread, MessageInput } from "../../../components/chat";
+import { openConversation } from "../../../utils/chatService";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
@@ -37,33 +46,51 @@ export default function MissionDetailPage() {
 
   const { mission, isLoading } = useCachedMission(missionId);
   const { profile } = useCurrentProfile();
-  const { apply, isLoading: isApplying, error: applyError, success: applySuccess } = useApplyToMission();
-  const { hasApplied, isLoading: isCheckingApplication } = useCheckApplication(missionId);
-  
+  const {
+    apply,
+    isLoading: isApplying,
+    error: applyError,
+    success: applySuccess,
+  } = useApplyToMission();
+  const { hasApplied, isLoading: isCheckingApplication } =
+    useCheckApplication(missionId);
+
   // Pour les recruteurs : récupérer les candidatures
   const isRecruiter = profile?.role === "recruiter";
   const isMissionOwner = mission?.recruiter_id === profile?.id;
-  const { applications, isLoading: isLoadingApplications, refetch: refetchApplications } = useMissionApplications(
-    isRecruiter && isMissionOwner ? missionId : null
-  );
-  const { updateStatus, isLoading: isUpdatingStatus } = useUpdateApplicationStatus();
-  
+  const {
+    applications,
+    isLoading: isLoadingApplications,
+    refetch: refetchApplications,
+  } = useMissionApplications(isRecruiter && isMissionOwner ? missionId : null);
+  const { updateStatus, isLoading: isUpdatingStatus } =
+    useUpdateApplicationStatus();
+
   // Pour les freelances : récupérer leurs candidatures pour vérifier le statut
   const { applications: userApplications } = useUserApplications();
-  const freelanceApplication = userApplications.find(app => app.mission_id === missionId);
+  const freelanceApplication = userApplications.find(
+    (app) => app.mission_id === missionId
+  );
   const isFreelanceAccepted = freelanceApplication?.status === "accepted";
-  
+
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [selectedFreelanceId, setSelectedFreelanceId] = useState<string | null>(null);
-  
+  const [selectedFreelanceId, setSelectedFreelanceId] = useState<string | null>(
+    null
+  );
+
   // Déterminer le freelance avec qui chatter (pour recruteur) ou utiliser l'ID du freelance connecté
-  const chatFreelanceId = isRecruiter && isMissionOwner 
-    ? selectedFreelanceId || (applications.find(app => app.status === "accepted")?.user_id || null)
-    : (profile?.role === "freelance" && isFreelanceAccepted ? profile.id : null);
-  
+  const chatFreelanceId =
+    isRecruiter && isMissionOwner
+      ? selectedFreelanceId ||
+        applications.find((app) => app.status === "accepted")?.user_id ||
+        null
+      : profile?.role === "freelance" && isFreelanceAccepted
+        ? profile.id
+        : null;
+
   // Vérifier si le freelance peut chatter (doit être accepté)
   const canFreelanceChat = profile?.role === "freelance" && isFreelanceAccepted;
-  
+
   // Initialiser le chat si les conditions sont remplies
   const chat = useMissionChat(
     missionId && (isRecruiter || canFreelanceChat) ? missionId : null,
@@ -84,7 +111,7 @@ export default function MissionDetailPage() {
 
   const handleApply = async () => {
     if (!missionId) return;
-    
+
     const result = await apply({ mission_id: missionId });
     if (result.success) {
       // Recharger la page après un court délai pour mettre à jour l'état
@@ -485,16 +512,25 @@ export default function MissionDetailPage() {
                           }
                         };
 
-                        const handleStatusChange = async (newStatus: ApplicationStatus) => {
-                          const result = await updateStatus(application.id, newStatus);
+                        const handleStatusChange = async (
+                          newStatus: ApplicationStatus
+                        ) => {
+                          const result = await updateStatus(
+                            application.id,
+                            newStatus
+                          );
                           if (result.success) {
                             refetchApplications();
                           } else {
-                            alert(result.error || "Erreur lors de la mise à jour");
+                            alert(
+                              result.error || "Erreur lors de la mise à jour"
+                            );
                           }
                         };
 
-                        const getAvailableStatuses = (currentStatus: ApplicationStatus): ApplicationStatus[] => {
+                        const getAvailableStatuses = (
+                          currentStatus: ApplicationStatus
+                        ): ApplicationStatus[] => {
                           switch (currentStatus) {
                             case "pending":
                               return ["shortlisted", "rejected", "accepted"];
@@ -511,9 +547,12 @@ export default function MissionDetailPage() {
                           }
                         };
 
-                        const availableStatuses = getAvailableStatuses(application.status);
+                        const availableStatuses = getAvailableStatuses(
+                          application.status
+                        );
                         const profileName = application.profile
-                          ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() || "Nom non renseigné"
+                          ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() ||
+                            "Nom non renseigné"
                           : "Utilisateur inconnu";
 
                         return (
@@ -526,9 +565,16 @@ export default function MissionDetailPage() {
                             borderColor="#E5E7EB"
                             gap="$3"
                           >
-                            <XStack justifyContent="space-between" alignItems="flex-start">
+                            <XStack
+                              justifyContent="space-between"
+                              alignItems="flex-start"
+                            >
                               <YStack flex={1} gap="$2">
-                                <Text fontSize={16} fontWeight="600" color="#000">
+                                <Text
+                                  fontSize={16}
+                                  fontWeight="600"
+                                  color="#000"
+                                >
                                   {profileName}
                                 </Text>
                                 {application.profile?.headline && (
@@ -545,7 +591,9 @@ export default function MissionDetailPage() {
                                   paddingHorizontal="$2"
                                   paddingVertical="$1"
                                   borderRadius={4}
-                                  backgroundColor={getStatusColor(application.status) + "20"}
+                                  backgroundColor={
+                                    getStatusColor(application.status) + "20"
+                                  }
                                   alignSelf="flex-start"
                                 >
                                   <Text
@@ -566,7 +614,9 @@ export default function MissionDetailPage() {
                                   backgroundColor="#E5E7EB"
                                 >
                                   <Image
-                                    source={{ uri: application.profile.photo_url }}
+                                    source={{
+                                      uri: application.profile.photo_url,
+                                    }}
                                     width="100%"
                                     height="100%"
                                     resizeMode="cover"
@@ -581,10 +631,19 @@ export default function MissionDetailPage() {
                                 backgroundColor="white"
                                 borderRadius={6}
                               >
-                                <Text fontSize={12} fontWeight="600" color="#666" marginBottom="$1">
+                                <Text
+                                  fontSize={12}
+                                  fontWeight="600"
+                                  color="#666"
+                                  marginBottom="$1"
+                                >
                                   Message de motivation :
                                 </Text>
-                                <Text fontSize={13} color="#333" lineHeight={18}>
+                                <Text
+                                  fontSize={13}
+                                  color="#333"
+                                  lineHeight={18}
+                                >
                                   {application.cover_letter}
                                 </Text>
                               </YStack>
@@ -599,7 +658,7 @@ export default function MissionDetailPage() {
                                     : application.status === "shortlisted"
                                       ? ["accepted", "rejected"]
                                       : [];
-                              
+
                               return availableStatuses.length > 0 ? (
                                 <XStack gap="$2" flexWrap="wrap">
                                   {availableStatuses.map((status) => (
@@ -617,7 +676,8 @@ export default function MissionDetailPage() {
                                             : undefined
                                       }
                                       color={
-                                        status === "accepted" || status === "rejected"
+                                        status === "accepted" ||
+                                        status === "rejected"
                                           ? "white"
                                           : undefined
                                       }
@@ -632,7 +692,9 @@ export default function MissionDetailPage() {
                             <Text fontSize={11} color="#999">
                               Candidature envoyée le{" "}
                               {application.created_at
-                                ? new Date(application.created_at).toLocaleDateString("fr-FR", {
+                                ? new Date(
+                                    application.created_at
+                                  ).toLocaleDateString("fr-FR", {
                                     day: "numeric",
                                     month: "short",
                                     year: "numeric",
@@ -662,24 +724,29 @@ export default function MissionDetailPage() {
                   <Text fontSize={18} fontWeight="bold" color="#000">
                     Messagerie
                   </Text>
-                  
+
                   {/* Liste des freelances acceptés pour chatter */}
-                  {applications.filter(app => app.status === "accepted").length > 0 ? (
+                  {applications.filter((app) => app.status === "accepted")
+                    .length > 0 ? (
                     <YStack gap="$3">
                       {applications
-                        .filter(app => app.status === "accepted")
+                        .filter((app) => app.status === "accepted")
                         .map((application) => {
                           const profileName = application.profile
-                            ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() || "Nom non renseigné"
+                            ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() ||
+                              "Nom non renseigné"
                             : "Utilisateur inconnu";
-                          const isSelected = selectedFreelanceId === application.user_id;
+                          const isSelected =
+                            selectedFreelanceId === application.user_id;
 
                           return (
                             <Button
                               key={application.id}
                               variant={isSelected ? "primary" : "outline"}
                               size="sm"
-                              onPress={() => setSelectedFreelanceId(application.user_id)}
+                              onPress={() =>
+                                setSelectedFreelanceId(application.user_id)
+                              }
                             >
                               💬 {profileName}
                             </Button>
@@ -709,17 +776,19 @@ export default function MissionDetailPage() {
                         borderBottomColor="#E5E7EB"
                       >
                         <Text fontSize={14} fontWeight="600" color="#000">
-                          Conversation avec {chat.senderNames.get(selectedFreelanceId) || "Freelance"}
+                          Conversation avec{" "}
+                          {chat.senderNames.get(selectedFreelanceId) ||
+                            "Freelance"}
                         </Text>
                       </YStack>
-                      
+
                       <ChatThread
                         messages={chat.messages}
                         currentUserId={chat.currentUserId || ""}
                         senderNames={chat.senderNames}
                         isLoading={chat.isLoading}
                       />
-                      
+
                       <MessageInput
                         onSend={async (content) => {
                           const success = await chat.sendMessage(content);
@@ -749,7 +818,7 @@ export default function MissionDetailPage() {
                   <Text fontSize={18} fontWeight="bold" color="#000">
                     Messagerie
                   </Text>
-                  
+
                   {chat.canAccess ? (
                     <YStack
                       borderWidth={1}
@@ -765,17 +834,19 @@ export default function MissionDetailPage() {
                         borderBottomColor="#E5E7EB"
                       >
                         <Text fontSize={14} fontWeight="600" color="#000">
-                          Conversation avec {chat.senderNames.get(mission.recruiter_id) || "Recruteur"}
+                          Conversation avec{" "}
+                          {chat.senderNames.get(mission.recruiter_id) ||
+                            "Recruteur"}
                         </Text>
                       </YStack>
-                      
+
                       <ChatThread
                         messages={chat.messages}
                         currentUserId={chat.currentUserId || ""}
                         senderNames={chat.senderNames}
                         isLoading={chat.isLoading}
                       />
-                      
+
                       <MessageInput
                         onSend={async (content) => {
                           const success = await chat.sendMessage(content);
@@ -858,7 +929,9 @@ export default function MissionDetailPage() {
                       variant="primary"
                       size="md"
                       width="100%"
-                      onPress={() => router.push(`/missions/${missionId}/candidates`)}
+                      onPress={() =>
+                        router.push(`/missions/${missionId}/candidates`)
+                      }
                     >
                       Gérer les candidatures
                     </Button>
@@ -890,9 +963,15 @@ export default function MissionDetailPage() {
                       size="md"
                       width="100%"
                       onPress={handleApply}
-                      disabled={isApplying || isCheckingApplication || mission?.status !== "published"}
+                      disabled={
+                        isApplying ||
+                        isCheckingApplication ||
+                        mission?.status !== "published"
+                      }
                     >
-                      {isApplying ? "Envoi en cours..." : "Postuler à cette mission"}
+                      {isApplying
+                        ? "Envoi en cours..."
+                        : "Postuler à cette mission"}
                     </Button>
                   ) : (
                     <YStack
@@ -906,7 +985,7 @@ export default function MissionDetailPage() {
                       </Text>
                     </YStack>
                   )}
-                  
+
                   {applyError && (
                     <YStack
                       padding="$3"
@@ -1043,8 +1122,32 @@ export default function MissionDetailPage() {
                   variant="outline"
                   size="md"
                   width="100%"
-                  onPress={() => {
-                    console.log("Contacter l'établissement:", mission.id);
+                  onPress={async () => {
+                    if (!profile || !mission) return;
+
+                    // Si on est freelance, on contacte le recruteur
+                    // Si on est recruteur, on ne peut pas utiliser ce bouton (déjà dans la section messagerie)
+                    if (profile.role === "freelance" && mission.recruiter_id) {
+                      const result = await openConversation(
+                        {
+                          missionId: mission.id,
+                          recruiterId: mission.recruiter_id,
+                          freelanceId: profile.id,
+                        },
+                        (conversationId) => {
+                          router.push(
+                            `/messagerie?conversationId=${conversationId}`
+                          );
+                        }
+                      );
+
+                      if (!result.success) {
+                        alert(
+                          result.error ||
+                            "Erreur lors de l'ouverture de la conversation"
+                        );
+                      }
+                    }
                   }}
                 >
                   Contacter l'établissement
