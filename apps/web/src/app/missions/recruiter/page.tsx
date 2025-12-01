@@ -1,9 +1,18 @@
 "use client";
 
-import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { MissionCard, CreateMissionCard, colors } from "@shiftly/ui";
-import { AppLayout, PageLoading } from "@/components";
+import { YStack, XStack, ScrollView } from "tamagui";
+import { MissionCard, CreateMissionCard } from "@shiftly/ui";
+import {
+  AppLayout,
+  PageLoading,
+  PageHeader,
+  StatisticsCard,
+  PageSection,
+  EmptyState,
+  StatusBadge,
+} from "@/components";
 import { useRecruiterMissionsPage } from "@/hooks";
+import { colors } from "@shiftly/ui";
 
 export default function RecruiterMissionsPage() {
   const {
@@ -30,75 +39,31 @@ export default function RecruiterMissionsPage() {
           gap="$6"
         >
           {/* En-tête */}
-          <YStack gap="$3">
-            <Text fontSize={32} fontWeight="700" color={colors.gray900}>
-              Mes missions
-            </Text>
-            <Text fontSize={16} color={colors.gray700}>
-              Gérez vos missions et créez-en de nouvelles
-            </Text>
-          </YStack>
+          <PageHeader
+            title="Mes missions"
+            description="Gérez vos missions et créez-en de nouvelles"
+          />
 
           {/* Statistiques rapides */}
           <XStack gap="$4" flexWrap="wrap">
-            <YStack
-              flex={1}
-              minWidth={200}
-              padding="$4"
-              backgroundColor={colors.white}
-              borderRadius={12}
-              borderWidth={1}
-              borderColor={colors.gray200}
-            >
-              <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                Total des missions
-              </Text>
-              <Text fontSize={32} fontWeight="700" color={colors.gray900}>
-                {missions.length}
-              </Text>
-            </YStack>
-
-            <YStack
-              flex={1}
-              minWidth={200}
-              padding="$4"
-              backgroundColor={colors.white}
-              borderRadius={12}
-              borderWidth={1}
-              borderColor={colors.gray200}
-            >
-              <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                Missions publiées
-              </Text>
-              <Text fontSize={32} fontWeight="700" color={colors.shiftlyViolet}>
-                {missions.filter((m) => m.status === "published").length}
-              </Text>
-            </YStack>
-
-            <YStack
-              flex={1}
-              minWidth={200}
-              padding="$4"
-              backgroundColor={colors.white}
-              borderRadius={12}
-              borderWidth={1}
-              borderColor={colors.gray200}
-            >
-              <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                Brouillons
-              </Text>
-              <Text fontSize={32} fontWeight="700" color={colors.gray500}>
-                {missions.filter((m) => m.status === "draft").length}
-              </Text>
-            </YStack>
+            <StatisticsCard
+              label="Total des missions"
+              value={missions.length}
+            />
+            <StatisticsCard
+              label="Missions publiées"
+              value={missions.filter((m) => m.status === "published").length}
+              valueColor={colors.shiftlyViolet}
+            />
+            <StatisticsCard
+              label="Brouillons"
+              value={missions.filter((m) => m.status === "draft").length}
+              valueColor={colors.gray500}
+            />
           </XStack>
 
           {/* Grille de missions */}
-          <YStack gap="$4">
-            <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-              Toutes les missions
-            </Text>
-
+          <PageSection title="Toutes les missions">
             <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
               {/* Carte de création */}
               <YStack width="calc(33.333% - 12px)" minWidth={300}>
@@ -136,13 +101,16 @@ export default function RecruiterMissionsPage() {
                   />
 
                   {/* Badge de statut */}
-                  <YStack
-                    position="absolute"
-                    top={12}
-                    right={12}
-                    paddingHorizontal="$3"
-                    paddingVertical="$1.5"
-                    borderRadius={20}
+                  <StatusBadge
+                    label={
+                      mission.status === "published"
+                        ? "Publié"
+                        : mission.status === "draft"
+                          ? "Brouillon"
+                          : mission.status === "closed"
+                            ? "Fermé"
+                            : "Annulé"
+                    }
                     backgroundColor={
                       mission.status === "published"
                         ? "#10B981"
@@ -152,39 +120,19 @@ export default function RecruiterMissionsPage() {
                             ? "#EF4444"
                             : colors.gray500
                     }
-                  >
-                    <Text fontSize={12} color={colors.white} fontWeight="600">
-                      {mission.status === "published"
-                        ? "Publié"
-                        : mission.status === "draft"
-                          ? "Brouillon"
-                          : mission.status === "closed"
-                            ? "Fermé"
-                            : "Annulé"}
-                    </Text>
-                  </YStack>
+                  />
                 </YStack>
               ))}
             </XStack>
 
             {/* Message si aucune mission */}
             {missions.length === 0 && (
-              <YStack
-                padding="$8"
-                alignItems="center"
-                justifyContent="center"
-                gap="$4"
-              >
-                <Text fontSize={18} color={colors.gray700} textAlign="center">
-                  Vous n'avez pas encore créé de mission
-                </Text>
-                <Text fontSize={14} color={colors.gray500} textAlign="center">
-                  Commencez par créer votre première mission en cliquant sur la
-                  carte ci-dessus
-                </Text>
-              </YStack>
+              <EmptyState
+                title="Vous n'avez pas encore créé de mission"
+                description="Commencez par créer votre première mission en cliquant sur la carte ci-dessus"
+              />
             )}
-          </YStack>
+          </PageSection>
         </YStack>
       </ScrollView>
     </AppLayout>

@@ -1,12 +1,18 @@
 "use client";
 
-import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { Badge, MissionCard, MissionFilters, colors } from "@shiftly/ui";
+import { YStack, XStack, ScrollView } from "tamagui";
+import { Badge, MissionCard, MissionFilters } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { FiMap, FiList } from "react-icons/fi";
-import { AppLayout, PageLoading } from "@/components";
+import {
+  AppLayout,
+  PageLoading,
+  ActiveFilters,
+  EmptyState,
+  MapLoader,
+} from "@/components";
 import { useHomePage } from "@/hooks";
-import { MapLoader } from "@/components";
+import type { ViewMode } from "@/components/ui/ViewToggle";
 
 export default function HomePage() {
   const router = useRouter();
@@ -35,132 +41,19 @@ export default function HomePage() {
       <ScrollView flex={1}>
         <YStack maxWidth={1400} width="100%" alignSelf="center" padding="$6">
           {/* Filtres actifs et vue */}
-          {activeFilterTags.length > 0 && (
-            <XStack
-              paddingVertical="$4"
-              gap="$3"
-              flexWrap="wrap"
-              alignItems="center"
-            >
-              <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                Filtres actifs:
-              </Text>
-
-              {activeFilterTags.map((tag) => (
-                <XStack
-                  key={tag}
-                  paddingHorizontal="$3"
-                  paddingVertical="$1.5"
-                  backgroundColor={colors.white}
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor={colors.gray200}
-                  gap="$2"
-                  alignItems="center"
-                >
-                  <Text fontSize={13} color={colors.gray900} fontWeight="500">
-                    {tag}
-                  </Text>
-                  <Text
-                    fontSize={16}
-                    color={colors.gray700}
-                    cursor="pointer"
-                    hoverStyle={{ color: "#EF4444" }}
-                    onPress={() => removeFilter(tag)}
-                  >
-                    ✕
-                  </Text>
-                </XStack>
-              ))}
-
-              <Text
-                fontSize={13}
-                color={colors.shiftlyViolet}
-                fontWeight="600"
-                cursor="pointer"
-                textDecorationLine="underline"
-                hoverStyle={{ opacity: 0.8 }}
-                onPress={clearAllFilters}
-              >
-                Effacer tout
-              </Text>
-
-              {/* Toggle Liste/Carte */}
-              <XStack marginLeft="auto" gap="$2">
-                <XStack
-                  paddingHorizontal="$3"
-                  paddingVertical="$2"
-                  backgroundColor={
-                    viewMode === "list" ? colors.shiftlyViolet : colors.white
-                  }
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor={
-                    viewMode === "list" ? colors.shiftlyViolet : colors.gray200
-                  }
-                  gap="$2"
-                  alignItems="center"
-                  cursor="pointer"
-                  hoverStyle={{
-                    borderColor: colors.shiftlyViolet,
-                    backgroundColor:
-                      viewMode === "list"
-                        ? colors.shiftlyViolet
-                        : colors.shiftlyVioletLight,
-                  }}
-                  onPress={() => setViewMode("list")}
-                >
-                  <FiList
-                    size={16}
-                    color={viewMode === "list" ? "#fff" : colors.gray900}
-                  />
-                  <Text
-                    fontSize={13}
-                    color={viewMode === "list" ? "#fff" : colors.gray900}
-                    fontWeight="600"
-                  >
-                    Liste
-                  </Text>
-                </XStack>
-
-                <XStack
-                  paddingHorizontal="$3"
-                  paddingVertical="$2"
-                  backgroundColor={
-                    viewMode === "map" ? colors.shiftlyViolet : colors.white
-                  }
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor={
-                    viewMode === "map" ? colors.shiftlyViolet : colors.gray200
-                  }
-                  gap="$2"
-                  alignItems="center"
-                  cursor="pointer"
-                  hoverStyle={{
-                    borderColor: colors.shiftlyViolet,
-                    backgroundColor:
-                      viewMode === "map"
-                        ? colors.shiftlyViolet
-                        : colors.shiftlyVioletLight,
-                  }}
-                  onPress={() => setViewMode("map")}
-                >
-                  <FiMap
-                    size={16}
-                    color={viewMode === "map" ? "#fff" : colors.shiftlyViolet}
-                  />
-                  <Text
-                    fontSize={13}
-                    color={viewMode === "map" ? "#fff" : colors.gray900}
-                    fontWeight="600"
-                  >
-                    Carte
-                  </Text>
-                </XStack>
-              </XStack>
-            </XStack>
-          )}
+          <ActiveFilters
+            filters={activeFilterTags}
+            onRemoveFilter={removeFilter}
+            onClearAll={clearAllFilters}
+            viewToggle={{
+              currentMode: viewMode as ViewMode,
+              options: [
+                { mode: "list", icon: <FiList size={16} />, label: "Liste" },
+                { mode: "map", icon: <FiMap size={16} />, label: "Carte" },
+              ],
+              onModeChange: (mode) => setViewMode(mode as "list" | "map"),
+            }}
+          />
 
           {/* Contenu principal avec filtres */}
           <XStack gap="$6" alignItems="flex-start" marginTop="$4">
@@ -172,19 +65,10 @@ export default function HomePage() {
             {/* Grille de missions OU Carte */}
             <YStack flex={1} gap="$4">
               {filteredMissions.length === 0 ? (
-                <YStack
-                  padding="$8"
-                  alignItems="center"
-                  justifyContent="center"
-                  gap="$4"
-                >
-                  <Text fontSize={18} color={colors.gray700} textAlign="center">
-                    Aucune mission disponible pour le moment
-                  </Text>
-                  <Text fontSize={14} color={colors.gray500} textAlign="center">
-                    Revenez plus tard pour découvrir de nouvelles opportunités
-                  </Text>
-                </YStack>
+                <EmptyState
+                  title="Aucune mission disponible pour le moment"
+                  description="Revenez plus tard pour découvrir de nouvelles opportunités"
+                />
               ) : viewMode === "list" ? (
                 <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
                   {filteredMissions.map((mission) => (

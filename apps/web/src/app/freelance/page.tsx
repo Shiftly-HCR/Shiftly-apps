@@ -1,6 +1,6 @@
 "use client";
 
-import { YStack, XStack, Text, ScrollView } from "tamagui";
+import { YStack, XStack, ScrollView, Text } from "tamagui";
 import {
   Button,
   FreelanceFilters,
@@ -8,8 +8,15 @@ import {
   colors,
 } from "@shiftly/ui";
 import { FiGrid, FiList } from "react-icons/fi";
-import { AppLayout, PageLoading } from "@/components";
+import {
+  AppLayout,
+  PageLoading,
+  PageHeader,
+  ActiveFilters,
+  EmptyState,
+} from "@/components";
 import { useFreelancePage } from "@/hooks";
+import type { ViewMode } from "@/components/ui/ViewToggle";
 
 export default function FreelancePage() {
   const {
@@ -37,135 +44,25 @@ export default function FreelancePage() {
       <ScrollView flex={1}>
         <YStack maxWidth={1400} width="100%" alignSelf="center" padding="$6">
           {/* En-tête */}
-          <YStack marginBottom="$6">
-            <Text
-              fontSize={32}
-              fontWeight="700"
-              color={colors.gray900}
-              marginBottom="$2"
-            >
-              Découvrez nos freelances
-            </Text>
-            <Text fontSize={16} color={colors.gray700}>
-              Trouvez le talent parfait pour votre mission parmi nos freelances
-              qualifiés
-            </Text>
-          </YStack>
+          <PageHeader
+            title="Découvrez nos freelances"
+            description="Trouvez le talent parfait pour votre mission parmi nos freelances qualifiés"
+          />
 
           {/* Filtres actifs et vue */}
-          {activeFilterTags.length > 0 && (
-            <XStack
-              paddingVertical="$4"
-              gap="$3"
-              flexWrap="wrap"
-              alignItems="center"
-              marginBottom="$4"
-            >
-              <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                Filtres actifs:
-              </Text>
-
-              {activeFilterTags.map((tag) => (
-                <XStack
-                  key={tag}
-                  paddingHorizontal="$3"
-                  paddingVertical="$1.5"
-                  backgroundColor={colors.white}
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor={colors.gray200}
-                  gap="$2"
-                  alignItems="center"
-                >
-                  <Text fontSize={13} color={colors.gray900} fontWeight="500">
-                    {tag}
-                  </Text>
-                  <Text
-                    fontSize={16}
-                    color={colors.gray700}
-                    cursor="pointer"
-                    hoverStyle={{ color: "#EF4444" }}
-                    onPress={() => removeFilter(tag)}
-                  >
-                    ✕
-                  </Text>
-                </XStack>
-              ))}
-
-              <Text
-                fontSize={13}
-                color={colors.shiftlyViolet}
-                fontWeight="600"
-                cursor="pointer"
-                textDecorationLine="underline"
-                hoverStyle={{ opacity: 0.8 }}
-                onPress={clearAllFilters}
-              >
-                Effacer tout
-              </Text>
-
-              {/* Toggle Grille/Liste */}
-              <XStack marginLeft="auto" gap="$2">
-                <XStack
-                  paddingHorizontal="$3"
-                  paddingVertical="$2"
-                  backgroundColor={
-                    viewMode === "grid" ? colors.shiftlyViolet : colors.white
-                  }
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor={
-                    viewMode === "grid" ? colors.shiftlyViolet : colors.gray200
-                  }
-                  gap="$2"
-                  alignItems="center"
-                  cursor="pointer"
-                  hoverStyle={{
-                    borderColor: colors.shiftlyViolet,
-                    backgroundColor:
-                      viewMode === "grid"
-                        ? colors.shiftlyViolet
-                        : colors.shiftlyVioletLight,
-                  }}
-                  onPress={() => setViewMode("grid")}
-                >
-                  <FiGrid
-                    size={16}
-                    color={viewMode === "grid" ? "#fff" : colors.gray900}
-                  />
-                </XStack>
-
-                <XStack
-                  paddingHorizontal="$3"
-                  paddingVertical="$2"
-                  backgroundColor={
-                    viewMode === "list" ? colors.shiftlyViolet : colors.white
-                  }
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor={
-                    viewMode === "list" ? colors.shiftlyViolet : colors.gray200
-                  }
-                  gap="$2"
-                  alignItems="center"
-                  cursor="pointer"
-                  hoverStyle={{
-                    borderColor: colors.shiftlyViolet,
-                    backgroundColor:
-                      viewMode === "list"
-                        ? colors.shiftlyViolet
-                        : colors.shiftlyVioletLight,
-                  }}
-                  onPress={() => setViewMode("list")}
-                >
-                  <FiList
-                    size={16}
-                    color={viewMode === "list" ? "#fff" : colors.gray900}
-                  />
-                </XStack>
-              </XStack>
-            </XStack>
-          )}
+          <ActiveFilters
+            filters={activeFilterTags}
+            onRemoveFilter={removeFilter}
+            onClearAll={clearAllFilters}
+            viewToggle={{
+              currentMode: viewMode as ViewMode,
+              options: [
+                { mode: "grid", icon: <FiGrid size={16} /> },
+                { mode: "list", icon: <FiList size={16} /> },
+              ],
+              onModeChange: (mode) => setViewMode(mode as "grid" | "list"),
+            }}
+          />
 
           {/* Contenu principal avec filtres */}
           <XStack gap="$6" alignItems="flex-start">
@@ -180,19 +77,10 @@ export default function FreelancePage() {
             {/* Grille de freelances */}
             <YStack flex={1} gap="$4">
               {filteredFreelances.length === 0 ? (
-                <YStack
-                  padding="$8"
-                  alignItems="center"
-                  justifyContent="center"
-                  gap="$4"
-                >
-                  <Text fontSize={18} color={colors.gray700} textAlign="center">
-                    Aucun freelance disponible pour le moment
-                  </Text>
-                  <Text fontSize={14} color={colors.gray500} textAlign="center">
-                    Revenez plus tard pour découvrir de nouveaux talents
-                  </Text>
-                </YStack>
+                <EmptyState
+                  title="Aucun freelance disponible pour le moment"
+                  description="Revenez plus tard pour découvrir de nouveaux talents"
+                />
               ) : (
                 <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
                   {filteredFreelances.map((freelance) => (

@@ -1,11 +1,20 @@
 "use client";
 
-import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { Button, MissionCard, colors } from "@shiftly/ui";
+import { YStack, XStack, ScrollView, Text } from "tamagui";
+import { Button, MissionCard } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { FiArrowRight, FiHeadphones } from "react-icons/fi";
-import { AppLayout, PageLoading } from "@/components";
+import {
+  AppLayout,
+  PageLoading,
+  PageHeader,
+  PageSection,
+  StatisticsCard,
+  EmptyState,
+  HelpCard,
+} from "@/components";
 import { useFreelanceMissionsPage } from "@/hooks";
+import { colors } from "@shiftly/ui";
 
 export default function FreelanceMissionsPage() {
   const router = useRouter();
@@ -36,26 +45,13 @@ export default function FreelanceMissionsPage() {
           gap="$6"
         >
           {/* En-tête */}
-          <XStack
-            alignItems="center"
-            justifyContent="space-between"
-            flexWrap="wrap"
-            gap="$4"
-          >
-            <Text fontSize={32} fontWeight="700" color={colors.gray900}>
-              Bienvenue, {getFullName()} 👋
-            </Text>
-          </XStack>
+          <PageHeader title={`Bienvenue, ${getFullName()} 👋`} />
 
           <XStack gap="$6" alignItems="flex-start" flexWrap="wrap">
             {/* Colonne gauche */}
             <YStack flex={1} minWidth={400} gap="$6">
               {/* Mes missions récentes */}
-              <YStack gap="$4">
-                <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-                  Mes missions récentes
-                </Text>
-
+              <PageSection title="Mes missions récentes">
                 {missions.length === 0 ? (
                   <YStack
                     padding="$6"
@@ -66,20 +62,11 @@ export default function FreelanceMissionsPage() {
                     alignItems="center"
                     gap="$2"
                   >
-                    <Text
-                      fontSize={16}
-                      color={colors.gray700}
-                      textAlign="center"
-                    >
-                      Aucune mission récente
-                    </Text>
-                    <Text
-                      fontSize={14}
-                      color={colors.gray500}
-                      textAlign="center"
-                    >
-                      Explorez les missions disponibles sur la page d'accueil
-                    </Text>
+                    <EmptyState
+                      title="Aucune mission récente"
+                      description="Explorez les missions disponibles sur la page d'accueil"
+                      padding="$0"
+                    />
                   </YStack>
                 ) : (
                   <YStack gap="$3">
@@ -150,94 +137,39 @@ export default function FreelanceMissionsPage() {
                     })}
                   </YStack>
                 )}
-              </YStack>
+              </PageSection>
 
               {/* Statistiques rapides */}
-              <YStack gap="$4">
-                <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-                  Statistiques rapides
-                </Text>
+              <PageSection title="Statistiques rapides">
                 <XStack gap="$4" flexWrap="wrap">
-                  <YStack
-                    flex={1}
+                  <StatisticsCard
+                    label="Missions actives"
+                    value={
+                      missions.filter(
+                        (m) => getMissionStatus(m) === "in_progress"
+                      ).length
+                    }
                     minWidth={180}
-                    padding="$4"
-                    backgroundColor={colors.white}
-                    borderRadius={12}
-                    borderWidth={1}
-                    borderColor={colors.gray200}
-                  >
-                    <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                      Missions actives
-                    </Text>
-                    <Text
-                      fontSize={32}
-                      fontWeight="700"
-                      color={colors.gray900}
-                      marginTop="$2"
-                    >
-                      {
-                        missions.filter(
-                          (m) => getMissionStatus(m) === "in_progress"
-                        ).length
-                      }
-                    </Text>
-                  </YStack>
-
-                  <YStack
-                    flex={1}
+                  />
+                  <StatisticsCard
+                    label="Candidatures en attente"
+                    value={15}
+                    valueColor={colors.shiftlyViolet}
                     minWidth={180}
-                    padding="$4"
-                    backgroundColor={colors.white}
-                    borderRadius={12}
-                    borderWidth={1}
-                    borderColor={colors.gray200}
-                  >
-                    <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                      Candidatures en attente
-                    </Text>
-                    <Text
-                      fontSize={32}
-                      fontWeight="700"
-                      color={colors.shiftlyViolet}
-                      marginTop="$2"
-                    >
-                      15
-                    </Text>
-                  </YStack>
-
-                  <YStack
-                    flex={1}
+                  />
+                  <StatisticsCard
+                    label="Taux de réussite"
+                    value="80%"
                     minWidth={180}
-                    padding="$4"
-                    backgroundColor={colors.white}
-                    borderRadius={12}
-                    borderWidth={1}
-                    borderColor={colors.gray200}
-                  >
-                    <Text fontSize={14} color={colors.gray700} fontWeight="600">
-                      Taux de réussite
-                    </Text>
-                    <Text
-                      fontSize={32}
-                      fontWeight="700"
-                      color={colors.gray900}
-                      marginTop="$2"
-                    >
-                      80%
-                    </Text>
-                  </YStack>
+                  />
                 </XStack>
-              </YStack>
+              </PageSection>
             </YStack>
 
             {/* Colonne droite */}
             <YStack width={400} flexShrink={0} gap="$6">
               {/* Missions recommandées */}
-              <YStack gap="$4">
-                <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-                  Missions recommandées
-                </Text>
+              <PageSection title="Missions recommandées">
                 {recommendedMissions.length > 0 ? (
                   <YStack gap="$3">
                     {recommendedMissions.map((mission) => {
@@ -301,75 +233,24 @@ export default function FreelanceMissionsPage() {
                     })}
                   </YStack>
                 ) : (
-                  <YStack
+                  <EmptyState
+                    title="Aucune mission recommandée pour le moment"
                     padding="$6"
-                    backgroundColor={colors.white}
-                    borderRadius={12}
-                    borderWidth={1}
-                    borderColor={colors.gray200}
-                    alignItems="center"
-                    gap="$2"
-                  >
-                    <Text
-                      fontSize={14}
-                      color={colors.gray500}
-                      textAlign="center"
-                    >
-                      Aucune mission recommandée pour le moment
-                    </Text>
-                  </YStack>
+                  />
                 )}
-              </YStack>
+              </PageSection>
 
               {/* Besoin d'aide ? */}
-              <YStack
-                padding="$6"
-                borderRadius={12}
-                borderWidth={1}
-                borderColor={colors.gray200}
-                gap="$4"
-                position="relative"
-                overflow="hidden"
-                style={{
-                  background: `linear-gradient(135deg, ${colors.shiftlyViolet} 0%, ${colors.shiftlyGold} 100%)`,
-                }}
-              >
-                {/* Illustration de fond */}
-                <YStack
-                  position="absolute"
-                  right={-20}
-                  bottom={-20}
-                  opacity={0.2}
-                  pointerEvents="none"
-                >
+              <HelpCard
+                title="Besoin d'aide ?"
+                subtitle="Contactez notre équipe Shiftly"
+                description="Nous sommes là pour vous aider à chaque étape."
+                buttonText="Nous contacter"
+                onButtonPress={() => router.push("/contact")}
+                backgroundIcon={
                   <FiHeadphones size={120} color={colors.white} />
-                </YStack>
-
-                <YStack gap="$2" zIndex={10}>
-                  <Text fontSize={20} fontWeight="700" color={colors.white}>
-                    Besoin d'aide ?
-                  </Text>
-                  <Text fontSize={16} color={colors.white} opacity={0.9}>
-                    Contactez notre équipe Shiftly
-                  </Text>
-                  <Text fontSize={14} color={colors.white} opacity={0.8}>
-                    Nous sommes là pour vous aider à chaque étape.
-                  </Text>
-                </YStack>
-
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onPress={() => router.push("/contact")}
-                  backgroundColor={colors.white}
-                  color={colors.shiftlyViolet}
-                  hoverStyle={{
-                    backgroundColor: colors.gray100,
-                  }}
-                >
-                  Nous contacter
-                </Button>
-              </YStack>
+                }
+              />
             </YStack>
           </XStack>
         </YStack>
