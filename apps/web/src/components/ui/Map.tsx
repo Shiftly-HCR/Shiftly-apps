@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React from "react";
 import ReactMapGL, { Marker, NavigationControl } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { YStack } from "tamagui";
+import { useMap } from "@/hooks";
 
 interface MapProps {
   latitude?: number;
@@ -36,34 +37,13 @@ export default function Map({
   interactive = true,
   style,
 }: MapProps) {
-  const [viewState, setViewState] = useState({
+  const { viewState, setViewState, handleMapClick } = useMap({
     latitude,
     longitude,
     zoom,
+    onMapClick,
+    interactive,
   });
-
-  // Mettre à jour la vue si les props changent
-  useEffect(() => {
-    setViewState({
-      latitude,
-      longitude,
-      zoom,
-    });
-  }, [latitude, longitude, zoom]);
-
-  const handleMapClick = useCallback(
-    (event: any) => {
-      if (onMapClick && interactive) {
-        onMapClick({
-          lngLat: {
-            lng: event.lngLat.lng,
-            lat: event.lngLat.lat,
-          },
-        });
-      }
-    },
-    [onMapClick, interactive]
-  );
 
   if (!MAPBOX_TOKEN) {
     return (

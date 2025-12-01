@@ -5,8 +5,12 @@ import { Button, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { FiMessageCircle } from "react-icons/fi";
 import { SimpleCheckbox } from "@/components/ui/SimpleCheckbox";
-import { type MissionApplicationWithProfile, type ApplicationStatus } from "@shiftly/data";
+import {
+  type MissionApplicationWithProfile,
+  type ApplicationStatus,
+} from "@shiftly/data";
 import { openConversation } from "@/utils/chatService";
+import { useMissionCandidatesRow } from "@/hooks";
 
 interface MissionCandidatesRowProps {
   application: MissionApplicationWithProfile;
@@ -34,24 +38,10 @@ export function MissionCandidatesRow({
   recruiterId,
 }: MissionCandidatesRowProps) {
   const router = useRouter();
-  
-  const profileName = application.profile
-    ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() ||
-      "Nom non renseigné"
-    : `Utilisateur ${application.user_id.substring(0, 8)}`;
-
-  const handleNameClick = () => {
-    router.push(`/profile/${application.user_id}`);
-  };
-
-  const availableStatuses: ApplicationStatus[] =
-    application.status === "pending"
-      ? ["shortlisted", "rejected", "accepted"]
-      : application.status === "applied"
-        ? ["shortlisted", "rejected"]
-        : application.status === "shortlisted"
-          ? ["accepted", "rejected"]
-          : [];
+  const { profileName, handleNameClick, availableStatuses } =
+    useMissionCandidatesRow({
+      application,
+    });
 
   return (
     <XStack
@@ -147,7 +137,12 @@ export function MissionCandidatesRow({
       </XStack>
 
       {/* Actions */}
-      <XStack width={120} alignItems="center" justifyContent="flex-end" gap="$2">
+      <XStack
+        width={120}
+        alignItems="center"
+        justifyContent="flex-end"
+        gap="$2"
+      >
         {/* Bouton de messagerie */}
         {missionId && recruiterId && (
           <Button
@@ -166,7 +161,10 @@ export function MissionCandidatesRow({
               );
 
               if (!result.success) {
-                alert(result.error || "Erreur lors de l'ouverture de la conversation");
+                alert(
+                  result.error ||
+                    "Erreur lors de l'ouverture de la conversation"
+                );
               }
             }}
             disabled={isUpdating}
@@ -174,7 +172,7 @@ export function MissionCandidatesRow({
             <FiMessageCircle size={18} color={colors.shiftlyViolet} />
           </Button>
         )}
-        
+
         {/* Menu d'actions */}
         {availableStatuses.length > 0 ? (
           <YStack position="relative">
@@ -200,4 +198,3 @@ export function MissionCandidatesRow({
     </XStack>
   );
 }
-

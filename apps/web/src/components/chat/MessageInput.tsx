@@ -2,7 +2,7 @@
 
 import { YStack, XStack, TextArea } from "tamagui";
 import { Button } from "@shiftly/ui";
-import { useState, KeyboardEvent } from "react";
+import { useMessageInput } from "@/hooks";
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
@@ -15,25 +15,10 @@ export function MessageInput({
   isSending = false,
   placeholder = "Écrivez un message...",
 }: MessageInputProps) {
-  const [content, setContent] = useState("");
-
-  const handleSend = async () => {
-    const trimmedContent = content.trim();
-    if (!trimmedContent || isSending) {
-      return;
-    }
-
-    await onSend(trimmedContent);
-    setContent("");
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Envoyer avec Entrée (sans Shift)
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const { content, setContent, handleSend } = useMessageInput({
+    onSend,
+    isSending,
+  });
 
   return (
     <YStack
@@ -57,7 +42,6 @@ export function MessageInput({
             padding="$3"
             fontSize={14}
             backgroundColor="#F9FAFB"
-            onKeyDown={handleKeyDown}
             disabled={isSending}
           />
         </YStack>

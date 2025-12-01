@@ -3,6 +3,7 @@
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import { type FreelanceExperience } from "@shiftly/data";
+import { useFormatDate } from "@/hooks";
 
 interface FreelanceExperiencesProps {
   experiences: FreelanceExperience[];
@@ -11,13 +12,7 @@ interface FreelanceExperiencesProps {
 export function FreelanceExperiences({
   experiences,
 }: FreelanceExperiencesProps) {
-  const formatDate = (date?: string) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("fr-FR", {
-      year: "numeric",
-      month: "short",
-    });
-  };
+  const { formatDateShort } = useFormatDate();
 
   return (
     <YStack gap="$3">
@@ -60,9 +55,9 @@ export function FreelanceExperiences({
                 {exp.location && `, ${exp.location}`}
               </Text>
               <Text fontSize={14} color={colors.gray500}>
-                {formatDate(exp.start_date)}
+                {formatDateShort(exp.start_date)}
                 {exp.end_date
-                  ? ` - ${formatDate(exp.end_date)}`
+                  ? ` - ${formatDateShort(exp.end_date)}`
                   : exp.is_current
                     ? " - Aujourd'hui"
                     : ""}
@@ -79,4 +74,3 @@ export function FreelanceExperiences({
     </YStack>
   );
 }
-

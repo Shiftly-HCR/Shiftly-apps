@@ -3,10 +3,7 @@
 import { YStack } from "tamagui";
 import { Navbar, Footer } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { useCurrentUser, useCurrentProfile } from "@/hooks";
-import { useSessionContext } from "@/providers/SessionProvider";
-import { signOut } from "@shiftly/data";
+import { useAppLayout } from "@/hooks";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -14,36 +11,14 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
-  const [searchValue, setSearchValue] = useState("");
-  const { user, isLoading: isLoadingUser } = useCurrentUser();
-  const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
-  const { clear } = useSessionContext();
-  const isLoading = isLoadingUser || isLoadingProfile;
-
-  // Rediriger vers login si pas d'utilisateur
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, isLoading, router]);
-
-  const handleLogout = async () => {
-    try {
-      // Déconnecter de Supabase
-      const result = await signOut();
-
-      if (result.success) {
-        // Vider le cache
-        await clear();
-        router.push("/login");
-      }
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
-      // Vider le cache même en cas d'erreur
-      await clear();
-      router.push("/login");
-    }
-  };
+  const {
+    user,
+    profile,
+    isLoading,
+    searchValue,
+    setSearchValue,
+    handleLogout,
+  } = useAppLayout();
 
   // Afficher un loader pendant la vérification
   if (isLoading) {
@@ -96,4 +71,3 @@ export function AppLayout({ children }: AppLayoutProps) {
     </YStack>
   );
 }
-

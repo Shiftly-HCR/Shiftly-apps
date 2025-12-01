@@ -3,25 +3,14 @@
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import { type FreelanceEducation } from "@shiftly/data";
+import { useFormatDate } from "@/hooks";
 
 interface FreelanceEducationsProps {
   educations: FreelanceEducation[];
 }
 
 export function FreelanceEducations({ educations }: FreelanceEducationsProps) {
-  const formatDate = (date?: string) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("fr-FR", {
-      year: "numeric",
-      month: "short",
-    });
-  };
-
-  console.log("🎓 FreelanceEducations - educations reçues:", educations);
-  console.log(
-    "🎓 FreelanceEducations - nombre de formations:",
-    educations?.length || 0
-  );
+  const { formatDateShort } = useFormatDate();
 
   if (!educations || educations.length === 0) {
     console.log("⚠️ FreelanceEducations - Aucune formation, retour null");
@@ -71,8 +60,8 @@ export function FreelanceEducations({ educations }: FreelanceEducationsProps) {
                 </Text>
               )}
               <Text fontSize={14} color={colors.gray500}>
-                {formatDate(edu.start_date)}
-                {edu.end_date ? ` - ${formatDate(edu.end_date)}` : ""}
+                {formatDateShort(edu.start_date)}
+                {edu.end_date ? ` - ${formatDateShort(edu.end_date)}` : ""}
               </Text>
             </YStack>
           </XStack>
@@ -81,4 +70,3 @@ export function FreelanceEducations({ educations }: FreelanceEducationsProps) {
     </YStack>
   );
 }
-

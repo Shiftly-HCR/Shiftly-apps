@@ -2,285 +2,68 @@
 
 import { YStack, XStack, Text } from "tamagui";
 import { Button, Input, DatePicker, Checkbox, colors } from "@shiftly/ui";
-import { useState, useEffect } from "react";
-import type {
-  FreelanceExperience,
-  FreelanceEducation,
-  LinkedInProfileData,
-} from "@shiftly/data";
-import {
-  updateFreelanceProfile,
-  upsertFreelanceExperience,
-  upsertFreelanceEducation,
-  deleteFreelanceExperience,
-  deleteFreelanceEducation,
-  syncLinkedInData,
-} from "@shiftly/data";
-import { useFreelanceData } from "@/hooks";
+import { useFreelanceProfileForm } from "@/hooks";
+import { useFormatDate } from "@/hooks";
 
 interface FreelanceProfileFormProps {
   onSave?: () => void;
 }
 
 export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
+  const { formatDateShort } = useFormatDate();
+
   const {
-    freelanceProfile,
-    experiences,
-    educations,
+    // Données
     isLoading,
-    refreshProfile,
-    refreshExperiences,
-    refreshEducations,
-  } = useFreelanceData();
+    experiencesList,
+    educationsList,
 
-  // États pour le profil
-  const [bio, setBio] = useState("");
-  const [skills, setSkills] = useState<string[]>([]);
-  const [skillInput, setSkillInput] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
-  const [availability, setAvailability] = useState("");
+    // États du profil
+    bio,
+    setBio,
+    skills,
+    skillInput,
+    setSkillInput,
+    hourlyRate,
+    setHourlyRate,
+    availability,
+    setAvailability,
 
-  // États pour les expériences
-  const [experiencesList, setExperiencesList] = useState<FreelanceExperience[]>([]);
-  const [editingExperienceId, setEditingExperienceId] = useState<string | null>(null);
-  const [experienceForm, setExperienceForm] = useState({
-    title: "",
-    company: "",
-    location: "",
-    start_date: "",
-    end_date: "",
-    is_current: false,
-    description: "",
-  });
+    // États des expériences
+    editingExperienceId,
+    experienceForm,
+    setExperienceForm,
 
-  // États pour les formations
-  const [educationsList, setEducationsList] = useState<FreelanceEducation[]>([]);
-  const [editingEducationId, setEditingEducationId] = useState<string | null>(null);
-  const [educationForm, setEducationForm] = useState({
-    school: "",
-    degree: "",
-    field: "",
-    start_date: "",
-    end_date: "",
-  });
+    // États des formations
+    editingEducationId,
+    educationForm,
+    setEducationForm,
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+    // États généraux
+    isSaving,
+    error,
+    success,
 
-  // Charger les données au montage
-  useEffect(() => {
-    if (freelanceProfile) {
-      setBio(freelanceProfile.bio || "");
-      setSkills(freelanceProfile.skills || []);
-      setHourlyRate(freelanceProfile.hourly_rate?.toString() || "");
-      setAvailability(freelanceProfile.availability || "");
-    }
-    setExperiencesList(experiences);
-    setEducationsList(educations);
-  }, [freelanceProfile, experiences, educations]);
+    // Handlers profil
+    handleSaveProfile,
+    handleAddSkill,
+    handleRemoveSkill,
 
-  const handleSaveProfile = async () => {
-    setIsSaving(true);
-    setError("");
-    setSuccess("");
+    // Handlers expériences
+    handleSaveExperience,
+    handleDeleteExperience,
+    handleEditExperience,
+    handleCancelEditExperience,
 
-    try {
-      const result = await updateFreelanceProfile({
-        bio,
-        skills,
-        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
-        availability,
-      });
+    // Handlers formations
+    handleSaveEducation,
+    handleDeleteEducation,
+    handleEditEducation,
+    handleCancelEditEducation,
 
-      if (result.success) {
-        setSuccess("Profil mis à jour avec succès !");
-        await refreshProfile();
-        onSave?.();
-      } else {
-        setError(result.error || "Erreur lors de la mise à jour");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleAddSkill = () => {
-    if (skillInput.trim() && !skills.includes(skillInput.trim())) {
-      setSkills([...skills, skillInput.trim()]);
-      setSkillInput("");
-    }
-  };
-
-  const handleRemoveSkill = (skillToRemove: string) => {
-    setSkills(skills.filter((s) => s !== skillToRemove));
-  };
-
-  const handleSaveExperience = async () => {
-    if (!experienceForm.title || !experienceForm.company) {
-      setError("Le titre et l'entreprise sont requis");
-      return;
-    }
-
-    setIsSaving(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const result = await upsertFreelanceExperience({
-        id: editingExperienceId || undefined,
-        ...experienceForm,
-        start_date: experienceForm.start_date || undefined,
-        end_date: experienceForm.is_current ? undefined : experienceForm.end_date || undefined,
-      });
-
-      if (result.success) {
-        setSuccess("Expérience sauvegardée avec succès !");
-        setEditingExperienceId(null);
-        setExperienceForm({
-          title: "",
-          company: "",
-          location: "",
-          start_date: "",
-          end_date: "",
-          is_current: false,
-          description: "",
-        });
-        await refreshExperiences();
-      } else {
-        setError(result.error || "Erreur lors de la sauvegarde");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDeleteExperience = async (id: string) => {
-    setIsSaving(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const result = await deleteFreelanceExperience(id);
-      if (result.success) {
-        setSuccess("Expérience supprimée avec succès !");
-        await refreshExperiences();
-      } else {
-        setError(result.error || "Erreur lors de la suppression");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleEditExperience = (exp: FreelanceExperience) => {
-    setEditingExperienceId(exp.id);
-    setExperienceForm({
-      title: exp.title || "",
-      company: exp.company || "",
-      location: exp.location || "",
-      start_date: exp.start_date || "",
-      end_date: exp.end_date || "",
-      is_current: exp.is_current || false,
-      description: exp.description || "",
-    });
-  };
-
-  const handleSaveEducation = async () => {
-    if (!educationForm.school) {
-      setError("L'établissement est requis");
-      return;
-    }
-
-    setIsSaving(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const result = await upsertFreelanceEducation({
-        id: editingEducationId || undefined,
-        ...educationForm,
-        start_date: educationForm.start_date || undefined,
-        end_date: educationForm.end_date || undefined,
-      });
-
-      if (result.success) {
-        setSuccess("Formation sauvegardée avec succès !");
-        setEditingEducationId(null);
-        setEducationForm({
-          school: "",
-          degree: "",
-          field: "",
-          start_date: "",
-          end_date: "",
-        });
-        await refreshEducations();
-      } else {
-        setError(result.error || "Erreur lors de la sauvegarde");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDeleteEducation = async (id: string) => {
-    setIsSaving(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const result = await deleteFreelanceEducation(id);
-      if (result.success) {
-        setSuccess("Formation supprimée avec succès !");
-        await refreshEducations();
-      } else {
-        setError(result.error || "Erreur lors de la suppression");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleEditEducation = (edu: FreelanceEducation) => {
-    setEditingEducationId(edu.id);
-    setEducationForm({
-      school: edu.school || "",
-      degree: edu.degree || "",
-      field: edu.field || "",
-      start_date: edu.start_date || "",
-      end_date: edu.end_date || "",
-    });
-  };
-
-  const handleSyncLinkedIn = async () => {
-    setIsSaving(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const result = await syncLinkedInData();
-      if (result.success) {
-        setSuccess("Données LinkedIn synchronisées avec succès !");
-        await Promise.all([refreshProfile(), refreshExperiences(), refreshEducations()]);
-      } else {
-        setError(result.error || "Erreur lors de la synchronisation");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    // Handler LinkedIn
+    handleSyncLinkedIn,
+  } = useFreelanceProfileForm({ onSave });
 
   if (isLoading) {
     return (
@@ -329,7 +112,12 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           <Text fontSize={20} fontWeight="700" color={colors.gray900}>
             Informations générales
           </Text>
-          <Button variant="outline" size="sm" onPress={handleSyncLinkedIn} disabled={isSaving}>
+          <Button
+            variant="outline"
+            size="sm"
+            onPress={handleSyncLinkedIn}
+            disabled={isSaving}
+          >
             🔗 Sync LinkedIn
           </Button>
         </XStack>
@@ -373,7 +161,11 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                   alignItems="center"
                   gap="$2"
                 >
-                  <Text fontSize={14} color={colors.shiftlyViolet} fontWeight="600">
+                  <Text
+                    fontSize={14}
+                    color={colors.shiftlyViolet}
+                    fontWeight="600"
+                  >
                     {skill}
                   </Text>
                   <Text
@@ -421,7 +213,9 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           disabled={isSaving}
           opacity={isSaving ? 0.6 : 1}
         >
-          {isSaving ? "Enregistrement..." : "Enregistrer les informations générales"}
+          {isSaving
+            ? "Enregistrement..."
+            : "Enregistrer les informations générales"}
         </Button>
       </YStack>
 
@@ -449,16 +243,9 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                   {exp.location && `, ${exp.location}`}
                 </Text>
                 <Text fontSize={14} color={colors.gray500}>
-                  {exp.start_date &&
-                    new Date(exp.start_date).toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "short",
-                    })}
+                  {formatDateShort(exp.start_date)}
                   {exp.end_date
-                    ? ` - ${new Date(exp.end_date).toLocaleDateString("fr-FR", {
-                        year: "numeric",
-                        month: "short",
-                      })}`
+                    ? ` - ${formatDateShort(exp.end_date)}`
                     : exp.is_current
                       ? " - Aujourd'hui"
                       : ""}
@@ -496,7 +283,9 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           gap="$4"
         >
           <Text fontSize={16} fontWeight="600" color={colors.gray900}>
-            {editingExperienceId ? "Modifier l'expérience" : "Ajouter une expérience"}
+            {editingExperienceId
+              ? "Modifier l'expérience"
+              : "Ajouter une expérience"}
           </Text>
 
           <YStack gap="$3">
@@ -529,7 +318,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 <DatePicker
                   label="Date de début"
                   value={experienceForm.start_date}
-                  onChange={(date) =>
+                  onChangeText={(date) =>
                     setExperienceForm({
                       ...experienceForm,
                       start_date: date,
@@ -541,7 +330,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 <DatePicker
                   label="Date de fin"
                   value={experienceForm.end_date}
-                  onChange={(date) =>
+                  onChangeText={(date) =>
                     setExperienceForm({
                       ...experienceForm,
                       end_date: date,
@@ -580,21 +369,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 {editingExperienceId ? "Modifier" : "Ajouter"}
               </Button>
               {editingExperienceId && (
-                <Button
-                  variant="outline"
-                  onPress={() => {
-                    setEditingExperienceId(null);
-                    setExperienceForm({
-                      title: "",
-                      company: "",
-                      location: "",
-                      start_date: "",
-                      end_date: "",
-                      is_current: false,
-                      description: "",
-                    });
-                  }}
-                >
+                <Button variant="outline" onPress={handleCancelEditExperience}>
                   Annuler
                 </Button>
               )}
@@ -629,16 +404,8 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                   </Text>
                 )}
                 <Text fontSize={14} color={colors.gray500}>
-                  {edu.start_date &&
-                    new Date(edu.start_date).toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "short",
-                    })}
-                  {edu.end_date &&
-                    ` - ${new Date(edu.end_date).toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "short",
-                    })}`}
+                  {formatDateShort(edu.start_date)}
+                  {edu.end_date && ` - ${formatDateShort(edu.end_date)}`}
                 </Text>
               </YStack>
               <XStack gap="$2">
@@ -668,7 +435,9 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           gap="$4"
         >
           <Text fontSize={16} fontWeight="600" color={colors.gray900}>
-            {editingEducationId ? "Modifier la formation" : "Ajouter une formation"}
+            {editingEducationId
+              ? "Modifier la formation"
+              : "Ajouter une formation"}
           </Text>
 
           <YStack gap="$3">
@@ -701,7 +470,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 <DatePicker
                   label="Date de début"
                   value={educationForm.start_date}
-                  onChange={(date) =>
+                  onChangeText={(date) =>
                     setEducationForm({
                       ...educationForm,
                       start_date: date,
@@ -713,7 +482,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 <DatePicker
                   label="Date de fin"
                   value={educationForm.end_date}
-                  onChange={(date) =>
+                  onChangeText={(date) =>
                     setEducationForm({
                       ...educationForm,
                       end_date: date,
@@ -731,19 +500,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
                 {editingEducationId ? "Modifier" : "Ajouter"}
               </Button>
               {editingEducationId && (
-                <Button
-                  variant="outline"
-                  onPress={() => {
-                    setEditingEducationId(null);
-                    setEducationForm({
-                      school: "",
-                      degree: "",
-                      field: "",
-                      start_date: "",
-                      end_date: "",
-                    });
-                  }}
-                >
+                <Button variant="outline" onPress={handleCancelEditEducation}>
                   Annuler
                 </Button>
               )}
@@ -754,4 +511,3 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
     </YStack>
   );
 }
-

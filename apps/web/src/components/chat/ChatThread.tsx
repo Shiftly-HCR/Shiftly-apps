@@ -1,9 +1,10 @@
 "use client";
 
 import { YStack, ScrollView, Text } from "tamagui";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { MessageBubble } from "./MessageBubble";
 import type { Message } from "@shiftly/data";
+import { useAutoScroll } from "@/hooks";
 
 interface ChatThreadProps {
   messages: Message[];
@@ -21,16 +22,11 @@ export function ChatThread({
   const scrollViewRef = useRef<any>(null);
 
   // Faire défiler vers le bas quand de nouveaux messages arrivent
-  useEffect(() => {
-    if (scrollViewRef.current && messages.length > 0) {
-      // Utiliser requestAnimationFrame pour s'assurer que le DOM est mis à jour
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 50);
-      });
-    }
-  }, [messages.length, messages]);
+  useAutoScroll({
+    scrollViewRef,
+    dependency: messages,
+    enabled: messages.length > 0,
+  });
 
   if (isLoading && messages.length === 0) {
     return (
