@@ -14,7 +14,7 @@ import {
   useUpdateApplicationStatus,
   useUserApplications,
 } from "@/hooks";
-import { useMissionChat } from "@/hooks/useMissionChat";
+import { useMissionChat } from "@/hooks";
 import type { ApplicationStatus } from "@shiftly/data";
 import { AppLayout } from "@/components/AppLayout";
 import { ChatThread, MessageInput } from "@/components/chat";

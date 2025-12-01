@@ -70,4 +70,3 @@ export function useMissionApplications(missionId: string | null) {
   };
 }
 
-

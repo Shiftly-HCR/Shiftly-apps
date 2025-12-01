@@ -5,7 +5,7 @@ import { colors } from "@shiftly/ui";
 import { AppLayout } from "@/components/AppLayout";
 import { useChat } from "@shiftly/data";
 import { ConversationsList, ConversationView } from "@/components/chat";
-import { useConversations } from "@/hooks/useConversations";
+import { useConversations } from "@/hooks";
 import { formatLastMessageTime } from "@/utils/messagingHelpers";
 import { useCurrentProfile } from "@/hooks";
 
