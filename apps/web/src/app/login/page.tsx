@@ -2,41 +2,20 @@
 
 import { YStack, XStack, Text, Image } from "tamagui";
 import { Button, Input, colors } from "@shiftly/ui";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "@shiftly/data";
-import { useSessionContext } from "@/providers/SessionProvider";
+import { useLoginPage } from "@/hooks";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { refresh } = useSessionContext();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLogin = async () => {
-    setError("");
-    setIsLoading(true);
-
-    if (!email || !password) {
-      setError("Veuillez remplir tous les champs");
-      setIsLoading(false);
-      return;
-    }
-
-    const result = await signIn({ email, password });
-
-    if (result.success) {
-      // Rafraîchir le cache après connexion
-      await refresh();
-      router.push("/home");
-    } else {
-      setError(result.error || "Une erreur est survenue");
-    }
-
-    setIsLoading(false);
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    error,
+    isLoading,
+    handleLogin,
+  } = useLoginPage();
 
   return (
     <YStack
