@@ -96,3 +96,4 @@ export function AppLayout({ children }: AppLayoutProps) {
     </YStack>
   );
 }
+

@@ -2,9 +2,8 @@
 
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout, ConversationsList, ConversationView } from "@/components";
 import { useChat } from "@shiftly/data";
-import { ConversationsList, ConversationView } from "@/components/chat";
 import { useConversations } from "@/hooks";
 import { formatLastMessageTime } from "@/utils/messagingHelpers";
 import { useCurrentProfile } from "@/hooks";

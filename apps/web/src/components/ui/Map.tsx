@@ -107,8 +107,6 @@ export default function Map({
         dragPan={interactive}
         dragRotate={interactive}
         doubleClickZoom={interactive}
-        touchZoom={interactive}
-        touchRotate={interactive}
         keyboard={interactive}
       >
         {/* Contrôles de navigation */}

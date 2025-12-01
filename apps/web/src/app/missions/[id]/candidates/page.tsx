@@ -11,13 +11,15 @@ import {
   useUpdateApplicationStatus,
   useCurrentProfile,
 } from "@/hooks";
-import { AppLayout } from "@/components/AppLayout";
-import { MissionCandidatesHeader } from "@/components/MissionCandidatesHeader";
-import { MissionCandidatesTabs } from "@/components/MissionCandidatesTabs";
-import { MissionCandidatesFilters } from "@/components/MissionCandidatesFilters";
-import { MissionCandidatesList } from "@/components/MissionCandidatesList";
-import { MissionDetailsTab } from "@/components/MissionDetailsTab";
-import { MissionActivityTab } from "@/components/MissionActivityTab";
+import {
+  AppLayout,
+  MissionCandidatesHeader,
+  MissionCandidatesTabs,
+  MissionCandidatesFilters,
+  MissionCandidatesList,
+  MissionDetailsTab,
+  MissionActivityTab,
+} from "@/components";
 
 type TabType = "candidates" | "details" | "activity";
 

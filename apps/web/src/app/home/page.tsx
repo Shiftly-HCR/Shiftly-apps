@@ -12,7 +12,7 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FiMap, FiList } from "react-icons/fi";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout } from "@/components";
 import { getPublishedMissions, type Mission } from "@shiftly/data";
 import { useSessionContext } from "@/providers/SessionProvider";
 import dynamic from "next/dynamic";

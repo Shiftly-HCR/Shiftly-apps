@@ -3,7 +3,7 @@
 import { YStack, Text } from "tamagui";
 import { useRouter } from "next/navigation";
 import { colors } from "@shiftly/ui";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout } from "@/components";
 import { useCurrentProfile } from "@/hooks";
 import RecruiterMissionsPage from "./recruiter/page";
 import FreelanceMissionsPage from "./freelance/page";

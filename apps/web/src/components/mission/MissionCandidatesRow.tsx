@@ -4,7 +4,7 @@ import { XStack, YStack, Text, Image } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { FiMessageCircle } from "react-icons/fi";
-import { SimpleCheckbox } from "./SimpleCheckbox";
+import { SimpleCheckbox } from "@/components/ui/SimpleCheckbox";
 import { type MissionApplicationWithProfile, type ApplicationStatus } from "@shiftly/data";
 import { openConversation } from "@/utils/chatService";
 

@@ -2,15 +2,13 @@
 
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
-import { type FreelanceExperience } from "@shiftly/data";
+import { type FreelanceEducation } from "@shiftly/data";
 
-interface FreelanceExperiencesProps {
-  experiences: FreelanceExperience[];
+interface FreelanceEducationsProps {
+  educations: FreelanceEducation[];
 }
 
-export function FreelanceExperiences({
-  experiences,
-}: FreelanceExperiencesProps) {
+export function FreelanceEducations({ educations }: FreelanceEducationsProps) {
   const formatDate = (date?: string) => {
     if (!date) return "";
     return new Date(date).toLocaleDateString("fr-FR", {
@@ -19,10 +17,21 @@ export function FreelanceExperiences({
     });
   };
 
+  console.log("🎓 FreelanceEducations - educations reçues:", educations);
+  console.log(
+    "🎓 FreelanceEducations - nombre de formations:",
+    educations?.length || 0
+  );
+
+  if (!educations || educations.length === 0) {
+    console.log("⚠️ FreelanceEducations - Aucune formation, retour null");
+    return null;
+  }
+
   return (
     <YStack gap="$3">
       <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-        Expériences
+        Formations
       </Text>
       <YStack gap="$4" position="relative" paddingLeft="$4">
         {/* Ligne verticale */}
@@ -35,8 +44,8 @@ export function FreelanceExperiences({
           backgroundColor={colors.shiftlyViolet}
         />
 
-        {experiences.map((exp, index) => (
-          <XStack key={exp.id || index} gap="$3" alignItems="flex-start">
+        {educations.map((edu, index) => (
+          <XStack key={edu.id || index} gap="$3" alignItems="flex-start">
             {/* Icône */}
             <YStack
               width={16}
@@ -53,25 +62,18 @@ export function FreelanceExperiences({
             {/* Contenu */}
             <YStack flex={1} gap="$1">
               <Text fontSize={18} fontWeight="600" color={colors.gray900}>
-                {exp.title}
+                {edu.school}
               </Text>
-              <Text fontSize={16} color={colors.gray700} fontWeight="500">
-                {exp.company}
-                {exp.location && `, ${exp.location}`}
-              </Text>
-              <Text fontSize={14} color={colors.gray500}>
-                {formatDate(exp.start_date)}
-                {exp.end_date
-                  ? ` - ${formatDate(exp.end_date)}`
-                  : exp.is_current
-                    ? " - Aujourd'hui"
-                    : ""}
-              </Text>
-              {exp.description && (
-                <Text fontSize={14} color={colors.gray700} marginTop="$2">
-                  {exp.description}
+              {edu.degree && (
+                <Text fontSize={16} color={colors.gray700} fontWeight="500">
+                  {edu.degree}
+                  {edu.field && ` - ${edu.field}`}
                 </Text>
               )}
+              <Text fontSize={14} color={colors.gray500}>
+                {formatDate(edu.start_date)}
+                {edu.end_date ? ` - ${formatDate(edu.end_date)}` : ""}
+              </Text>
             </YStack>
           </XStack>
         ))}
@@ -79,3 +81,4 @@ export function FreelanceExperiences({
     </YStack>
   );
 }
+

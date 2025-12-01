@@ -23,7 +23,7 @@ export function SessionCacheDebug() {
 
   return (
     <YStack
-      position="fixed"
+      position="absolute"
       bottom={16}
       right={16}
       padding="$3"
@@ -38,12 +38,17 @@ export function SessionCacheDebug() {
       zIndex={9999}
       minWidth={200}
     >
-      <Text fontSize={12} fontWeight="700" color={colors.gray900} marginBottom="$2">
+      <Text
+        fontSize={12}
+        fontWeight="700"
+        color={colors.gray900}
+        marginBottom="$2"
+      >
         🔍 Session Cache Debug
       </Text>
       <YStack gap="$1">
         <XStack justifyContent="space-between">
-          <Text fontSize={11} color={colors.gray600}>
+          <Text fontSize={11} color={colors.gray700}>
             Requêtes Supabase:
           </Text>
           <Text fontSize={11} fontWeight="600" color={colors.gray900}>
@@ -52,7 +57,7 @@ export function SessionCacheDebug() {
         </XStack>
         {cacheAge !== null && (
           <XStack justifyContent="space-between">
-            <Text fontSize={11} color={colors.gray600}>
+            <Text fontSize={11} color={colors.gray700}>
               Cache age:
             </Text>
             <Text fontSize={11} fontWeight="600" color={colors.gray900}>
@@ -61,7 +66,7 @@ export function SessionCacheDebug() {
           </XStack>
         )}
         <XStack justifyContent="space-between">
-          <Text fontSize={11} color={colors.gray600}>
+          <Text fontSize={11} color={colors.gray700}>
             User ID:
           </Text>
           <Text fontSize={11} fontWeight="600" color={colors.gray900}>
@@ -69,7 +74,7 @@ export function SessionCacheDebug() {
           </Text>
         </XStack>
         <XStack justifyContent="space-between">
-          <Text fontSize={11} color={colors.gray600}>
+          <Text fontSize={11} color={colors.gray700}>
             Role:
           </Text>
           <Text fontSize={11} fontWeight="600" color={colors.gray900}>
@@ -80,6 +85,3 @@ export function SessionCacheDebug() {
     </YStack>
   );
 }
-
-
-

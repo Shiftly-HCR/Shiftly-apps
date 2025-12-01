@@ -20,7 +20,7 @@ import {
   reverseGeocode,
   debounce,
 } from "@shiftly/data";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout } from "@/components";
 import { useRecruiterMissions, useCachedMission } from "@/hooks";
 import dynamic from "next/dynamic";
 

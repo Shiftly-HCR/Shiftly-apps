@@ -30,4 +30,3 @@ export function SimpleCheckbox({ checked, onPress }: SimpleCheckboxProps) {
     </XStack>
   );
 }
-

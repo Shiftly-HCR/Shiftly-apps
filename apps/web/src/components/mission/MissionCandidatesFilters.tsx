@@ -2,7 +2,7 @@
 
 import { YStack, XStack, Text } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
-import { SimpleCheckbox } from "./SimpleCheckbox";
+import { SimpleCheckbox } from "@/components/ui/SimpleCheckbox";
 import { type ApplicationStatus } from "@shiftly/data";
 
 interface MissionCandidatesFiltersProps {

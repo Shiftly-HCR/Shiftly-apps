@@ -5,7 +5,7 @@ import { Button, MissionCard, colors } from "@shiftly/ui";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiArrowRight, FiHeadphones } from "react-icons/fi";
-import { AppLayout } from "@/components/AppLayout";
+import { AppLayout } from "@/components";
 import { getPublishedMissions, type Mission } from "@shiftly/data";
 import { useCurrentProfile } from "@/hooks";
 

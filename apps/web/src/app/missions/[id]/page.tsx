@@ -16,8 +16,7 @@ import {
 } from "@/hooks";
 import { useMissionChat } from "@/hooks";
 import type { ApplicationStatus } from "@shiftly/data";
-import { AppLayout } from "@/components/AppLayout";
-import { ChatThread, MessageInput } from "@/components/chat";
+import { AppLayout, ChatThread, MessageInput } from "@/components";
 import { openConversation } from "@/utils/chatService";
 import dynamic from "next/dynamic";
 
