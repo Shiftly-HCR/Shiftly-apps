@@ -1,6 +1,6 @@
 "use client";
 
-import { useSessionContext } from "../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 import type { SessionCache } from "@shiftly/core";
 
 /**

@@ -13,16 +13,16 @@ import {
   useMissionApplications,
   useUpdateApplicationStatus,
   useUserApplications,
-} from "../../../hooks";
-import { useMissionChat } from "../../../hooks/useMissionChat";
+} from "@/hooks";
+import { useMissionChat } from "@/hooks/useMissionChat";
 import type { ApplicationStatus } from "@shiftly/data";
-import { AppLayout } from "../../../components/AppLayout";
-import { ChatThread, MessageInput } from "../../../components/chat";
-import { openConversation } from "../../../utils/chatService";
+import { AppLayout } from "@/components/AppLayout";
+import { ChatThread, MessageInput } from "@/components/chat";
+import { openConversation } from "@/utils/chatService";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
-const Map = dynamic(() => import("../../../components/Map"), {
+const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
   loading: () => (
     <YStack

@@ -12,9 +12,9 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FiGrid, FiList } from "react-icons/fi";
-import { AppLayout } from "../../components/AppLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { getPublishedFreelances, type FreelanceProfile } from "@shiftly/data";
-import { useSessionContext } from "../../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 
 const positionOptions = [
   { label: "Tous les postes", value: "all" },

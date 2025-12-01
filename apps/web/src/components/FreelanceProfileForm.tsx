@@ -16,7 +16,7 @@ import {
   deleteFreelanceEducation,
   syncLinkedInData,
 } from "@shiftly/data";
-import { useFreelanceData } from "../hooks/useFreelanceData";
+import { useFreelanceData } from "@/hooks/useFreelanceData";
 
 interface FreelanceProfileFormProps {
   onSave?: () => void;

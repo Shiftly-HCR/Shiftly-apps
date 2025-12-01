@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { TamaguiProvider } from "../providers/TamaguiProvider";
-import { SessionProvider } from "../providers/SessionProvider";
-import { SessionCacheDebug } from "../components/SessionCacheDebug";
+import { TamaguiProvider } from "@/providers/TamaguiProvider";
+import { SessionProvider } from "@/providers/SessionProvider";
+import { SessionCacheDebug } from "@/components/SessionCacheDebug";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -19,12 +19,12 @@ import {
   reverseGeocode,
   debounce,
 } from "@shiftly/data";
-import { AppLayout } from "../../../components/AppLayout";
-import { useRecruiterMissions } from "../../../hooks";
+import { AppLayout } from "@/components/AppLayout";
+import { useRecruiterMissions } from "@/hooks";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
-const Map = dynamic(() => import("../../../components/Map"), {
+const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
   loading: () => (
     <YStack

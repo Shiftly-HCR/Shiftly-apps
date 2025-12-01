@@ -10,14 +10,14 @@ import {
   useMissionApplications,
   useUpdateApplicationStatus,
   useCurrentProfile,
-} from "../../../../hooks";
-import { AppLayout } from "../../../../components/AppLayout";
-import { MissionCandidatesHeader } from "../../../../components/MissionCandidatesHeader";
-import { MissionCandidatesTabs } from "../../../../components/MissionCandidatesTabs";
-import { MissionCandidatesFilters } from "../../../../components/MissionCandidatesFilters";
-import { MissionCandidatesList } from "../../../../components/MissionCandidatesList";
-import { MissionDetailsTab } from "../../../../components/MissionDetailsTab";
-import { MissionActivityTab } from "../../../../components/MissionActivityTab";
+} from "@/hooks";
+import { AppLayout } from "@/components/AppLayout";
+import { MissionCandidatesHeader } from "@/components/MissionCandidatesHeader";
+import { MissionCandidatesTabs } from "@/components/MissionCandidatesTabs";
+import { MissionCandidatesFilters } from "@/components/MissionCandidatesFilters";
+import { MissionCandidatesList } from "@/components/MissionCandidatesList";
+import { MissionDetailsTab } from "@/components/MissionDetailsTab";
+import { MissionActivityTab } from "@/components/MissionActivityTab";
 
 type TabType = "candidates" | "details" | "activity";
 

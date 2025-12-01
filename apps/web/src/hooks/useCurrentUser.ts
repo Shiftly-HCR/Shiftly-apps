@@ -1,6 +1,6 @@
 "use client";
 
-import { useSessionContext } from "../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 import type { User, Session } from "@supabase/supabase-js";
 
 /**

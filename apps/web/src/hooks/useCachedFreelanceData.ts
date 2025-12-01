@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSessionContext } from "../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 import {
   getFreelanceExperiencesById,
   getFreelanceEducationsById,

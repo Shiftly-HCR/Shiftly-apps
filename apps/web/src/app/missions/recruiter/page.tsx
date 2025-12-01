@@ -3,8 +3,8 @@
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { useRouter } from "next/navigation";
 import { MissionCard, CreateMissionCard, colors } from "@shiftly/ui";
-import { AppLayout } from "../../../components/AppLayout";
-import { useRecruiterMissions } from "../../../hooks";
+import { AppLayout } from "@/components/AppLayout";
+import { useRecruiterMissions } from "@/hooks";
 
 export default function RecruiterMissionsPage() {
   const router = useRouter();

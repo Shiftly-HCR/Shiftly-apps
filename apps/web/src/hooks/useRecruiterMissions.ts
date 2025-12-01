@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useSessionContext } from "../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 import type { Mission } from "@shiftly/data";
 
 /**

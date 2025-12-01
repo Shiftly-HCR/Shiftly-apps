@@ -9,9 +9,9 @@ import {
   uploadProfilePhoto,
   deleteProfilePhoto,
 } from "@shiftly/data";
-import { useCurrentProfile } from "../../hooks";
-import { AppLayout } from "../../components/AppLayout";
-import { FreelanceProfileForm } from "../../components/FreelanceProfileForm";
+import { useCurrentProfile } from "@/hooks";
+import { AppLayout } from "@/components/AppLayout";
+import { FreelanceProfileForm } from "@/components/FreelanceProfileForm";
 
 export default function ProfilePage() {
   const router = useRouter();

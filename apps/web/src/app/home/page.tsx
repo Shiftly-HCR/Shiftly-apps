@@ -12,13 +12,13 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FiMap, FiList } from "react-icons/fi";
-import { AppLayout } from "../../components/AppLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { getPublishedMissions, type Mission } from "@shiftly/data";
-import { useSessionContext } from "../../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
-const Map = dynamic(() => import("../../components/Map"), {
+const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
   loading: () => (
     <YStack

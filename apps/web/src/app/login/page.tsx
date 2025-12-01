@@ -5,7 +5,7 @@ import { Button, Input, colors } from "@shiftly/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@shiftly/data";
-import { useSessionContext } from "../../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 
 export default function LoginPage() {
   const router = useRouter();

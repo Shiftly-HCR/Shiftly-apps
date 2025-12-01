@@ -2,12 +2,12 @@
 
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
-import { AppLayout } from "../../components/AppLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { useChat } from "@shiftly/data";
-import { ConversationsList, ConversationView } from "../../components/chat";
-import { useConversations } from "../../hooks/useConversations";
-import { formatLastMessageTime } from "../../utils/messagingHelpers";
-import { useCurrentProfile } from "../../hooks";
+import { ConversationsList, ConversationView } from "@/components/chat";
+import { useConversations } from "@/hooks/useConversations";
+import { formatLastMessageTime } from "@/utils/messagingHelpers";
+import { useCurrentProfile } from "@/hooks";
 
 export default function MessageriePage() {
   const { profile } = useCurrentProfile();

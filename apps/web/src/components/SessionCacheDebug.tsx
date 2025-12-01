@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, Text, XStack } from "tamagui";
-import { useSessionContext } from "../providers/SessionProvider";
+import { useSessionContext } from "@/providers/SessionProvider";
 import { colors } from "@shiftly/ui";
 
 /**

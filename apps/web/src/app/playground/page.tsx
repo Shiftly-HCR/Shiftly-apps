@@ -31,9 +31,9 @@ import {
   useShiftlyToast,
   colors,
 } from "@shiftly/ui";
-import { SearchBar } from "../../../../../packages/ui/src/components/web/SearchBar";
-import { BottomNavigation } from "../../../../../packages/ui/src/components/web/BottomNavigation";
-import { ProfileCard } from "../../../../../packages/ui/src/components/web/ProfileCard";
+import { SearchBar } from "@shiftly/ui/components/web/SearchBar";
+import { BottomNavigation } from "@shiftly/ui/components/web/BottomNavigation";
+import { ProfileCard } from "@shiftly/ui/components/web/ProfileCard";
 
 export default function PlaygroundPage() {
   const toast = useShiftlyToast();

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { YStack, Paragraph, H2, ScrollView } from "tamagui";
 import { Navbar } from "@shiftly/ui";
-import { signOut } from "../../../../../packages/data/auth/auth";
+import { signOut } from "@shiftly/data";
 import { useRouter } from "next/navigation";
 
 export default function NavbarDemoPage() {

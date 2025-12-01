@@ -2,7 +2,7 @@
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, BaseCard, colors } from "@shiftly/ui";
-import { AppLayout } from "../../components/AppLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { FiCheck, FiHome, FiUser, FiBriefcase } from "react-icons/fi";
 
 interface SubscriptionPlan {

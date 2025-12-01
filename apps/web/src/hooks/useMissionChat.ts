@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useChat, getOrCreateConversation } from "@shiftly/data";
 import type { Conversation } from "@shiftly/data";
-import { useCurrentProfile } from "./useCurrentProfile";
+import { useCurrentProfile } from "@/hooks/useCurrentProfile";
 import { getProfileById } from "@shiftly/data";
 import { supabase } from "@shiftly/data";
 

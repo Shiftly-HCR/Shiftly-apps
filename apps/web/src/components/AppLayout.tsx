@@ -4,8 +4,8 @@ import { YStack } from "tamagui";
 import { Navbar, Footer } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useCurrentUser, useCurrentProfile } from "../hooks";
-import { useSessionContext } from "../providers/SessionProvider";
+import { useCurrentUser, useCurrentProfile } from "@/hooks";
+import { useSessionContext } from "@/providers/SessionProvider";
 import { signOut } from "@shiftly/data";
 
 interface AppLayoutProps {

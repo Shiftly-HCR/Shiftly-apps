@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FiMessageCircle } from "react-icons/fi";
 import { SimpleCheckbox } from "./SimpleCheckbox";
 import { type MissionApplicationWithProfile, type ApplicationStatus } from "@shiftly/data";
-import { openConversation } from "../utils/chatService";
+import { openConversation } from "@/utils/chatService";
 
 interface MissionCandidatesRowProps {
   application: MissionApplicationWithProfile;

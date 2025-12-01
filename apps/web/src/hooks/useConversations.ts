@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { listUserConversations } from "@shiftly/data";
 import type { ConversationWithDetails } from "@shiftly/data";
-import { useCurrentProfile } from "./useCurrentProfile";
+import { useCurrentProfile } from "@/hooks/useCurrentProfile";
 
 /**
  * Hook pour gérer les conversations et la sélection
