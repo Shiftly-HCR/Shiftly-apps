@@ -23,11 +23,14 @@ export function ChatThread({
   // Faire défiler vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
     if (scrollViewRef.current && messages.length > 0) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      // Utiliser requestAnimationFrame pour s'assurer que le DOM est mis à jour
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 50);
+      });
     }
-  }, [messages.length]);
+  }, [messages.length, messages]);
 
   if (isLoading && messages.length === 0) {
     return (

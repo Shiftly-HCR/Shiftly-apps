@@ -54,21 +54,7 @@ export function ConversationItem({
             {lastMessage.content}
           </Text>
         )}
-        {conversation.unread_count && conversation.unread_count > 0 && (
-          <XStack
-            alignSelf="flex-start"
-            backgroundColor={colors.shiftlyViolet}
-            borderRadius={10}
-            paddingHorizontal="$2"
-            paddingVertical="$1"
-          >
-            <Text fontSize={10} fontWeight="600" color={colors.white}>
-              {conversation.unread_count}
-            </Text>
-          </XStack>
-        )}
       </YStack>
     </XStack>
   );
 }
-
