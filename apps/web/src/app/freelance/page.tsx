@@ -8,7 +8,7 @@ import {
   colors,
 } from "@shiftly/ui";
 import { FiGrid, FiList } from "react-icons/fi";
-import { AppLayout } from "@/components";
+import { AppLayout, PageLoading } from "@/components";
 import { useFreelancePage } from "@/hooks";
 
 export default function FreelancePage() {

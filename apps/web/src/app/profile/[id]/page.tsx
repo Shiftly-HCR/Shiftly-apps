@@ -1,36 +1,32 @@
 "use client";
 
-import { useState } from "react";
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, Badge, colors } from "@shiftly/ui";
-import { useRouter, useParams } from "next/navigation";
-import { AppLayout, FreelanceExperiences, FreelanceEducations, PageLoading } from "@/components";
-import { FiCheck, FiMessageCircle, FiBookmark } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 import {
-  useCachedProfile,
-  useCachedFreelanceData,
-  useCurrentProfile,
-} from "@/hooks";
+  AppLayout,
+  FreelanceExperiences,
+  FreelanceEducations,
+  PageLoading,
+} from "@/components";
+import { FiCheck, FiMessageCircle, FiBookmark } from "react-icons/fi";
+import { useFreelanceProfilePage } from "@/hooks";
 import { navigateToMessaging } from "@/utils/chatService";
 
 type TabType = "overview" | "availability" | "reviews" | "documents";
 
 export default function FreelanceProfilePage() {
   const router = useRouter();
-  const params = useParams();
-  const freelanceId = params?.id as string;
-
-  const { profile, isLoading: isLoadingProfile } =
-    useCachedProfile(freelanceId);
   const {
+    freelanceId,
+    profile,
     experiences,
     educations,
-    isLoading: isLoadingExperiences,
-  } = useCachedFreelanceData(freelanceId);
-  const { profile: currentProfile } = useCurrentProfile();
-  const [activeTab, setActiveTab] = useState<TabType>("overview");
-
-  const isLoading = isLoadingProfile || isLoadingExperiences;
+    currentProfile,
+    activeTab,
+    setActiveTab,
+    isLoading,
+  } = useFreelanceProfilePage();
 
   if (isLoading) {
     return <PageLoading />;
@@ -109,7 +105,7 @@ export default function FreelanceProfilePage() {
                     <Text fontSize={32} fontWeight="700" color={colors.gray900}>
                       {getFullName()}
                     </Text>
-                    {profile.note && (
+                    {"note" in profile && profile.note && (
                       <XStack alignItems="center" gap="$1">
                         <Text fontSize={16} color={colors.shiftlyGold}>
                           ⭐
@@ -126,7 +122,9 @@ export default function FreelanceProfilePage() {
                   </XStack>
 
                   <Text fontSize={18} color={colors.gray700} fontWeight="500">
-                    {profile.headline || "Freelance"}
+                    {"headline" in profile && profile.headline
+                      ? profile.headline
+                      : "Freelance"}
                   </Text>
 
                   {/* Badges */}
@@ -220,45 +218,49 @@ export default function FreelanceProfilePage() {
                       À propos
                     </Text>
                     <Text fontSize={16} color={colors.gray700} lineHeight={24}>
-                      {profile.summary ||
-                        profile.bio ||
-                        "Aucune description disponible."}
+                      {"summary" in profile && profile.summary
+                        ? profile.summary
+                        : profile.bio || "Aucune description disponible."}
                     </Text>
                   </YStack>
 
                   {/* Compétences */}
-                  {profile.skills && profile.skills.length > 0 && (
-                    <YStack gap="$3">
-                      <Text
-                        fontSize={20}
-                        fontWeight="700"
-                        color={colors.gray900}
-                      >
-                        Compétences
-                      </Text>
-                      <XStack gap="$2" flexWrap="wrap">
-                        {profile.skills.map((skill, index) => (
-                          <XStack
-                            key={index}
-                            paddingHorizontal="$3"
-                            paddingVertical="$2"
-                            backgroundColor={colors.white}
-                            borderRadius="$3"
-                            borderWidth={1}
-                            borderColor={colors.gray200}
-                          >
-                            <Text
-                              fontSize={14}
-                              color={colors.gray700}
-                              fontWeight="500"
-                            >
-                              {skill}
-                            </Text>
-                          </XStack>
-                        ))}
-                      </XStack>
-                    </YStack>
-                  )}
+                  {"skills" in profile &&
+                    profile.skills &&
+                    profile.skills.length > 0 && (
+                      <YStack gap="$3">
+                        <Text
+                          fontSize={20}
+                          fontWeight="700"
+                          color={colors.gray900}
+                        >
+                          Compétences
+                        </Text>
+                        <XStack gap="$2" flexWrap="wrap">
+                          {profile.skills.map(
+                            (skill: string, index: number) => (
+                              <XStack
+                                key={index}
+                                paddingHorizontal="$3"
+                                paddingVertical="$2"
+                                backgroundColor={colors.white}
+                                borderRadius="$3"
+                                borderWidth={1}
+                                borderColor={colors.gray200}
+                              >
+                                <Text
+                                  fontSize={14}
+                                  color={colors.gray700}
+                                  fontWeight="500"
+                                >
+                                  {skill}
+                                </Text>
+                              </XStack>
+                            )
+                          )}
+                        </XStack>
+                      </YStack>
+                    )}
 
                   {/* Expériences */}
                   <FreelanceExperiences experiences={experiences} />
@@ -318,8 +320,7 @@ export default function FreelanceProfilePage() {
               borderRadius={12}
               borderWidth={1}
               borderColor={colors.gray200}
-              position="sticky"
-              top={20}
+              style={{ position: "sticky", top: 20 }}
             >
               <Button
                 variant="primary"
