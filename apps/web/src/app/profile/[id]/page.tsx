@@ -4,7 +4,7 @@ import { useState } from "react";
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, Badge, colors } from "@shiftly/ui";
 import { useRouter, useParams } from "next/navigation";
-import { AppLayout, FreelanceExperiences, FreelanceEducations } from "@/components";
+import { AppLayout, FreelanceExperiences, FreelanceEducations, PageLoading } from "@/components";
 import { FiCheck, FiMessageCircle, FiBookmark } from "react-icons/fi";
 import {
   useCachedProfile,
@@ -33,20 +33,7 @@ export default function FreelanceProfilePage() {
   const isLoading = isLoadingProfile || isLoadingExperiences;
 
   if (isLoading) {
-    return (
-      <AppLayout>
-        <YStack
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          padding="$6"
-        >
-          <Text fontSize={16} color={colors.gray700}>
-            Chargement du profil...
-          </Text>
-        </YStack>
-      </AppLayout>
-    );
+    return <PageLoading />;
   }
 
   if (!profile) {

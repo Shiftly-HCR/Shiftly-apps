@@ -16,5 +16,8 @@ export * from "./freelance";
 // Layout hooks
 export * from "./layout";
 
+// Page hooks
+export * from "./pages";
+
 // Utils hooks
 export * from "./utils";

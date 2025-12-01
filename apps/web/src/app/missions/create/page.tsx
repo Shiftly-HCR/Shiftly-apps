@@ -1,8 +1,6 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView, Image } from "tamagui";
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import {
   Button,
   Input,
@@ -11,200 +9,58 @@ import {
   TimePicker,
   colors,
 } from "@shiftly/ui";
-import {
-  createMission,
-  uploadMissionImage,
-  publishMission,
-  geocodeAddress,
-  reverseGeocode,
-  debounce,
-} from "@shiftly/data";
 import { AppLayout } from "@/components";
-import { useRecruiterMissions } from "@/hooks";
-import dynamic from "next/dynamic";
-
-// Import dynamique de Map pour éviter les erreurs SSR
-const Map = dynamic(() => import("@/components/ui/Map"), {
-  ssr: false,
-  loading: () => (
-    <YStack
-      backgroundColor={colors.gray100}
-      borderRadius={12}
-      height={250}
-      alignItems="center"
-      justifyContent="center"
-      borderWidth={1}
-      borderColor={colors.gray200}
-    >
-      <Text fontSize={14} color={colors.gray500}>
-        Chargement de la carte...
-      </Text>
-    </YStack>
-  ),
-});
-
-type Step = 1 | 2 | 3 | 4;
+import { MapLoader } from "@/components";
+import { useCreateMissionPage } from "@/hooks";
 
 export default function CreateMissionPage() {
-  const router = useRouter();
-  const { refresh } = useRecruiterMissions();
-  const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const {
+    // États des étapes
+    currentStep,
+    isLoading,
+    error,
 
-  // Étape 1: Infos générales
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [skills, setSkills] = useState<string>("");
+    // États Étape 1: Infos générales
+    title,
+    setTitle,
+    description,
+    setDescription,
+    skills,
+    setSkills,
 
-  // Étape 2: Localisation
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [latitude, setLatitude] = useState<number>(48.8566); // Paris par défaut
-  const [longitude, setLongitude] = useState<number>(2.3522);
+    // États Étape 2: Localisation
+    address,
+    setAddress,
+    city,
+    setCity,
+    postalCode,
+    setPostalCode,
+    latitude,
+    longitude,
+    isGeocoding,
 
-  // Étape 3: Dates et horaires
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+    // États Étape 3: Dates et horaires
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    startTime,
+    setStartTime,
+    endTime,
+    setEndTime,
 
-  // Étape 4: Rémunération et image
-  const [hourlyRate, setHourlyRate] = useState("");
-  const [missionImage, setMissionImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+    // États Étape 4: Rémunération et image
+    hourlyRate,
+    setHourlyRate,
+    imagePreview,
 
-  // État pour le géocodage
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
-
-  // Géocodage de l'adresse vers coordonnées (avec debounce)
-  const handleAddressChange = useCallback(
-    debounce(async (addr: string, cty: string, postal: string) => {
-      if (!addr && !cty && !postal) return;
-
-      setIsGeocoding(true);
-      const result = await geocodeAddress(addr, cty, postal, mapboxToken);
-      setIsGeocoding(false);
-
-      if (result) {
-        setLatitude(result.latitude);
-        setLongitude(result.longitude);
-        // Mettre à jour les champs si vides
-        if (!cty && result.city) setCity(result.city);
-        if (!postal && result.postalCode) setPostalCode(result.postalCode);
-      }
-    }, 1000),
-    [mapboxToken]
-  );
-
-  // Géocodage inversé des coordonnées vers adresse
-  const handleMapClick = useCallback(
-    async (lat: number, lng: number) => {
-      setLatitude(lat);
-      setLongitude(lng);
-
-      setIsGeocoding(true);
-      const result = await reverseGeocode(lat, lng, mapboxToken);
-      setIsGeocoding(false);
-
-      if (result) {
-        setAddress(result.address);
-        setCity(result.city);
-        setPostalCode(result.postalCode);
-      }
-    },
-    [mapboxToken]
-  );
-
-  // Effet pour déclencher le géocodage quand l'adresse change
-  useEffect(() => {
-    handleAddressChange(address, city, postalCode);
-  }, [address, city, postalCode, handleAddressChange]);
-
-  const handleNext = () => {
-    setError("");
-
-    // Validation selon l'étape
-    if (currentStep === 1) {
-      if (!title.trim()) {
-        setError("Le titre est requis");
-        return;
-      }
-    }
-
-    if (currentStep < 4) {
-      setCurrentStep((currentStep + 1) as Step);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((currentStep - 1) as Step);
-    }
-  };
-
-  const handleImageChange = (file: File) => {
-    setMissionImage(file);
-    // Créer un aperçu
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleSubmit = async (saveAsDraft: boolean = false) => {
-    setError("");
-    setIsLoading(true);
-
-    try {
-      // Créer la mission
-      const skillsArray = skills
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
-
-      const missionResult = await createMission({
-        title,
-        description,
-        skills: skillsArray.length > 0 ? skillsArray : undefined,
-        address: address || undefined,
-        city: city || undefined,
-        postal_code: postalCode || undefined,
-        latitude: latitude,
-        longitude: longitude,
-        start_date: startDate || undefined,
-        end_date: endDate || undefined,
-        start_time: startTime || undefined,
-        end_time: endTime || undefined,
-        hourly_rate: hourlyRate ? parseFloat(hourlyRate) : undefined,
-        status: saveAsDraft ? "draft" : "published",
-      });
-
-      if (!missionResult.success) {
-        setError(missionResult.error || "Erreur lors de la création");
-        setIsLoading(false);
-        return;
-      }
-
-      // Upload l'image si elle existe
-      if (missionImage && missionResult.mission) {
-        await uploadMissionImage(missionResult.mission.id, missionImage);
-      }
-
-      // Rafraîchir le cache des missions
-      await refresh();
-
-      // Redirection vers la liste des missions
-      router.push("/missions");
-    } catch (err) {
-      console.error(err);
-      setError("Une erreur est survenue");
-      setIsLoading(false);
-    }
-  };
+    // Handlers
+    handleNext,
+    handleBack,
+    handleImageChange,
+    handleMapClick,
+    handleSubmit,
+  } = useCreateMissionPage();
 
   const renderStepIndicator = () => (
     <XStack gap="$2" justifyContent="center" marginBottom="$6">
@@ -317,7 +173,7 @@ export default function CreateMissionPage() {
           Cliquez sur la carte pour positionner le marqueur et remplir l'adresse
           automatiquement
         </Text>
-        <Map
+        <MapLoader
           latitude={latitude}
           longitude={longitude}
           zoom={13}
@@ -428,8 +284,7 @@ export default function CreateMissionPage() {
             variant="outline"
             size="sm"
             onPress={() => {
-              setMissionImage(null);
-              setImagePreview("");
+              handleImageChange(null as any);
             }}
           >
             Changer l'image

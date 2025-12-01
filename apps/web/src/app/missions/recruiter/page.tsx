@@ -1,46 +1,22 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { useRouter } from "next/navigation";
 import { MissionCard, CreateMissionCard, colors } from "@shiftly/ui";
-import { AppLayout } from "@/components";
-import { useRecruiterMissions } from "@/hooks";
+import { AppLayout, PageLoading } from "@/components";
+import { useRecruiterMissionsPage } from "@/hooks";
 
 export default function RecruiterMissionsPage() {
-  const router = useRouter();
-  const { missions, isLoading } = useRecruiterMissions();
-
-  const handleCreateMission = () => {
-    router.push("/missions/create");
-  };
-
-  const handleMissionClick = (missionId: string) => {
-    router.push(`/missions/${missionId}`);
-  };
-
-  const handleEditMission = (missionId: string) => {
-    router.push(`/missions/${missionId}/edit`);
-  };
-
-  const handleManageCandidates = (missionId: string) => {
-    router.push(`/missions/${missionId}/candidates`);
-  };
+  const {
+    missions,
+    isLoading,
+    handleCreateMission,
+    handleMissionClick,
+    handleEditMission,
+    handleManageCandidates,
+  } = useRecruiterMissionsPage();
 
   if (isLoading) {
-    return (
-      <AppLayout>
-        <YStack
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          padding="$4"
-        >
-          <Text fontSize={16} color={colors.gray700}>
-            Chargement...
-          </Text>
-        </YStack>
-      </AppLayout>
-    );
+    return <PageLoading />;
   }
 
   return (
@@ -154,7 +130,9 @@ export default function RecruiterMissionsPage() {
                     missionId={mission.id}
                     onPress={() => handleMissionClick(mission.id)}
                     onEdit={() => handleEditMission(mission.id)}
-                    onManageCandidates={() => handleManageCandidates(mission.id)}
+                    onManageCandidates={() =>
+                      handleManageCandidates(mission.id)
+                    }
                   />
 
                   {/* Badge de statut */}
@@ -172,7 +150,7 @@ export default function RecruiterMissionsPage() {
                           ? colors.gray500
                           : mission.status === "closed"
                             ? "#EF4444"
-                            : colors.gray300
+                            : colors.gray500
                     }
                   >
                     <Text fontSize={12} color={colors.white} fontWeight="600">

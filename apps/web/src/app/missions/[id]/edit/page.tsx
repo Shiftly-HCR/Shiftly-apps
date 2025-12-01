@@ -22,27 +22,7 @@ import {
 } from "@shiftly/data";
 import { AppLayout } from "@/components";
 import { useRecruiterMissions, useCachedMission } from "@/hooks";
-import dynamic from "next/dynamic";
-
-// Import dynamique de Map pour éviter les erreurs SSR
-const Map = dynamic(() => import("@/components/ui/Map"), {
-  ssr: false,
-  loading: () => (
-    <YStack
-      backgroundColor={colors.gray100}
-      borderRadius={12}
-      height={250}
-      alignItems="center"
-      justifyContent="center"
-      borderWidth={1}
-      borderColor={colors.gray200}
-    >
-      <Text fontSize={14} color={colors.gray500}>
-        Chargement de la carte...
-      </Text>
-    </YStack>
-  ),
-});
+import { MapLoader } from "@/components";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -419,7 +399,7 @@ export default function EditMissionPage() {
           Cliquez sur la carte pour positionner le marqueur et remplir l'adresse
           automatiquement
         </Text>
-        <Map
+        <MapLoader
           latitude={latitude}
           longitude={longitude}
           zoom={13}

@@ -1,16 +1,9 @@
 "use client";
 
 import { YStack, Text, ScrollView } from "tamagui";
-import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button, colors } from "@shiftly/ui";
 import { type ApplicationStatus } from "@shiftly/data";
-import {
-  useCachedMission,
-  useMissionApplications,
-  useUpdateApplicationStatus,
-  useCurrentProfile,
-} from "@/hooks";
 import {
   AppLayout,
   MissionCandidatesHeader,
@@ -19,157 +12,39 @@ import {
   MissionCandidatesList,
   MissionDetailsTab,
   MissionActivityTab,
+  PageLoading,
 } from "@/components";
+import { useMissionCandidatesPage } from "@/hooks";
 
 type TabType = "candidates" | "details" | "activity";
 
 export default function MissionCandidatesPage() {
   const router = useRouter();
-  const params = useParams();
-  const missionId = params.id as string;
-  const [activeTab, setActiveTab] = useState<TabType>("candidates");
-  const [selectedApplications, setSelectedApplications] = useState<string[]>(
-    []
-  );
-  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">(
-    "all"
-  );
-
-  const { mission, isLoading: isLoadingMission } = useCachedMission(missionId);
-  const { profile } = useCurrentProfile();
   const {
+    missionId,
+    activeTab,
+    setActiveTab,
+    selectedApplications,
+    statusFilter,
+    setStatusFilter,
+    mission,
+    isLoadingMission,
+    isLoadingApplications,
+    isUpdatingStatus,
+    isMissionOwner,
+    filteredApplications,
     applications,
-    isLoading: isLoadingApplications,
-    refetch,
-  } = useMissionApplications(missionId);
-  const { updateStatus, isLoading: isUpdatingStatus } =
-    useUpdateApplicationStatus();
-
-  // Vérifier que l'utilisateur est le recruteur propriétaire
-  const isMissionOwner = mission?.recruiter_id === profile?.id;
-
-  const getStatusLabel = (status: ApplicationStatus) => {
-    switch (status) {
-      case "pending":
-        return "En attente";
-      case "applied":
-        return "Reçu";
-      case "shortlisted":
-        return "Shortlist";
-      case "rejected":
-        return "Refusé";
-      case "accepted":
-        return "Confirmé";
-      case "withdrawn":
-        return "Retiré";
-      default:
-        return status;
-    }
-  };
-
-  const getStatusColor = (status: ApplicationStatus) => {
-    switch (status) {
-      case "pending":
-        return colors.shiftlyViolet;
-      case "applied":
-        return colors.shiftlyViolet;
-      case "shortlisted":
-        return colors.shiftlyGold;
-      case "rejected":
-        return "#EF4444";
-      case "accepted":
-        return "#10B981";
-      case "withdrawn":
-        return colors.gray500;
-      default:
-        return colors.gray700;
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 0) return "Reçu aujourd'hui";
-    if (diffInDays === 1) return "Reçu il y a 1 jour";
-    return `Reçu il y a ${diffInDays} jours`;
-  };
-
-  const handleStatusChange = async (
-    applicationId: string,
-    newStatus: ApplicationStatus
-  ) => {
-    const result = await updateStatus(applicationId, newStatus);
-    if (result.success) {
-      refetch();
-      setSelectedApplications([]);
-    } else {
-      alert(result.error || "Erreur lors de la mise à jour");
-    }
-  };
-
-  const handleBulkAction = async (
-    action: "shortlist" | "reject" | "accept"
-  ) => {
-    if (selectedApplications.length === 0) return;
-
-    const statusMap: Record<string, ApplicationStatus> = {
-      shortlist: "shortlisted",
-      reject: "rejected",
-      accept: "accepted",
-    };
-
-    const newStatus = statusMap[action];
-    if (!newStatus) return;
-
-    // Mettre à jour toutes les candidatures sélectionnées
-    for (const appId of selectedApplications) {
-      await handleStatusChange(appId, newStatus);
-    }
-  };
-
-  const toggleApplicationSelection = (applicationId: string) => {
-    setSelectedApplications((prev) =>
-      prev.includes(applicationId)
-        ? prev.filter((id) => id !== applicationId)
-        : [...prev, applicationId]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    const filteredApplications = getFilteredApplications();
-    if (selectedApplications.length === filteredApplications.length) {
-      setSelectedApplications([]);
-    } else {
-      setSelectedApplications(filteredApplications.map((app) => app.id));
-    }
-  };
-
-  const getFilteredApplications = () => {
-    if (statusFilter === "all") return applications;
-    return applications.filter((app) => app.status === statusFilter);
-  };
-
-  const filteredApplications = getFilteredApplications();
+    getStatusLabel,
+    getStatusColor,
+    formatDate,
+    handleStatusChange,
+    handleBulkAction,
+    toggleApplicationSelection,
+    toggleSelectAll,
+  } = useMissionCandidatesPage();
 
   if (isLoadingMission) {
-    return (
-      <AppLayout>
-        <YStack
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          padding="$6"
-        >
-          <Text fontSize={16} color={colors.gray700}>
-            Chargement...
-          </Text>
-        </YStack>
-      </AppLayout>
-    );
+    return <PageLoading />;
   }
 
   if (!mission) {

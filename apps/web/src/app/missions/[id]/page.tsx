@@ -1,140 +1,49 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView, Image } from "tamagui";
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button, colors } from "@shiftly/ui";
-import { type Mission } from "@shiftly/data";
-import {
-  useCachedMission,
-  useApplyToMission,
-  useCheckApplication,
-  useCurrentProfile,
-  useMissionApplications,
-  useUpdateApplicationStatus,
-  useUserApplications,
-} from "@/hooks";
-import { useMissionChat } from "@/hooks";
 import type { ApplicationStatus } from "@shiftly/data";
-import { AppLayout, ChatThread, MessageInput } from "@/components";
+import { AppLayout, ChatThread, MessageInput, PageLoading } from "@/components";
 import { openConversation } from "@/utils/chatService";
-import dynamic from "next/dynamic";
-
-// Import dynamique de Map pour éviter les erreurs SSR
-const Map = dynamic(() => import("@/components/ui/Map"), {
-  ssr: false,
-  loading: () => (
-    <YStack
-      backgroundColor="#E0E0E0"
-      borderRadius={8}
-      height={300}
-      alignItems="center"
-      justifyContent="center"
-    >
-      <Text fontSize={14} color="#999">
-        Chargement de la carte...
-      </Text>
-    </YStack>
-  ),
-});
+import { getStatusLabel, getStatusColor } from "@/utils/missionHelpers";
+import { useMissionDetailPage } from "@/hooks";
+import { MapLoader } from "@/components";
 
 export default function MissionDetailPage() {
   const router = useRouter();
-  const params = useParams();
-  const missionId = params.id as string;
-
-  const { mission, isLoading } = useCachedMission(missionId);
-  const { profile } = useCurrentProfile();
   const {
-    apply,
-    isLoading: isApplying,
-    error: applyError,
-    success: applySuccess,
-  } = useApplyToMission();
-  const { hasApplied, isLoading: isCheckingApplication } =
-    useCheckApplication(missionId);
-
-  // Pour les recruteurs : récupérer les candidatures
-  const isRecruiter = profile?.role === "recruiter";
-  const isMissionOwner = mission?.recruiter_id === profile?.id;
-  const {
+    missionId,
+    mission,
+    isLoading,
+    profile,
+    isRecruiter,
+    isMissionOwner,
     applications,
-    isLoading: isLoadingApplications,
-    refetch: refetchApplications,
-  } = useMissionApplications(isRecruiter && isMissionOwner ? missionId : null);
-  const { updateStatus, isLoading: isUpdatingStatus } =
-    useUpdateApplicationStatus();
-
-  // Pour les freelances : récupérer leurs candidatures pour vérifier le statut
-  const { applications: userApplications } = useUserApplications();
-  const freelanceApplication = userApplications.find(
-    (app) => app.mission_id === missionId
-  );
-  const isFreelanceAccepted = freelanceApplication?.status === "accepted";
-
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [selectedFreelanceId, setSelectedFreelanceId] = useState<string | null>(
-    null
-  );
-
-  // Déterminer le freelance avec qui chatter (pour recruteur) ou utiliser l'ID du freelance connecté
-  const chatFreelanceId =
-    isRecruiter && isMissionOwner
-      ? selectedFreelanceId ||
-        applications.find((app) => app.status === "accepted")?.user_id ||
-        null
-      : profile?.role === "freelance" && isFreelanceAccepted
-        ? profile.id
-        : null;
-
-  // Vérifier si le freelance peut chatter (doit être accepté)
-  const canFreelanceChat = profile?.role === "freelance" && isFreelanceAccepted;
-
-  // Initialiser le chat si les conditions sont remplies
-  const chat = useMissionChat(
-    missionId && (isRecruiter || canFreelanceChat) ? missionId : null,
-    mission?.recruiter_id || null,
-    chatFreelanceId
-  );
-
-  // Gérer l'affichage du message de succès
-  useEffect(() => {
-    if (applySuccess) {
-      setShowSuccessMessage(true);
-      const timer = setTimeout(() => {
-        setShowSuccessMessage(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [applySuccess]);
-
-  const handleApply = async () => {
-    if (!missionId) return;
-
-    const result = await apply({ mission_id: missionId });
-    if (result.success) {
-      // Recharger la page après un court délai pour mettre à jour l'état
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    }
-  };
+    isLoadingApplications,
+    isUpdatingStatus,
+    freelanceApplication,
+    isFreelanceAccepted,
+    showSuccessMessage,
+    selectedFreelanceId,
+    setSelectedFreelanceId,
+    chatFreelanceId,
+    canFreelanceChat,
+    chat,
+    apply,
+    isApplying,
+    applyError,
+    applySuccess,
+    hasApplied,
+    isCheckingApplication,
+    updateStatus,
+    refetchApplications,
+    handleApply,
+    formatDateShort,
+  } = useMissionDetailPage();
 
   if (isLoading) {
-    return (
-      <AppLayout>
-        <YStack
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          padding="$6"
-        >
-          <Text fontSize={16} color="#666">
-            Chargement...
-          </Text>
-        </YStack>
-      </AppLayout>
-    );
+    return <PageLoading />;
   }
 
   if (!mission) {
@@ -157,28 +66,6 @@ export default function MissionDetailPage() {
       </AppLayout>
     );
   }
-
-  // Format dates pour affichage
-  const formatDateShort = (startDate?: string, endDate?: string) => {
-    if (!startDate && !endDate) return "Dates non définies";
-
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const diffInDays = Math.ceil(
-        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      const startDay = start.getDate().toString().padStart(2, "0");
-      const endFormatted = end.toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      return `Du ${startDay} au ${endFormatted}, ${diffInDays + 1} jours`;
-    }
-
-    return "Dates non définies";
-  };
 
   return (
     <AppLayout>
@@ -415,7 +302,7 @@ export default function MissionDetailPage() {
                 <Text fontSize={14} color="#666" marginBottom="$3">
                   {mission.postal_code || "75000"} {mission.city || "Paris"}
                 </Text>
-                <Map
+                <MapLoader
                   latitude={mission.latitude || 48.8566}
                   longitude={mission.longitude || 2.3522}
                   zoom={15}
@@ -473,44 +360,6 @@ export default function MissionDetailPage() {
                   ) : (
                     <YStack gap="$3">
                       {applications.map((application) => {
-                        const getStatusLabel = (status: ApplicationStatus) => {
-                          switch (status) {
-                            case "pending":
-                              return "En attente";
-                            case "applied":
-                              return "Candidature reçue";
-                            case "shortlisted":
-                              return "Présélectionné";
-                            case "rejected":
-                              return "Refusé";
-                            case "accepted":
-                              return "Accepté";
-                            case "withdrawn":
-                              return "Retiré";
-                            default:
-                              return status;
-                          }
-                        };
-
-                        const getStatusColor = (status: ApplicationStatus) => {
-                          switch (status) {
-                            case "pending":
-                              return "#3B82F6";
-                            case "applied":
-                              return "#3B82F6";
-                            case "shortlisted":
-                              return "#10B981";
-                            case "rejected":
-                              return "#EF4444";
-                            case "accepted":
-                              return "#10B981";
-                            case "withdrawn":
-                              return "#6B7280";
-                            default:
-                              return "#666";
-                          }
-                        };
-
                         const handleStatusChange = async (
                           newStatus: ApplicationStatus
                         ) => {

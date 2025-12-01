@@ -10,7 +10,7 @@ import {
   deleteProfilePhoto,
 } from "@shiftly/data";
 import { useCurrentProfile } from "@/hooks";
-import { AppLayout, FreelanceProfileForm } from "@/components";
+import { AppLayout, FreelanceProfileForm, PageLoading } from "@/components";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -120,21 +120,7 @@ export default function ProfilePage() {
   };
 
   if (isLoading) {
-    return (
-      <AppLayout>
-        <YStack
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          padding="$4"
-          paddingVertical="$8"
-        >
-          <Text fontSize={16} color="#6B7280">
-            Chargement...
-          </Text>
-        </YStack>
-      </AppLayout>
-    );
+    return <PageLoading />;
   }
 
   return (
