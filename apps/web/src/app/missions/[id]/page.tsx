@@ -21,7 +21,7 @@ import { openConversation } from "@/utils/chatService";
 import dynamic from "next/dynamic";
 
 // Import dynamique de Map pour éviter les erreurs SSR
-const Map = dynamic(() => import("@/components/Map"), {
+const Map = dynamic(() => import("@/components/ui/Map"), {
   ssr: false,
   loading: () => (
     <YStack

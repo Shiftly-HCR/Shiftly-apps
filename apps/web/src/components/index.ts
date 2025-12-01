@@ -9,6 +9,7 @@ export * from "./layout";
 
 // UI components
 export * from "./ui";
+export { Map } from "./ui";
 
 // Chat components
 export * from "./chat";
