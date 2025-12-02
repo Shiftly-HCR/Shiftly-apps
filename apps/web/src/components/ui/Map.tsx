@@ -24,6 +24,11 @@ interface MapProps {
   height?: string | number;
   markers?: MapMarker[];
   onMapClick?: (event: { lngLat: { lng: number; lat: number } }) => void;
+  onViewStateChange?: (viewState: {
+    latitude: number;
+    longitude: number;
+    zoom: number;
+  }) => void;
   interactive?: boolean;
   style?: React.CSSProperties;
 }
@@ -38,6 +43,7 @@ export default function Map({
   height = 400,
   markers = [],
   onMapClick,
+  onViewStateChange,
   interactive = true,
   style,
 }: MapProps) {
@@ -48,6 +54,13 @@ export default function Map({
     onMapClick,
     interactive,
   });
+
+  // Notifier les changements de vue
+  React.useEffect(() => {
+    if (onViewStateChange) {
+      onViewStateChange(viewState);
+    }
+  }, [viewState, onViewStateChange]);
 
   if (!MAPBOX_TOKEN) {
     return (

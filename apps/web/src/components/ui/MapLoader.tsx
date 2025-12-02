@@ -23,6 +23,7 @@ interface MapLoaderProps {
   height?: string | number;
   markers?: MapMarker[];
   onMapClick?: (event: { lngLat: { lng: number; lat: number } }) => void;
+  onViewStateChange?: (viewState: { latitude: number; longitude: number; zoom: number }) => void;
   interactive?: boolean;
   style?: React.CSSProperties;
 }

@@ -14,20 +14,20 @@ export function MissionBubbleMarker({ mission, onClick }: Props) {
       onPress={onClick}
       cursor="pointer"
       // petite ombre + bord arrondi
-      bg="$background"
-      br="$4"
+      backgroundColor="$background"
+      borderRadius="$4"
       padding="$2"
       elevation="$2"
       maxWidth={220}
     >
       {/* Contenu principal */}
-      <XStack gap="$2" ai="center">
+      <XStack gap="$2" alignItems="center">
         {mission.image_url && (
           <Image
             source={{ uri: mission.image_url }}
             width={40}
             height={40}
-            br="$3"
+            borderRadius={12}
           />
         )}
         <YStack>
@@ -41,7 +41,7 @@ export function MissionBubbleMarker({ mission, onClick }: Props) {
       </XStack>
 
       {/* “tail” de la bulle */}
-      <YStack ai="center" mt="$1">
+      <YStack alignItems="center" marginTop="$1">
         <YStack
           width={0}
           height={0}

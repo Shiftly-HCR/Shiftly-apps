@@ -8,3 +8,4 @@ export * from "./MissionDetailsTab";
 export * from "./MissionListView";
 export * from "./MissionMapView";
 export * from "./MissionBubbleMarker";
+export * from "./MissionClusterMarker";
