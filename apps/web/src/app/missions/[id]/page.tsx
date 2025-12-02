@@ -4,11 +4,16 @@ import { YStack, XStack, Text, ScrollView, Image } from "tamagui";
 import { useRouter } from "next/navigation";
 import { Button, colors } from "@shiftly/ui";
 import type { ApplicationStatus } from "@shiftly/data";
-import { AppLayout, ChatThread, MessageInput, PageLoading } from "@/components";
+import {
+  AppLayout,
+  ChatThread,
+  MessageInput,
+  PageLoading,
+  MissionMapView,
+} from "@/components";
 import { openConversation } from "@/utils/chatService";
 import { getStatusLabel, getStatusColor } from "@/utils/missionHelpers";
 import { useMissionDetailPage } from "@/hooks";
-import { MapLoader } from "@/components";
 
 export default function MissionDetailPage() {
   const router = useRouter();
@@ -302,20 +307,13 @@ export default function MissionDetailPage() {
                 <Text fontSize={14} color="#666" marginBottom="$3">
                   {mission.postal_code || "75000"} {mission.city || "Paris"}
                 </Text>
-                <MapLoader
+                <MissionMapView
+                  missions={[mission]}
+                  onMissionClick={() => {}}
                   latitude={mission.latitude || 48.8566}
                   longitude={mission.longitude || 2.3522}
                   zoom={15}
                   height={300}
-                  markers={[
-                    {
-                      id: mission.id,
-                      latitude: mission.latitude || 48.8566,
-                      longitude: mission.longitude || 2.3522,
-                      title: mission.title,
-                    },
-                  ]}
-                  interactive={true}
                 />
               </YStack>
 
