@@ -82,35 +82,43 @@ export function MissionDetailSidebar({
               Gérer les candidatures
             </Button>
           ) : showSuccessMessage ? (
-            <YStack
-              padding="$3"
+            <XStack
+              paddingVertical="$3"
+              paddingHorizontal="$4"
               backgroundColor="#D4F4DD"
               borderRadius={8}
               alignItems="center"
-              flexDirection="row"
               justifyContent="center"
               gap="$2"
             >
-              <CheckCircle2 size={16} color="#00A86B" />
+              <CheckCircle2
+                size={16}
+                color="#00A86B"
+                style={{ flexShrink: 0 }}
+              />
               <Text fontSize={14} color="#00A86B" fontWeight="600">
                 Candidature envoyée avec succès !
               </Text>
-            </YStack>
+            </XStack>
           ) : hasApplied ? (
-            <YStack
-              padding="$3"
+            <XStack
+              paddingVertical="$3"
+              paddingHorizontal="$4"
               backgroundColor="#FFF3CD"
               borderRadius={8}
               alignItems="center"
-              flexDirection="row"
-              justifyContent="center"
+              justifyContent="space-between"
               gap="$2"
             >
-              <CheckCircle2 size={16} color="#856404" />
+              <CheckCircle2
+                size={16}
+                color="#856404"
+                style={{ flexShrink: 0 }}
+              />
               <Text fontSize={14} color="#856404" fontWeight="600">
                 Vous avez déjà postulé à cette mission
               </Text>
-            </YStack>
+            </XStack>
           ) : profile?.role === "freelance" ? (
             <Button
               variant="primary"
@@ -139,12 +147,10 @@ export function MissionDetailSidebar({
           )}
 
           {applyError && (
-            <YStack
-              padding="$3"
-              backgroundColor="#F8D7DA"
-              borderRadius={8}
-            >
-              <Text fontSize={14} color="#721C24">{applyError}</Text>
+            <YStack padding="$3" backgroundColor="#F8D7DA" borderRadius={8}>
+              <Text fontSize={14} color="#721C24">
+                {applyError}
+              </Text>
             </YStack>
           )}
 
@@ -156,20 +162,28 @@ export function MissionDetailSidebar({
               console.log("Sauvegarder la mission:", mission.id);
             }}
           >
-            <Heart size={16} style={{ marginRight: 8 }} />
-            Sauvegarder la mission
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              width="100%"
+              paddingHorizontal="$2"
+            >
+              <Heart size={16} style={{ flexShrink: 0 }} color="white" />
+              <Text color="white">Sauvegarder la mission</Text>
+            </XStack>
           </Button>
 
           {/* Badge Shiftly certifie */}
           <XStack
             backgroundColor="#D4F4DD"
             borderRadius={8}
-            padding="$3"
+            paddingVertical="$3"
+            paddingHorizontal="$4"
             alignItems="center"
-            justifyContent="center"
+            justifyContent="space-between"
             gap="$2"
           >
-            <CheckCircle2 size={16} color="#00A86B" />
+            <CheckCircle2 size={16} color="#00A86B" style={{ flexShrink: 0 }} />
             <Text fontSize={14} color="#00A86B" fontWeight="600">
               Shiftly certifie cette mission
             </Text>
@@ -187,12 +201,7 @@ export function MissionDetailSidebar({
         shadowOpacity={0.1}
         shadowRadius={8}
       >
-        <Text
-          fontSize={18}
-          fontWeight="bold"
-          marginBottom="$4"
-          color="#000"
-        >
+        <Text fontSize={18} fontWeight="bold" marginBottom="$4" color="#000">
           Établissement
         </Text>
 
@@ -213,12 +222,12 @@ export function MissionDetailSidebar({
               Nom de l'établissement
             </Text>
             <XStack alignItems="center" gap="$1" marginTop="$1">
-              <Star size={14} color={colors.shiftlyViolet} fill={colors.shiftlyViolet} />
-              <Text
-                fontSize={14}
+              <Star
+                size={14}
                 color={colors.shiftlyViolet}
-                fontWeight="600"
-              >
+                fill={colors.shiftlyViolet}
+              />
+              <Text fontSize={14} color={colors.shiftlyViolet} fontWeight="600">
                 4.5
               </Text>
               <Text fontSize={12} color="#999">
@@ -231,14 +240,14 @@ export function MissionDetailSidebar({
         {/* Informations établissement */}
         <YStack gap="$3" marginBottom="$4">
           <XStack alignItems="center" gap="$2">
-            <MapPin size={16} color="#666" />
+            <MapPin size={16} color="#666" style={{ flexShrink: 0 }} />
             <Text fontSize={14} color="#666">
               {mission.city || "Paris"}
             </Text>
           </XStack>
 
           <XStack alignItems="center" gap="$2">
-            <UtensilsCrossed size={16} color="#666" />
+            <UtensilsCrossed size={16} color="#666" style={{ flexShrink: 0 }} />
             <Text fontSize={14} color="#666">
               Restaurant
             </Text>
@@ -287,9 +296,7 @@ export function MissionDetailSidebar({
                   freelanceId: profile.id,
                 },
                 (conversationId) => {
-                  router.push(
-                    `/messagerie?conversationId=${conversationId}`
-                  );
+                  router.push(`/messagerie?conversationId=${conversationId}`);
                 }
               );
 
@@ -308,4 +315,3 @@ export function MissionDetailSidebar({
     </YStack>
   );
 }
-

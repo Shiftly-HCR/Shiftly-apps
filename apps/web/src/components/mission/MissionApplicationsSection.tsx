@@ -66,11 +66,14 @@ export function MissionApplicationsSection({
         <Button
           variant="outline"
           size="sm"
+          width="100%"
           onPress={onRefresh}
           disabled={isLoadingApplications}
         >
-          <RefreshCw size={16} style={{ marginRight: 8 }} />
-          Actualiser
+          <XStack alignItems="center" width="100%" paddingHorizontal="$2">
+            <RefreshCw size={16} style={{ flexShrink: 0 }} />
+            <Text>Actualiser</Text>
+          </XStack>
         </Button>
       </XStack>
 
@@ -122,7 +125,7 @@ export function MissionApplicationsSection({
                     )}
                     {application.profile?.location && (
                       <XStack alignItems="center" gap="$1">
-                        <MapPin size={12} color="#999" />
+                        <MapPin size={12} color="#999" style={{ flexShrink: 0 }} />
                         <Text fontSize={12} color="#999">
                           {application.profile.location}
                         </Text>

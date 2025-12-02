@@ -1,6 +1,6 @@
 "use client";
 
-import { YStack, Text, Button } from "tamagui";
+import { YStack, XStack, Text, Button } from "tamagui";
 import { MessageCircle } from "lucide-react";
 import { ChatThread, MessageInput } from "@/components";
 
@@ -60,10 +60,17 @@ export function MissionChatSection({
                 key={freelance.id}
                 variant={isSelected ? "primary" : "outline"}
                 size="sm"
+                width="100%"
                 onPress={() => onSelectFreelance?.(freelance.id)}
               >
-                <MessageCircle size={16} style={{ marginRight: 8 }} />
-                {freelance.name}
+                <XStack alignItems="center" width="100%" paddingHorizontal="$2">
+                  <MessageCircle 
+                    size={16} 
+                    style={{ flexShrink: 0 }} 
+                    color={isSelected ? "white" : undefined}
+                  />
+                  <Text color={isSelected ? "white" : undefined}>{freelance.name}</Text>
+                </XStack>
               </Button>
             );
           })}

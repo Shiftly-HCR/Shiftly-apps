@@ -22,7 +22,7 @@ export function MissionDetailSkills({ mission }: MissionDetailSkillsProps) {
       shadowRadius={8}
     >
       <XStack alignItems="center" gap="$2" marginBottom="$3">
-        <Briefcase size={20} color="#000" />
+        <Briefcase size={20} color="#000" style={{ flexShrink: 0 }} />
         <Text fontSize={18} fontWeight="bold" color="#000">
           Compétences requises
         </Text>

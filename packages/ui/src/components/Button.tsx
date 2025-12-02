@@ -1,4 +1,4 @@
-import { Button as TButton, styled, Text } from "tamagui";
+import { Button as TButton, styled, Text, XStack } from "tamagui";
 import React, { useState } from "react";
 
 const StyledButton = styled(TButton, {
@@ -169,6 +169,52 @@ export const Button = ({
     }
   };
 
+  // Fonction pour cloner les enfants et appliquer la couleur
+  const cloneChildrenWithColor = (children: React.ReactNode, color: string): React.ReactNode => {
+    return React.Children.map(children, (child) => {
+      if (React.isValidElement(child)) {
+        const childElement = child as React.ReactElement<any>;
+        const childType = childElement.type;
+        const childProps = childElement.props || {};
+        
+        // Si c'est un Text de Tamagui, appliquer la couleur
+        if (childType === Text) {
+          return React.cloneElement(childElement, {
+            ...childProps,
+            color: color,
+          });
+        }
+        
+        // Si c'est une fonction (probablement une icône Lucide), appliquer la couleur si elle accepte une prop color
+        if (variant === "primary" && typeof childType === 'function') {
+          // Les icônes Lucide acceptent généralement une prop 'color' et 'size'
+          if (childProps.size !== undefined || childProps.color !== undefined || 
+              childProps.style !== undefined) {
+            return React.cloneElement(childElement, {
+              ...childProps,
+              color: color,
+            });
+          }
+        }
+        
+        // Si c'est un XStack ou autre composant avec des enfants, cloner récursivement
+        if (childProps.children) {
+          return React.cloneElement(childElement, {
+            ...childProps,
+            children: cloneChildrenWithColor(childProps.children, color),
+          });
+        }
+      }
+      return child;
+    });
+  };
+
+  // Vérifier si les enfants sont déjà des éléments React complexes (pas juste du texte)
+  const isComplexChildren = React.isValidElement(children) || 
+    (Array.isArray(children) && children.some(child => React.isValidElement(child)));
+
+  const textColor = getTextColor();
+
   return (
     <StyledButton
       variant={variant}
@@ -177,14 +223,20 @@ export const Button = ({
       onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
-      <Text
-        color={getTextColor()}
-        textAlign="center"
-        fontWeight="600"
-        fontSize={getTextSize()}
-      >
-        {children}
-      </Text>
+      {isComplexChildren ? (
+        <XStack alignItems="center" justifyContent="space-between" width="100%">
+          {variant === "primary" ? cloneChildrenWithColor(children, textColor) : children}
+        </XStack>
+      ) : (
+        <Text
+          color={textColor}
+          textAlign="center"
+          fontWeight="600"
+          fontSize={getTextSize()}
+        >
+          {children}
+        </Text>
+      )}
     </StyledButton>
   );
 };

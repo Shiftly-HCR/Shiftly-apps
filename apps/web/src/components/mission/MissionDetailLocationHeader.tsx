@@ -13,7 +13,7 @@ export function MissionDetailLocationHeader({
 }: MissionDetailLocationHeaderProps) {
   return (
     <XStack alignItems="center" gap="$2" marginBottom="$6">
-      <MapPin size={16} color="#666" />
+      <MapPin size={16} color="#666" style={{ flexShrink: 0 }} />
       <Text fontSize={16} color="#666">
         {mission.city || mission.address || "Paris"}
       </Text>

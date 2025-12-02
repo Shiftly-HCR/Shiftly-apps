@@ -1,6 +1,6 @@
 "use client";
 
-import { YStack, Text } from "tamagui";
+import { YStack, XStack, Text } from "tamagui";
 import { MapPin } from "lucide-react";
 import { MissionMapView } from "@/components";
 import type { Mission } from "@shiftly/data";
@@ -20,12 +20,12 @@ export function MissionDetailLocation({ mission }: MissionDetailLocationProps) {
       shadowOpacity={0.1}
       shadowRadius={8}
     >
-      <YStack alignItems="center" gap="$2" marginBottom="$3" flexDirection="row">
-        <MapPin size={20} color="#000" />
+      <XStack alignItems="center" gap="$2" marginBottom="$3">
+        <MapPin size={20} color="#000" style={{ flexShrink: 0 }} />
         <Text fontSize={18} fontWeight="bold" color="#000">
           Localisation
         </Text>
-      </YStack>
+      </XStack>
       <Text fontSize={14} color="#666" marginBottom="$2">
         {mission.address || "85 boulevard brune"}
       </Text>

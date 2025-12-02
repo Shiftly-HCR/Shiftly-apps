@@ -123,15 +123,6 @@ export default function MissionDetailPage() {
                 />
               )}
 
-              {/* Section Messagerie pour les freelances acceptés */}
-              {profile?.role === "freelance" && canFreelanceChat && mission && (
-                <MissionChatSection
-                  title="Messagerie"
-                  chat={chat}
-                  selectedFreelanceId={mission.recruiter_id}
-                />
-              )}
-
               {/* Autres missions similaires */}
               <YStack
                 backgroundColor="white"
