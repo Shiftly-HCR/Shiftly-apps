@@ -5,3 +5,4 @@ export * from "./useApplyToMission";
 export * from "./useCheckApplication";
 export * from "./useUserApplications";
 export * from "./useRecruiterMissions";
+export * from "./useMissionClustering";
