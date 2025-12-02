@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@shiftly/data";
+import { getCurrentUser, getCurrentProfile } from "@shiftly/data";
 import { YStack, Text } from "tamagui";
 
 export default function Home() {
@@ -13,8 +13,13 @@ export default function Home() {
       const user = await getCurrentUser();
 
       if (user) {
-        // Utilisateur connecté → redirection vers /home
-        router.push("/home");
+        // Utilisateur connecté → redirection selon le rôle
+        const profile = await getCurrentProfile();
+        if (profile?.role === "commercial") {
+          router.push("/commercial");
+        } else {
+          router.push("/home");
+        }
       } else {
         // Utilisateur non connecté → redirection vers /login
         router.push("/login");

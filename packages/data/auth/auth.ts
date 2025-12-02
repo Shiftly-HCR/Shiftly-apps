@@ -6,7 +6,7 @@ export interface SignUpParams {
   password: string;
   firstName?: string;
   lastName?: string;
-  role?: "freelance" | "recruiter";
+  role?: "freelance" | "recruiter" | "commercial";
 }
 
 export interface SignInParams {
@@ -54,6 +54,9 @@ export async function signUp({
     // Note: Le trigger SQL devrait le faire automatiquement, mais on le fait aussi ici
     // pour s'assurer que le profil existe immédiatement avec le bon rôle
     if (data.user) {
+      // Attendre un peu pour que le trigger SQL s'exécute d'abord
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const profileResult = await createProfile({
         userId: data.user.id,
         email,
@@ -65,7 +68,8 @@ export async function signUp({
       // On ne bloque pas l'inscription si le profil échoue (le trigger le créera)
       if (!profileResult.success) {
         console.warn(
-          "Le profil n'a pas pu être créé immédiatement, le trigger le créera automatiquement"
+          "Le profil n'a pas pu être créé immédiatement, le trigger le créera automatiquement",
+          profileResult.error
         );
       }
     }

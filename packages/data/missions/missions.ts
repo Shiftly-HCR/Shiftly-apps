@@ -6,6 +6,7 @@ export interface Mission {
   created_at?: string;
   updated_at?: string;
   recruiter_id: string;
+  establishment_id?: string | null; // ID de l'établissement associé (optionnel)
   title: string;
   description?: string;
   skills?: string[];
@@ -44,6 +45,7 @@ export interface CreateMissionParams {
   status?: "draft" | "published";
   is_urgent?: boolean;
   total_positions?: number;
+  establishment_id?: string | null; // ID de l'établissement associé (optionnel)
 }
 
 export interface UpdateMissionParams {
@@ -63,6 +65,7 @@ export interface UpdateMissionParams {
   status?: "draft" | "published" | "closed" | "cancelled";
   is_urgent?: boolean;
   total_positions?: number;
+  establishment_id?: string | null; // ID de l'établissement associé (optionnel)
 }
 
 /**

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "@shiftly/data";
+import { signIn, getCurrentProfile } from "@shiftly/data";
 import { useSessionContext } from "@/providers/SessionProvider";
 
 /**
@@ -32,7 +32,15 @@ export function useLoginPage() {
     if (result.success) {
       // Rafraîchir le cache après connexion
       await refresh();
-      router.push("/home");
+      
+      // Récupérer le profil pour déterminer la redirection selon le rôle
+      const profile = await getCurrentProfile();
+      
+      if (profile?.role === "commercial") {
+        router.push("/commercial");
+      } else {
+        router.push("/home");
+      }
     } else {
       setError(result.error || "Une erreur est survenue");
     }

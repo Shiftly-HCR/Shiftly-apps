@@ -251,9 +251,174 @@ interface CreateProfileParams {
   email: string;
   firstName?: string;
   lastName?: string;
-  role?: string;
+  role?: string; // "freelance" | "recruiter" | "commercial"
 }
 ```
+
+#### Rôles utilisateurs
+
+Le système supporte trois types de rôles :
+
+- **`freelance`** : Utilisateur freelance cherchant des missions
+- **`recruiter`** : Recruteur créant et gérant des missions
+- **`commercial`** : Commercial gérant des établissements recruteurs (nouveau)
+
+### Établissements (`establishments/`)
+
+Ce package gère les établissements recruteurs stockés dans la table `establishments` de Supabase. Un établissement est créé par un recruteur (owner) et peut être associé à un commercial via un code secret (fonctionnalité à venir).
+
+#### Fonctions disponibles
+
+##### `listMyEstablishments(): Promise<{ success: boolean; error?: string; establishments?: Establishment[] }>`
+
+Liste les établissements du recruteur courant.
+
+```typescript
+import { listMyEstablishments } from "@shiftly/data";
+
+const result = await listMyEstablishments();
+
+if (result.success && result.establishments) {
+  console.log("Établissements:", result.establishments);
+}
+```
+
+##### `createEstablishment(params: CreateEstablishmentParams): Promise<{ success: boolean; error?: string; establishment?: Establishment }>`
+
+Crée un établissement pour le recruteur courant. Un code secret aléatoire est automatiquement généré.
+
+```typescript
+import { createEstablishment } from "@shiftly/data";
+
+const result = await createEstablishment({
+  name: "Restaurant Le Gourmet",
+  address: "123 Rue de la Paix",
+  city: "Paris",
+  postal_code: "75001",
+  latitude: 48.8566,
+  longitude: 2.3522,
+});
+
+if (result.success) {
+  console.log("Établissement créé:", result.establishment);
+  console.log("Code secret:", result.establishment?.secret_code);
+}
+```
+
+##### `updateEstablishment(establishmentId: string, params: UpdateEstablishmentParams): Promise<{ success: boolean; error?: string; establishment?: Establishment }>`
+
+Met à jour un établissement.
+
+```typescript
+import { updateEstablishment } from "@shiftly/data";
+
+const result = await updateEstablishment("establishment-id", {
+  name: "Nouveau nom",
+  city: "Lyon",
+});
+```
+
+##### `deleteEstablishment(establishmentId: string): Promise<{ success: boolean; error?: string }>`
+
+Supprime un établissement.
+
+```typescript
+import { deleteEstablishment } from "@shiftly/data";
+
+const result = await deleteEstablishment("establishment-id");
+```
+
+##### `getEstablishmentById(establishmentId: string): Promise<Establishment | null>`
+
+Récupère un établissement par son ID.
+
+```typescript
+import { getEstablishmentById } from "@shiftly/data";
+
+const establishment = await getEstablishmentById("establishment-id");
+```
+
+#### Hook React
+
+##### `useMyEstablishments()`
+
+Hook React pour gérer les établissements du recruteur courant.
+
+```typescript
+import { useMyEstablishments } from "@shiftly/data";
+
+function MyEstablishments() {
+  const { establishments, isLoading, error, create, update, remove } =
+    useMyEstablishments();
+
+  if (isLoading) return <div>Chargement...</div>;
+  if (error) return <div>Erreur: {error}</div>;
+
+  return (
+    <div>
+      {establishments.map((est) => (
+        <div key={est.id}>
+          <h3>{est.name}</h3>
+          <p>Code secret: {est.secret_code}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+#### Types
+
+##### `Establishment`
+
+```typescript
+interface Establishment {
+  id: string;
+  owner_id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  latitude?: number;
+  longitude?: number;
+  secret_code?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+```
+
+##### `CreateEstablishmentParams`
+
+```typescript
+interface CreateEstablishmentParams {
+  name: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  latitude?: number;
+  longitude?: number;
+}
+```
+
+##### `UpdateEstablishmentParams`
+
+```typescript
+interface UpdateEstablishmentParams {
+  name?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  latitude?: number;
+  longitude?: number;
+}
+```
+
+#### Sécurité (RLS)
+
+Les politiques RLS (Row Level Security) sont configurées pour que :
+
+- Un recruteur (owner) peut voir, créer, modifier et supprimer uniquement ses propres établissements
+- Les commerciaux ne peuvent pas encore accéder aux établissements (fonctionnalité à venir via le code secret)
 
 ### Configuration
 

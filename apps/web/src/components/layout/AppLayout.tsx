@@ -47,12 +47,14 @@ export function AppLayout({ children }: AppLayoutProps) {
           "Utilisateur"
         }
         userAvatar={profile?.photo_url || ""}
+        userRole={profile?.role}
         onHomeClick={() => router.push("/home")}
         onProfileClick={() => router.push("/profile")}
         onMissionsClick={() => router.push("/missions")}
         onSubscriptionClick={() => router.push("/subscription")}
         onFreelanceClick={() => router.push("/freelance")}
         onMessagingClick={() => router.push("/messagerie")}
+        onCommercialClick={() => router.push("/commercial")}
         onLogoutClick={handleLogout}
       />
       <YStack flex={1}>{children}</YStack>

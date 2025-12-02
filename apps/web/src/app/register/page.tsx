@@ -105,10 +105,11 @@ export default function RegisterPage() {
               options={[
                 { label: "Recruteur", value: "recruiter" },
                 { label: "Freelance", value: "freelance" },
+                { label: "Commercial", value: "commercial" },
               ]}
               value={userType}
               onChange={(value) =>
-                setUserType(value as "freelance" | "recruiter")
+                setUserType(value as "freelance" | "recruiter" | "commercial")
               }
               required
               helperText="Sélectionnez votre type de compte"

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signUp } from "@shiftly/data";
+import { signUp, getCurrentProfile } from "@shiftly/data";
+import { useSessionContext } from "@/providers/SessionProvider";
 
 /**
  * Hook pour gérer la logique de la page d'inscription
@@ -10,12 +11,15 @@ import { signUp } from "@shiftly/data";
  */
 export function useRegisterPage() {
   const router = useRouter();
+  const { refresh } = useSessionContext();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [userType, setUserType] = useState<"freelance" | "recruiter">("recruiter");
+  const [userType, setUserType] = useState<
+    "freelance" | "recruiter" | "commercial"
+  >("recruiter");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,7 +28,14 @@ export function useRegisterPage() {
     setIsLoading(true);
 
     // Validation
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !userType) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !userType
+    ) {
       setError("Veuillez remplir tous les champs");
       setIsLoading(false);
       return;
@@ -51,7 +62,17 @@ export function useRegisterPage() {
     });
 
     if (result.success) {
-      router.push("/home");
+      // Rafraîchir le cache après inscription
+      await refresh();
+
+      // Récupérer le profil pour déterminer la redirection selon le rôle
+      const profile = await getCurrentProfile();
+
+      if (profile?.role === "commercial") {
+        router.push("/commercial");
+      } else {
+        router.push("/home");
+      }
     } else {
       setError(result.error || "Une erreur est survenue");
     }
@@ -80,4 +101,3 @@ export function useRegisterPage() {
     handleRegister,
   };
 }
-

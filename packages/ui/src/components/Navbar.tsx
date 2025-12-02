@@ -9,12 +9,14 @@ interface NavbarProps {
   searchValue?: string;
   userAvatar?: string;
   userName?: string;
+  userRole?: string;
   onHomeClick?: () => void;
   onProfileClick?: () => void;
   onMissionsClick?: () => void;
   onSubscriptionClick?: () => void;
   onFreelanceClick?: () => void;
   onMessagingClick?: () => void;
+  onCommercialClick?: () => void;
   onLogoutClick?: () => void;
 }
 
@@ -25,12 +27,14 @@ export function Navbar({
   searchValue = "",
   userAvatar,
   userName = "Utilisateur",
+  userRole,
   onHomeClick,
   onProfileClick,
   onMissionsClick,
   onSubscriptionClick,
   onFreelanceClick,
   onMessagingClick,
+  onCommercialClick,
   onLogoutClick,
 }: NavbarProps) {
   const [isMobile, setIsMobile] = useState(false);
@@ -190,54 +194,74 @@ export function Navbar({
                 >
                   Profil
                 </Text>
-                <Text
-                  fontSize={14}
-                  fontWeight="600"
-                  color={colors.gray900}
-                  cursor="pointer"
-                  hoverStyle={{
-                    color: colors.shiftlyViolet,
-                  }}
-                  onPress={onMissionsClick}
-                >
-                  Mes missions
-                </Text>
-                <Text
-                  fontSize={14}
-                  fontWeight="600"
-                  color={colors.gray900}
-                  cursor="pointer"
-                  hoverStyle={{
-                    color: colors.shiftlyViolet,
-                  }}
-                  onPress={onSubscriptionClick}
-                >
-                  Abonnement
-                </Text>
-                <Text
-                  fontSize={14}
-                  fontWeight="600"
-                  color={colors.gray900}
-                  cursor="pointer"
-                  hoverStyle={{
-                    color: colors.shiftlyViolet,
-                  }}
-                  onPress={onFreelanceClick}
-                >
-                  Freelance
-                </Text>
-                <Text
-                  fontSize={14}
-                  fontWeight="600"
-                  color={colors.gray900}
-                  cursor="pointer"
-                  hoverStyle={{
-                    color: colors.shiftlyViolet,
-                  }}
-                  onPress={onMessagingClick}
-                >
-                  Messagerie
-                </Text>
+                {/* Afficher le lien Commercial uniquement pour les commerciaux */}
+                {userRole === "commercial" && onCommercialClick && (
+                  <Text
+                    fontSize={14}
+                    fontWeight="600"
+                    color={colors.gray900}
+                    cursor="pointer"
+                    hoverStyle={{
+                      color: colors.shiftlyViolet,
+                    }}
+                    onPress={onCommercialClick}
+                  >
+                    Dashboard commercial
+                  </Text>
+                )}
+                {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
+                {userRole !== "commercial" && (
+                  <>
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={colors.gray900}
+                      cursor="pointer"
+                      hoverStyle={{
+                        color: colors.shiftlyViolet,
+                      }}
+                      onPress={onMissionsClick}
+                    >
+                      Mes missions
+                    </Text>
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={colors.gray900}
+                      cursor="pointer"
+                      hoverStyle={{
+                        color: colors.shiftlyViolet,
+                      }}
+                      onPress={onSubscriptionClick}
+                    >
+                      Abonnement
+                    </Text>
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={colors.gray900}
+                      cursor="pointer"
+                      hoverStyle={{
+                        color: colors.shiftlyViolet,
+                      }}
+                      onPress={onFreelanceClick}
+                    >
+                      Freelance
+                    </Text>
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={colors.gray900}
+                      cursor="pointer"
+                      hoverStyle={{
+                        color: colors.shiftlyViolet,
+                      }}
+                      onPress={onMessagingClick}
+                    >
+                      Messagerie
+                    </Text>
+                  </>
+                )}
               </>
             )}
 
@@ -400,13 +424,31 @@ export function Navbar({
                 {/* Liens de navigation */}
                 <YStack gap="$1" marginTop="$2">
                   <MenuLink label="Profil" onPress={onProfileClick} />
-                  <MenuLink label="Mes missions" onPress={onMissionsClick} />
-                  <MenuLink
-                    label="Abonnement"
-                    onPress={onSubscriptionClick}
-                  />
-                  <MenuLink label="Freelance" onPress={onFreelanceClick} />
-                  <MenuLink label="Messagerie" onPress={onMessagingClick} />
+                  {/* Afficher le lien Commercial uniquement pour les commerciaux */}
+                  {userRole === "commercial" && onCommercialClick && (
+                    <MenuLink
+                      label="Dashboard commercial"
+                      onPress={onCommercialClick}
+                    />
+                  )}
+                  {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
+                  {userRole !== "commercial" && (
+                    <>
+                      <MenuLink
+                        label="Mes missions"
+                        onPress={onMissionsClick}
+                      />
+                      <MenuLink
+                        label="Abonnement"
+                        onPress={onSubscriptionClick}
+                      />
+                      <MenuLink label="Freelance" onPress={onFreelanceClick} />
+                      <MenuLink
+                        label="Messagerie"
+                        onPress={onMessagingClick}
+                      />
+                    </>
+                  )}
                 </YStack>
 
                 {/* Déconnexion */}
