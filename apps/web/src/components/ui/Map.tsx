@@ -6,19 +6,23 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { YStack } from "tamagui";
 import { useMap } from "@/hooks";
 
+// Type pour les markers de la carte
+export type MapMarker = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  title?: string;
+  onClick?: () => void;
+  content?: React.ReactNode; // Contenu personnalisé (ex: MissionBubbleMarker)
+};
+
 interface MapProps {
   latitude?: number;
   longitude?: number;
   zoom?: number;
   width?: string | number;
   height?: string | number;
-  markers?: Array<{
-    id: string;
-    latitude: number;
-    longitude: number;
-    title?: string;
-    onClick?: () => void;
-  }>;
+  markers?: MapMarker[];
   onMapClick?: (event: { lngLat: { lng: number; lat: number } }) => void;
   interactive?: boolean;
   style?: React.CSSProperties;
@@ -102,16 +106,18 @@ export default function Map({
             longitude={marker.longitude}
             anchor="bottom"
           >
-            <div
-              onClick={() => marker.onClick && marker.onClick()}
-              style={{
-                cursor: marker.onClick ? "pointer" : "default",
-                fontSize: 32,
-                transform: "translateY(-16px)",
-              }}
-            >
-              📍
-            </div>
+            {marker.content || (
+              <div
+                onClick={() => marker.onClick && marker.onClick()}
+                style={{
+                  cursor: marker.onClick ? "pointer" : "default",
+                  fontSize: 32,
+                  transform: "translateY(-16px)",
+                }}
+              >
+                📍
+              </div>
+            )}
           </Marker>
         ))}
       </ReactMapGL>

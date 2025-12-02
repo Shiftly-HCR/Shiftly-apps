@@ -4,6 +4,16 @@ import dynamic from "next/dynamic";
 import { YStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 
+// Type pour les markers de la carte
+export type MapMarker = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  title?: string;
+  onClick?: () => void;
+  content?: React.ReactNode; // Contenu personnalisé (ex: MissionBubbleMarker)
+};
+
 // Type pour les props du Map
 interface MapLoaderProps {
   latitude?: number;
@@ -11,13 +21,7 @@ interface MapLoaderProps {
   zoom?: number;
   width?: string | number;
   height?: string | number;
-  markers?: Array<{
-    id: string;
-    latitude: number;
-    longitude: number;
-    title?: string;
-    onClick?: () => void;
-  }>;
+  markers?: MapMarker[];
   onMapClick?: (event: { lngLat: { lng: number; lat: number } }) => void;
   interactive?: boolean;
   style?: React.CSSProperties;

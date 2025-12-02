@@ -1,6 +1,6 @@
 "use client";
 
-import { MapLoader } from "@/components";
+import { MapLoader, MissionBubbleMarker } from "@/components";
 import type { Mission } from "@shiftly/data";
 
 interface MissionMapViewProps {
@@ -26,8 +26,12 @@ export function MissionMapView({
       id: mission.id,
       latitude: mission.latitude!,
       longitude: mission.longitude!,
-      title: mission.title,
-      onClick: () => onMissionClick(mission.id),
+      content: (
+        <MissionBubbleMarker
+          mission={mission}
+          onClick={() => onMissionClick(mission.id)}
+        />
+      ),
     }));
 
   return (
