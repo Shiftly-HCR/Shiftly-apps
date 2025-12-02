@@ -11,6 +11,7 @@ export interface Conversation {
   mission_id: string;
   recruiter_id: string;
   freelance_id: string;
+  created_by?: string | null; // ID de l'utilisateur qui a créé la conversation
 }
 
 /**

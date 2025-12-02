@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { XStack, YStack, Text, Image } from "tamagui";
 import { colors } from "../theme";
+
+const MOBILE_BREAKPOINT = 768;
 
 interface FooterProps {
   className?: string;
@@ -30,6 +32,23 @@ export function Footer({
   onLegalClick,
 }: FooterProps) {
   const currentYear = new Date().getFullYear();
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkScreenSize = () => {
+      if (typeof window !== "undefined") {
+        setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+      }
+    };
+
+    checkScreenSize();
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", checkScreenSize);
+      return () => window.removeEventListener("resize", checkScreenSize);
+    }
+  }, []);
 
   const handleNavigation = (
     callback?: () => void,
@@ -50,21 +69,30 @@ export function Footer({
       backgroundColor={colors.white}
       borderTopWidth={1}
       borderTopColor={colors.gray200}
-      paddingHorizontal="$6"
-      paddingVertical="$6"
+      paddingHorizontal={mounted && isMobile ? "$4" : "$6"}
+      paddingVertical={mounted && isMobile ? "$4" : "$6"}
       marginTop="auto"
     >
       <XStack
         maxWidth={1400}
         width="100%"
         alignSelf="center"
-        justifyContent="space-between"
+        justifyContent={
+          mounted && isMobile ? "flex-start" : "space-between"
+        }
         alignItems="flex-start"
         flexWrap="wrap"
-        gap="$6"
+        gap={mounted && isMobile ? "$4" : "$6"}
+        flexDirection={mounted && isMobile ? "column" : "row"}
       >
         {/* Section Logo et description */}
-        <YStack gap="$3" flex={1} minWidth={200}>
+        <YStack
+          gap="$3"
+          flex={mounted && isMobile ? 0 : 1}
+          minWidth={mounted && isMobile ? "100%" : 200}
+          width={mounted && isMobile ? "100%" : "auto"}
+          marginBottom={mounted && isMobile ? "$4" : 0}
+        >
           <XStack
             alignItems="center"
             gap="$2"
@@ -89,9 +117,18 @@ export function Footer({
         </YStack>
 
         {/* Section Liens */}
-        <XStack gap="$8" flexWrap="wrap">
+        <XStack
+          gap={mounted && isMobile ? "$6" : "$8"}
+          flexWrap="wrap"
+          width={mounted && isMobile ? "100%" : "auto"}
+          justifyContent={mounted && isMobile ? "space-between" : "flex-start"}
+        >
           {/* Navigation */}
-          <YStack gap="$2" minWidth={120}>
+          <YStack
+            gap="$2"
+            minWidth={mounted && isMobile ? "45%" : 120}
+            width={mounted && isMobile ? "45%" : "auto"}
+          >
             <Text fontSize={14} fontWeight="600" color={colors.gray900} marginBottom="$1">
               Navigation
             </Text>
@@ -134,7 +171,11 @@ export function Footer({
           </YStack>
 
           {/* Support */}
-          <YStack gap="$2" minWidth={120}>
+          <YStack
+            gap="$2"
+            minWidth={mounted && isMobile ? "45%" : 120}
+            width={mounted && isMobile ? "45%" : "auto"}
+          >
             <Text fontSize={14} fontWeight="600" color={colors.gray900} marginBottom="$1">
               Support
             </Text>
@@ -168,7 +209,12 @@ export function Footer({
           </YStack>
 
           {/* Légal */}
-          <YStack gap="$2" minWidth={120}>
+          <YStack
+            gap="$2"
+            minWidth={mounted && isMobile ? "45%" : 120}
+            width={mounted && isMobile ? "45%" : "auto"}
+            marginTop={mounted && isMobile ? "$4" : 0}
+          >
             <Text fontSize={14} fontWeight="600" color={colors.gray900} marginBottom="$1">
               Légal
             </Text>
@@ -205,14 +251,18 @@ export function Footer({
 
       {/* Copyright */}
       <XStack
-        marginTop="$6"
-        paddingTop="$4"
+        marginTop={mounted && isMobile ? "$4" : "$6"}
+        paddingTop={mounted && isMobile ? "$3" : "$4"}
         borderTopWidth={1}
         borderTopColor={colors.gray200}
         justifyContent="center"
         alignItems="center"
       >
-        <Text fontSize={12} color={colors.gray500}>
+        <Text
+          fontSize={mounted && isMobile ? 11 : 12}
+          color={colors.gray500}
+          textAlign="center"
+        >
           © {currentYear} Shiftly. Tous droits réservés.
         </Text>
       </XStack>

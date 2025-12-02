@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hesita web app",
+  title: "Shiftly web app",
   description: "Recrutement HCR",
 };
 

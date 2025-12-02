@@ -4,6 +4,7 @@ import { YStack, Text, ScrollView } from "tamagui";
 import { colors } from "@shiftly/ui";
 import type { ConversationWithDetails } from "@shiftly/data";
 import { ConversationItem } from "./ConversationItem";
+import { useResponsive } from "@/hooks";
 
 interface ConversationsListProps {
   conversations: ConversationWithDetails[];
@@ -22,13 +23,14 @@ export function ConversationsList({
   formatTime,
   isLoading,
 }: ConversationsListProps) {
+  const { isMobile, mounted } = useResponsive();
+
   return (
     <YStack
-      width={350}
-      borderRightWidth={1}
+      width={mounted && isMobile ? "100%" : 350}
+      borderRightWidth={mounted && isMobile ? 0 : 1}
       borderRightColor={colors.gray200}
       backgroundColor={colors.white}
-      $sm={{ width: "100%", borderRightWidth: 0 }}
     >
       {/* En-tête */}
       <YStack
@@ -77,5 +79,3 @@ export function ConversationsList({
     </YStack>
   );
 }
-
-

@@ -21,6 +21,12 @@ export async function getOrCreateConversation({
   conversation?: Conversation;
 }> {
   try {
+    // Récupérer l'utilisateur connecté pour enregistrer qui crée la conversation
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const currentUserId = user?.id;
+
     // Vérifier si une conversation existe déjà
     const { data: existing, error: selectError } = await supabase
       .from("conversations")
@@ -44,6 +50,7 @@ export async function getOrCreateConversation({
         mission_id: missionId,
         recruiter_id: recruiterId,
         freelance_id: freelanceId,
+        created_by: currentUserId || null, // Enregistrer qui crée la conversation
         created_at: new Date().toISOString(),
       })
       .select()
@@ -204,15 +211,36 @@ export async function listUserConversations(
       }
     });
 
-    // Combiner les données
-    return conversations.map((conversation) => ({
-      ...conversation,
-      mission: missionsMap.get(conversation.mission_id) || null,
-      recruiter: profilesMap.get(conversation.recruiter_id) || null,
-      freelance: profilesMap.get(conversation.freelance_id) || null,
-      last_message: lastMessagesMap.get(conversation.id) || null,
-      unread_count: 0, // TODO: Implémenter le comptage des messages non lus
-    }));
+    // Combiner les données et filtrer les conversations vides côté destinataire
+    const conversationsWithDetails = conversations
+      .map((conversation) => ({
+        ...conversation,
+        mission: missionsMap.get(conversation.mission_id) || null,
+        recruiter: profilesMap.get(conversation.recruiter_id) || null,
+        freelance: profilesMap.get(conversation.freelance_id) || null,
+        last_message: lastMessagesMap.get(conversation.id) || null,
+        unread_count: 0, // TODO: Implémenter le comptage des messages non lus
+      }))
+      .filter((conversation) => {
+        // Si la conversation n'a pas de messages (last_message est null)
+        const hasNoMessages = !conversation.last_message;
+
+        // Si la conversation a des messages, toujours l'afficher
+        if (!hasNoMessages) {
+          return true;
+        }
+
+        // Si la conversation est vide, ne l'afficher que pour celui qui l'a créée
+        // Si created_by n'est pas défini (anciennes conversations), afficher quand même
+        if (!conversation.created_by) {
+          return true; // Pour la rétrocompatibilité avec les anciennes conversations
+        }
+
+        // Afficher uniquement si l'utilisateur actuel est celui qui a créé la conversation
+        return conversation.created_by === targetUserId;
+      });
+
+    return conversationsWithDetails;
   } catch (err) {
     console.error("Erreur lors de la récupération des conversations:", err);
     return [];
