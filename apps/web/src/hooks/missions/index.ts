@@ -8,3 +8,4 @@ export * from "./useRecruiterMissions";
 export * from "./useMissionClustering";
 export * from "./useEstablishments";
 export * from "./useEstablishmentsManager";
+export * from "./useMissionEstablishment";

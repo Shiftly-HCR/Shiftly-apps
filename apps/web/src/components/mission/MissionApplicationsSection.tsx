@@ -3,16 +3,21 @@
 import { YStack, XStack, Text, Image } from "tamagui";
 import { RefreshCw, MapPin } from "lucide-react";
 import { Button } from "@shiftly/ui";
-import type { ApplicationStatus } from "@shiftly/data";
+import type {
+  ApplicationStatus,
+  MissionApplicationWithProfile,
+} from "@shiftly/data";
 import { getStatusLabel, getStatusColor } from "@/utils/missionHelpers";
-import type { Application } from "@shiftly/data";
 
 interface MissionApplicationsSectionProps {
-  applications: Application[];
+  applications: MissionApplicationWithProfile[];
   isLoadingApplications: boolean;
   isUpdatingStatus: boolean;
   onRefresh: () => void;
-  onStatusChange: (applicationId: string, newStatus: ApplicationStatus) => Promise<void>;
+  onStatusChange: (
+    applicationId: string,
+    newStatus: ApplicationStatus
+  ) => Promise<void>;
 }
 
 export function MissionApplicationsSection({
@@ -63,18 +68,6 @@ export function MissionApplicationsSection({
         <Text fontSize={18} fontWeight="bold" color="#000">
           Candidatures ({applications.length})
         </Text>
-        <Button
-          variant="outline"
-          size="sm"
-          width="100%"
-          onPress={onRefresh}
-          disabled={isLoadingApplications}
-        >
-          <XStack alignItems="center" width="100%" paddingHorizontal="$2">
-            <RefreshCw size={16} style={{ flexShrink: 0 }} />
-            <Text>Actualiser</Text>
-          </XStack>
-        </Button>
       </XStack>
 
       {isLoadingApplications ? (
@@ -92,9 +85,7 @@ export function MissionApplicationsSection({
       ) : (
         <YStack gap="$3">
           {applications.map((application) => {
-            const availableStatuses = getAvailableStatuses(
-              application.status
-            );
+            const availableStatuses = getAvailableStatuses(application.status);
             const profileName = application.profile
               ? `${application.profile.first_name || ""} ${application.profile.last_name || ""}`.trim() ||
                 "Nom non renseigné"
@@ -110,10 +101,7 @@ export function MissionApplicationsSection({
                 borderColor="#E5E7EB"
                 gap="$3"
               >
-                <XStack
-                  justifyContent="space-between"
-                  alignItems="flex-start"
-                >
+                <XStack justifyContent="space-between" alignItems="flex-start">
                   <YStack flex={1} gap="$2">
                     <Text fontSize={16} fontWeight="600" color="#000">
                       {profileName}
@@ -125,7 +113,11 @@ export function MissionApplicationsSection({
                     )}
                     {application.profile?.location && (
                       <XStack alignItems="center" gap="$1">
-                        <MapPin size={12} color="#999" style={{ flexShrink: 0 }} />
+                        <MapPin
+                          size={12}
+                          color="#999"
+                          style={{ flexShrink: 0 }}
+                        />
                         <Text fontSize={12} color="#999">
                           {application.profile.location}
                         </Text>
@@ -170,11 +162,7 @@ export function MissionApplicationsSection({
                 </XStack>
 
                 {application.cover_letter && (
-                  <YStack
-                    padding="$3"
-                    backgroundColor="white"
-                    borderRadius={6}
-                  >
+                  <YStack padding="$3" backgroundColor="white" borderRadius={6}>
                     <Text
                       fontSize={12}
                       fontWeight="600"
@@ -196,7 +184,9 @@ export function MissionApplicationsSection({
                         key={status}
                         variant="outline"
                         size="sm"
-                        onPress={() => handleStatusChange(application.id, status)}
+                        onPress={() =>
+                          handleStatusChange(application.id, status)
+                        }
                         disabled={isUpdatingStatus}
                         backgroundColor={
                           status === "accepted"
@@ -238,4 +228,3 @@ export function MissionApplicationsSection({
     </YStack>
   );
 }
-
