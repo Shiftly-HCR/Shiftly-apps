@@ -3,7 +3,7 @@
 import { YStack, XStack, ScrollView } from "tamagui";
 import { MissionFilters } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
-import { FiMap, FiList } from "react-icons/fi";
+import { Map, List } from "lucide-react";
 import {
   AppLayout,
   PageLoading,
@@ -49,8 +49,8 @@ export default function HomePage() {
             viewToggle={{
               currentMode: viewMode as ViewMode,
               options: [
-                { mode: "list", icon: <FiList size={16} />, label: "Liste" },
-                { mode: "map", icon: <FiMap size={16} />, label: "Carte" },
+                { mode: "list", icon: <List size={16} />, label: "Liste" },
+                { mode: "map", icon: <Map size={16} />, label: "Carte" },
               ],
               onModeChange: (mode) => setViewMode(mode as "list" | "map"),
             }}
