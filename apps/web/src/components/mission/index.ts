@@ -22,3 +22,4 @@ export * from "./MissionChatSection";
 export * from "./RecruiterMissionsHeader";
 export * from "./RecruiterMissionsList";
 export * from "./RecruiterMissionCard";
+export * from "./EstablishmentsManager";

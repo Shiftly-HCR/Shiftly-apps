@@ -1,5 +1,5 @@
 import { Card, XStack, YStack, H4, Paragraph, Button, Image } from "tamagui";
-import { MapPin, Clock, Euro } from "@tamagui/lucide-icons";
+import { MapPin, Clock, Euro } from "lucide-react";
 
 interface MissionCardProps {
   title: string;
@@ -43,21 +43,21 @@ export function MissionCard({
           </H4>
 
           <XStack alignItems="center" gap="$2">
-            <MapPin size="$1" color="$gray10" />
+            <MapPin size={16} color="#6B7280" />
             <Paragraph size="$3" color="$gray10">
               {location}
             </Paragraph>
           </XStack>
 
           <XStack alignItems="center" gap="$2">
-            <Clock size="$1" color="$gray10" />
+            <Clock size={16} color="#6B7280" />
             <Paragraph size="$3" color="$gray10">
               {time}
             </Paragraph>
           </XStack>
 
           <XStack alignItems="center" gap="$2">
-            <Euro size="$1" color="$violet10" />
+            <Euro size={16} color="#782478" />
             <Paragraph size="$4" fontWeight="600" color="$violet10">
               {price}
             </Paragraph>

@@ -5,6 +5,7 @@ import { AppLayout, PageLoading } from "@/components";
 import {
   RecruiterMissionsHeader,
   RecruiterMissionsList,
+  EstablishmentsManager,
 } from "@/components/mission";
 import { useRecruiterMissionsPage } from "@/hooks";
 
@@ -32,6 +33,8 @@ export default function RecruiterMissionsPage() {
           padding="$6"
           gap="$6"
         >
+          <EstablishmentsManager />
+
           <RecruiterMissionsHeader missions={missions} />
 
           <RecruiterMissionsList

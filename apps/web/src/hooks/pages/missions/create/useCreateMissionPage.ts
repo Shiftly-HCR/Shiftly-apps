@@ -2,24 +2,26 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useRecruiterMissions } from "@/hooks";
+import { useRecruiterMissions, useEstablishments } from "@/hooks";
 import {
   createMission,
   uploadMissionImage,
   geocodeAddress,
   reverseGeocode,
   debounce,
+  getEstablishmentById,
 } from "@shiftly/data";
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 /**
  * Hook pour gérer la logique de la page de création de mission
  * Gère les étapes, les formulaires, le géocodage et la soumission
  */
-export function useCreateMissionPage() {
+export function useCreateMissionPage(initialEstablishmentId?: string) {
   const router = useRouter();
   const { refresh } = useRecruiterMissions();
+  const { establishments } = useEstablishments();
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,20 +31,32 @@ export function useCreateMissionPage() {
   const [description, setDescription] = useState("");
   const [skills, setSkills] = useState<string>("");
 
-  // Étape 2: Localisation
+  // Étape 2: Établissement (nouveau)
+  const [selectedEstablishmentId, setSelectedEstablishmentId] = useState<
+    string | null
+  >(initialEstablishmentId || null);
+
+  // Initialiser l'établissement si fourni en paramètre
+  useEffect(() => {
+    if (initialEstablishmentId && !selectedEstablishmentId) {
+      setSelectedEstablishmentId(initialEstablishmentId);
+    }
+  }, [initialEstablishmentId]);
+
+  // Étape 3: Localisation
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [latitude, setLatitude] = useState<number>(48.8566); // Paris par défaut
   const [longitude, setLongitude] = useState<number>(2.3522);
 
-  // Étape 3: Dates et horaires
+  // Étape 4: Dates et horaires
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
-  // Étape 4: Rémunération et image
+  // Étape 5: Rémunération et image
   const [hourlyRate, setHourlyRate] = useState("");
   const [missionImage, setMissionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -50,6 +64,49 @@ export function useCreateMissionPage() {
   // État pour le géocodage
   const [isGeocoding, setIsGeocoding] = useState(false);
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+  // Charger l'adresse de l'établissement si sélectionné
+  useEffect(() => {
+    const loadEstablishmentAddress = async () => {
+      if (selectedEstablishmentId) {
+        // Chercher d'abord dans la liste des établissements déjà chargés
+        const establishmentFromList = establishments.find(
+          (est) => est.id === selectedEstablishmentId
+        );
+
+        if (establishmentFromList) {
+          // Utiliser les données de l'établissement depuis la liste
+          setAddress(establishmentFromList.address || "");
+          setCity(establishmentFromList.city || "");
+          setPostalCode(establishmentFromList.postal_code || "");
+          if (
+            establishmentFromList.latitude &&
+            establishmentFromList.longitude
+          ) {
+            setLatitude(establishmentFromList.latitude);
+            setLongitude(establishmentFromList.longitude);
+          }
+        } else {
+          // Sinon, charger depuis l'API
+          const establishment = await getEstablishmentById(
+            selectedEstablishmentId
+          );
+          if (establishment) {
+            setAddress(establishment.address || "");
+            setCity(establishment.city || "");
+            setPostalCode(establishment.postal_code || "");
+            if (establishment.latitude && establishment.longitude) {
+              setLatitude(establishment.latitude);
+              setLongitude(establishment.longitude);
+            }
+          }
+        }
+      }
+    };
+
+    loadEstablishmentAddress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEstablishmentId]);
 
   // Géocodage de l'adresse vers coordonnées (avec debounce)
   const handleAddressChange = useCallback(
@@ -106,7 +163,7 @@ export function useCreateMissionPage() {
       }
     }
 
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep((currentStep + 1) as Step);
     }
   };
@@ -146,6 +203,7 @@ export function useCreateMissionPage() {
         title,
         description,
         skills: skillsArray.length > 0 ? skillsArray : undefined,
+        establishment_id: selectedEstablishmentId || undefined,
         address: address || undefined,
         city: city || undefined,
         postal_code: postalCode || undefined,
@@ -198,7 +256,12 @@ export function useCreateMissionPage() {
     skills,
     setSkills,
 
-    // États Étape 2: Localisation
+    // États Étape 2: Établissement
+    selectedEstablishmentId,
+    setSelectedEstablishmentId,
+    establishments,
+
+    // États Étape 3: Localisation
     address,
     setAddress,
     city,
@@ -211,7 +274,7 @@ export function useCreateMissionPage() {
     setLongitude,
     isGeocoding,
 
-    // États Étape 3: Dates et horaires
+    // États Étape 4: Dates et horaires
     startDate,
     setStartDate,
     endDate,

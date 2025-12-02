@@ -7,13 +7,19 @@ import {
   ImagePicker,
   DatePicker,
   TimePicker,
+  Select,
   colors,
 } from "@shiftly/ui";
 import { AppLayout } from "@/components";
 import { MapLoader } from "@/components";
 import { useCreateMissionPage } from "@/hooks";
+import { Building2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export default function CreateMissionPage() {
+  const searchParams = useSearchParams();
+  const establishmentId = searchParams.get("establishment") || undefined;
+
   const {
     // États des étapes
     currentStep,
@@ -28,7 +34,12 @@ export default function CreateMissionPage() {
     skills,
     setSkills,
 
-    // États Étape 2: Localisation
+    // États Étape 2: Établissement
+    selectedEstablishmentId,
+    setSelectedEstablishmentId,
+    establishments,
+
+    // États Étape 3: Localisation
     address,
     setAddress,
     city,
@@ -39,7 +50,7 @@ export default function CreateMissionPage() {
     longitude,
     isGeocoding,
 
-    // États Étape 3: Dates et horaires
+    // États Étape 4: Dates et horaires
     startDate,
     setStartDate,
     endDate,
@@ -49,9 +60,10 @@ export default function CreateMissionPage() {
     endTime,
     setEndTime,
 
-    // États Étape 4: Rémunération et image
+    // États Étape 5: Rémunération et image
     hourlyRate,
     setHourlyRate,
+    missionImage,
     imagePreview,
 
     // Handlers
@@ -60,11 +72,11 @@ export default function CreateMissionPage() {
     handleImageChange,
     handleMapClick,
     handleSubmit,
-  } = useCreateMissionPage();
+  } = useCreateMissionPage(establishmentId);
 
   const renderStepIndicator = () => (
     <XStack gap="$2" justifyContent="center" marginBottom="$6">
-      {[1, 2, 3, 4].map((step) => (
+      {[1, 2, 3, 4, 5].map((step) => (
         <YStack
           key={step}
           width={currentStep >= step ? 60 : 40}
@@ -124,7 +136,91 @@ export default function CreateMissionPage() {
     </YStack>
   );
 
-  const renderStep2 = () => (
+  const renderStep2 = () => {
+    // Trouver l'établissement sélectionné pour afficher ses informations
+    const selectedEstablishment = establishments.find(
+      (est) => est.id === selectedEstablishmentId
+    );
+
+    return (
+      <YStack gap="$4">
+        <Text fontSize={24} fontWeight="700" color={colors.gray900}>
+          Établissement
+        </Text>
+        <Text fontSize={14} color={colors.gray500}>
+          Liez cette mission à un établissement existant ou créez-la sans
+          établissement
+        </Text>
+
+        <Select
+          label="Établissement (optionnel)"
+          value={selectedEstablishmentId || ""}
+          onValueChange={(value) => setSelectedEstablishmentId(value || null)}
+          placeholder="Aucun établissement"
+          options={[
+            { label: "Aucun établissement", value: "" },
+            ...establishments.map((est: any) => ({
+              label: `${est.name}${est.city ? ` - ${est.city}` : ""}`,
+              value: est.id,
+            })),
+          ]}
+        />
+
+        {selectedEstablishmentId && selectedEstablishment && (
+          <YStack
+            padding="$4"
+            backgroundColor={colors.backgroundLight}
+            borderRadius="$3"
+            gap="$3"
+            borderWidth={1}
+            borderColor={colors.shiftlyVioletLight}
+          >
+            <XStack alignItems="center" gap="$2">
+              <Building2 size={18} color={colors.shiftlyViolet} />
+              <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                {selectedEstablishment.name}
+              </Text>
+            </XStack>
+
+            {selectedEstablishment.address && (
+              <YStack gap="$1">
+                <Text fontSize={12} fontWeight="600" color={colors.gray500}>
+                  Adresse de l'établissement (sera utilisée pour la mission) :
+                </Text>
+                <Text fontSize={14} color={colors.gray700}>
+                  {selectedEstablishment.address}
+                </Text>
+                {(selectedEstablishment.postal_code ||
+                  selectedEstablishment.city) && (
+                  <Text fontSize={14} color={colors.gray500}>
+                    {[
+                      selectedEstablishment.postal_code,
+                      selectedEstablishment.city,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </Text>
+                )}
+              </YStack>
+            )}
+
+            <YStack
+              padding="$2"
+              backgroundColor={colors.white}
+              borderRadius="$2"
+              gap="$1"
+            >
+              <Text fontSize={12} color={colors.shiftlyViolet} fontWeight="600">
+                ✓ L'adresse sera automatiquement héritée à l'étape suivante
+              </Text>
+            </YStack>
+          </YStack>
+        )}
+      </YStack>
+    );
+  };
+
+  const renderStep3 = () => (
     <YStack gap="$4">
       <Text fontSize={24} fontWeight="700" color={colors.gray900}>
         Où se déroule la mission ?
@@ -157,44 +253,59 @@ export default function CreateMissionPage() {
         </YStack>
       </XStack>
 
-      {/* Carte interactive */}
-      <YStack gap="$2">
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-            Localisation sur la carte
-          </Text>
-          {isGeocoding && (
-            <Text fontSize={12} color={colors.shiftlyViolet}>
-              🔄 Mise à jour...
+      {/* Carte interactive - désactivée si établissement sélectionné */}
+      {!selectedEstablishmentId && (
+        <YStack gap="$2">
+          <XStack justifyContent="space-between" alignItems="center">
+            <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+              Localisation sur la carte
             </Text>
-          )}
-        </XStack>
-        <Text fontSize={12} color={colors.gray500}>
-          Cliquez sur la carte pour positionner le marqueur et remplir l'adresse
-          automatiquement
-        </Text>
-        <MapLoader
-          latitude={latitude}
-          longitude={longitude}
-          zoom={13}
-          height={250}
-          markers={[
-            {
-              id: "mission-location",
-              latitude: latitude,
-              longitude: longitude,
-            },
-          ]}
-          onMapClick={(event) => {
-            handleMapClick(event.lngLat.lat, event.lngLat.lng);
-          }}
-          interactive={true}
-        />
-      </YStack>
+            {isGeocoding && (
+              <Text fontSize={12} color={colors.shiftlyViolet}>
+                🔄 Mise à jour...
+              </Text>
+            )}
+          </XStack>
+          <Text fontSize={12} color={colors.gray500}>
+            Cliquez sur la carte pour positionner le marqueur et remplir
+            l'adresse automatiquement
+          </Text>
+          <MapLoader
+            latitude={latitude}
+            longitude={longitude}
+            zoom={13}
+            height={250}
+            markers={[
+              {
+                id: "mission-location",
+                latitude: latitude,
+                longitude: longitude,
+              },
+            ]}
+            onMapClick={(event) => {
+              handleMapClick(event.lngLat.lat, event.lngLat.lng);
+            }}
+            interactive={true}
+          />
+        </YStack>
+      )}
+
+      {selectedEstablishmentId && (
+        <YStack
+          padding="$3"
+          backgroundColor={colors.backgroundLight}
+          borderRadius="$3"
+        >
+          <Text fontSize={14} color={colors.gray500}>
+            L'adresse de l'établissement sélectionné sera utilisée. Vous pouvez
+            modifier les champs ci-dessus si nécessaire.
+          </Text>
+        </YStack>
+      )}
     </YStack>
   );
 
-  const renderStep3 = () => (
+  const renderStep4 = () => (
     <YStack gap="$4">
       <Text fontSize={24} fontWeight="700" color={colors.gray900}>
         Éléments de planning
@@ -250,7 +361,7 @@ export default function CreateMissionPage() {
     </YStack>
   );
 
-  const renderStep4 = () => (
+  const renderStep5 = () => (
     <YStack gap="$4">
       <Text fontSize={24} fontWeight="700" color={colors.gray900}>
         Mission à publier
@@ -380,6 +491,7 @@ export default function CreateMissionPage() {
             {currentStep === 2 && renderStep2()}
             {currentStep === 3 && renderStep3()}
             {currentStep === 4 && renderStep4()}
+            {currentStep === 5 && renderStep5()}
 
             {/* Boutons de navigation */}
             <XStack gap="$3" marginTop="$4">
@@ -397,7 +509,7 @@ export default function CreateMissionPage() {
               )}
 
               <YStack flex={1}>
-                {currentStep < 4 ? (
+                {currentStep < 5 ? (
                   <Button
                     variant="primary"
                     size="lg"

@@ -19,16 +19,20 @@ import {
   geocodeAddress,
   reverseGeocode,
   debounce,
+  getEstablishmentById,
 } from "@shiftly/data";
 import { AppLayout } from "@/components";
-import { useRecruiterMissions, useCachedMission } from "@/hooks";
+import { useRecruiterMissions, useCachedMission, useEstablishments } from "@/hooks";
 import { MapLoader } from "@/components";
+import { Select } from "@shiftly/ui";
+import { Building2 } from "lucide-react";
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 export default function EditMissionPage() {
   const router = useRouter();
   const { refresh } = useRecruiterMissions();
+  const { establishments } = useEstablishments();
   const params = useParams();
   const missionId = params.id as string;
   const { mission: cachedMission, isLoading: isLoadingMission } =
@@ -45,20 +49,25 @@ export default function EditMissionPage() {
   const [description, setDescription] = useState("");
   const [skills, setSkills] = useState<string>("");
 
-  // Étape 2: Localisation
+  // Étape 2: Établissement
+  const [selectedEstablishmentId, setSelectedEstablishmentId] = useState<
+    string | null
+  >(null);
+
+  // Étape 3: Localisation
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [latitude, setLatitude] = useState<number>(48.8566);
   const [longitude, setLongitude] = useState<number>(2.3522);
 
-  // Étape 3: Dates et horaires
+  // Étape 4: Dates et horaires
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
-  // Étape 4: Rémunération et image
+  // Étape 5: Rémunération et image
   const [hourlyRate, setHourlyRate] = useState("");
   const [missionImage, setMissionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -115,6 +124,7 @@ export default function EditMissionPage() {
     setTitle(mission.title);
     setDescription(mission.description || "");
     setSkills(mission.skills?.join(", ") || "");
+    setSelectedEstablishmentId(mission.establishment_id || null);
     setAddress(mission.address || "");
     setCity(mission.city || "");
     setPostalCode(mission.postal_code || "");
@@ -128,6 +138,49 @@ export default function EditMissionPage() {
     setExistingImageUrl(mission.image_url || "");
     setImagePreview(mission.image_url || "");
   }, [mission]);
+
+  // Charger l'adresse de l'établissement si sélectionné
+  useEffect(() => {
+    const loadEstablishmentAddress = async () => {
+      if (selectedEstablishmentId) {
+        // Chercher d'abord dans la liste des établissements déjà chargés
+        const establishmentFromList = establishments.find(
+          (est) => est.id === selectedEstablishmentId
+        );
+
+        if (establishmentFromList) {
+          // Utiliser les données de l'établissement depuis la liste
+          setAddress(establishmentFromList.address || "");
+          setCity(establishmentFromList.city || "");
+          setPostalCode(establishmentFromList.postal_code || "");
+          if (
+            establishmentFromList.latitude &&
+            establishmentFromList.longitude
+          ) {
+            setLatitude(establishmentFromList.latitude);
+            setLongitude(establishmentFromList.longitude);
+          }
+        } else {
+          // Sinon, charger depuis l'API
+          const establishment = await getEstablishmentById(
+            selectedEstablishmentId
+          );
+          if (establishment) {
+            setAddress(establishment.address || "");
+            setCity(establishment.city || "");
+            setPostalCode(establishment.postal_code || "");
+            if (establishment.latitude && establishment.longitude) {
+              setLatitude(establishment.latitude);
+              setLongitude(establishment.longitude);
+            }
+          }
+        }
+      }
+    };
+
+    loadEstablishmentAddress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEstablishmentId]);
 
   // Effet pour déclencher le géocodage quand l'adresse change (sauf au chargement initial)
   useEffect(() => {
@@ -146,7 +199,7 @@ export default function EditMissionPage() {
       }
     }
 
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep((currentStep + 1) as Step);
     }
   };
@@ -189,6 +242,7 @@ export default function EditMissionPage() {
         title,
         description,
         skills: skillsArray.length > 0 ? skillsArray : undefined,
+        establishment_id: selectedEstablishmentId || undefined,
         address: address || undefined,
         city: city || undefined,
         postal_code: postalCode || undefined,
@@ -287,7 +341,7 @@ export default function EditMissionPage() {
   // Indicateur de progression
   const renderStepIndicator = () => (
     <XStack gap="$2" justifyContent="center" marginBottom="$6">
-      {[1, 2, 3, 4].map((step) => (
+      {[1, 2, 3, 4, 5].map((step) => (
         <YStack
           key={step}
           width={currentStep >= step ? 60 : 40}
@@ -349,8 +403,93 @@ export default function EditMissionPage() {
     </YStack>
   );
 
-  // Étape 2: Localisation
-  const renderStep2 = () => (
+  // Étape 2: Établissement
+  const renderStep2 = () => {
+    // Trouver l'établissement sélectionné pour afficher ses informations
+    const selectedEstablishment = establishments.find(
+      (est) => est.id === selectedEstablishmentId
+    );
+
+    return (
+      <YStack gap="$4">
+        <Text fontSize={24} fontWeight="700" color={colors.gray900}>
+          Établissement
+        </Text>
+        <Text fontSize={14} color={colors.gray500}>
+          Liez cette mission à un établissement existant ou créez-la sans
+          établissement
+        </Text>
+
+        <Select
+          label="Établissement (optionnel)"
+          value={selectedEstablishmentId || ""}
+          onValueChange={(value) => setSelectedEstablishmentId(value || null)}
+          placeholder="Aucun établissement"
+          options={[
+            { label: "Aucun établissement", value: "" },
+            ...establishments.map((est: any) => ({
+              label: `${est.name}${est.city ? ` - ${est.city}` : ""}`,
+              value: est.id,
+            })),
+          ]}
+        />
+
+        {selectedEstablishmentId && selectedEstablishment && (
+          <YStack
+            padding="$4"
+            backgroundColor={colors.backgroundLight}
+            borderRadius="$3"
+            gap="$3"
+            borderWidth={1}
+            borderColor={colors.shiftlyVioletLight}
+          >
+            <XStack alignItems="center" gap="$2">
+              <Building2 size={18} color={colors.shiftlyViolet} />
+              <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                {selectedEstablishment.name}
+              </Text>
+            </XStack>
+
+            {selectedEstablishment.address && (
+              <YStack gap="$1">
+                <Text fontSize={12} fontWeight="600" color={colors.gray500}>
+                  Adresse de l'établissement (sera utilisée pour la mission) :
+                </Text>
+                <Text fontSize={14} color={colors.gray700}>
+                  {selectedEstablishment.address}
+                </Text>
+                {(selectedEstablishment.postal_code ||
+                  selectedEstablishment.city) && (
+                  <Text fontSize={14} color={colors.gray500}>
+                    {[
+                      selectedEstablishment.postal_code,
+                      selectedEstablishment.city,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </Text>
+                )}
+              </YStack>
+            )}
+
+            <YStack
+              padding="$2"
+              backgroundColor={colors.white}
+              borderRadius="$2"
+              gap="$1"
+            >
+              <Text fontSize={12} color={colors.shiftlyViolet} fontWeight="600">
+                ✓ L'adresse sera automatiquement héritée à l'étape suivante
+              </Text>
+            </YStack>
+          </YStack>
+        )}
+      </YStack>
+    );
+  };
+
+  // Étape 3: Localisation
+  const renderStep3 = () => (
     <YStack gap="$4">
       <Text fontSize={24} fontWeight="700" color={colors.gray900}>
         Où se déroule la mission ?
@@ -383,45 +522,60 @@ export default function EditMissionPage() {
         </YStack>
       </XStack>
 
-      {/* Carte interactive */}
-      <YStack gap="$2">
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-            Localisation sur la carte
-          </Text>
-          {isGeocoding && (
-            <Text fontSize={12} color={colors.shiftlyViolet}>
-              🔄 Mise à jour...
+      {/* Carte interactive - désactivée si établissement sélectionné */}
+      {!selectedEstablishmentId && (
+        <YStack gap="$2">
+          <XStack justifyContent="space-between" alignItems="center">
+            <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+              Localisation sur la carte
             </Text>
-          )}
-        </XStack>
-        <Text fontSize={12} color={colors.gray500}>
-          Cliquez sur la carte pour positionner le marqueur et remplir l'adresse
-          automatiquement
-        </Text>
-        <MapLoader
-          latitude={latitude}
-          longitude={longitude}
-          zoom={13}
-          height={250}
-          markers={[
-            {
-              id: "mission-location",
-              latitude: latitude,
-              longitude: longitude,
-            },
-          ]}
-          onMapClick={(event) => {
-            handleMapClick(event.lngLat.lat, event.lngLat.lng);
-          }}
-          interactive={true}
-        />
-      </YStack>
+            {isGeocoding && (
+              <Text fontSize={12} color={colors.shiftlyViolet}>
+                🔄 Mise à jour...
+              </Text>
+            )}
+          </XStack>
+          <Text fontSize={12} color={colors.gray500}>
+            Cliquez sur la carte pour positionner le marqueur et remplir l'adresse
+            automatiquement
+          </Text>
+          <MapLoader
+            latitude={latitude}
+            longitude={longitude}
+            zoom={13}
+            height={250}
+            markers={[
+              {
+                id: "mission-location",
+                latitude: latitude,
+                longitude: longitude,
+              },
+            ]}
+            onMapClick={(event) => {
+              handleMapClick(event.lngLat.lat, event.lngLat.lng);
+            }}
+            interactive={true}
+          />
+        </YStack>
+      )}
+
+      {selectedEstablishmentId && (
+        <YStack
+          padding="$3"
+          backgroundColor={colors.backgroundLight}
+          borderRadius="$3"
+        >
+          <Text fontSize={14} color={colors.gray500}>
+            L'adresse de l'établissement sélectionné sera utilisée. Vous pouvez
+            modifier les champs ci-dessus si nécessaire.
+          </Text>
+        </YStack>
+      )}
     </YStack>
   );
 
-  // Étape 3: Dates et horaires
-  const renderStep3 = () => (
+  // Étape 4: Dates et horaires
+  const renderStep4 = () => (
     <YStack gap="$4">
       <Text fontSize={24} fontWeight="700" color={colors.gray900}>
         Éléments de planning
@@ -477,8 +631,8 @@ export default function EditMissionPage() {
     </YStack>
   );
 
-  // Étape 4: Rémunération et image
-  const renderStep4 = () => (
+  // Étape 5: Rémunération et image
+  const renderStep5 = () => (
     <YStack gap="$4">
       <Text fontSize={24} fontWeight="700" color={colors.gray900}>
         Rémunération et visuels
@@ -539,7 +693,7 @@ export default function EditMissionPage() {
               Modifier la mission
             </Text>
             <Text fontSize={16} color={colors.gray700}>
-              Étape {currentStep} sur 4
+              Étape {currentStep} sur 5
             </Text>
           </YStack>
 
@@ -559,6 +713,7 @@ export default function EditMissionPage() {
             {currentStep === 2 && renderStep2()}
             {currentStep === 3 && renderStep3()}
             {currentStep === 4 && renderStep4()}
+            {currentStep === 5 && renderStep5()}
 
             {/* Message d'erreur */}
             {error && (
@@ -586,7 +741,7 @@ export default function EditMissionPage() {
               Retour
             </Button>
 
-            {currentStep < 4 ? (
+            {currentStep < 5 ? (
               <Button
                 variant="primary"
                 size="lg"
