@@ -7,6 +7,7 @@ import { MapPin, Building2, Heart, CheckCircle2, Star } from "lucide-react";
 import type { Mission } from "@shiftly/data";
 import { openConversation } from "@/utils/chatService";
 import { useMissionEstablishment } from "@/hooks";
+import { MissionAddressDisplay } from "./MissionAddressDisplay";
 
 interface MissionDetailSidebarProps {
   mission: Mission;
@@ -214,129 +215,14 @@ export function MissionDetailSidebar({
               Chargement...
             </Text>
           </YStack>
-        ) : hasEstablishment ? (
-          <>
-            <XStack alignItems="center" gap="$3" marginBottom="$4">
-              <YStack
-                width={60}
-                height={60}
-                borderRadius={30}
-                backgroundColor="#F0F0F0"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Building2 size={28} color={colors.shiftlyViolet} />
-              </YStack>
-              <YStack flex={1}>
-                <Text fontSize={16} fontWeight="600" color="#000">
-                  {displayName}
-                </Text>
-                <XStack alignItems="center" gap="$1" marginTop="$1">
-                  <Star
-                    size={14}
-                    color={colors.shiftlyViolet}
-                    fill={colors.shiftlyViolet}
-                  />
-                  <Text
-                    fontSize={14}
-                    color={colors.shiftlyViolet}
-                    fontWeight="600"
-                  >
-                    4.5
-                  </Text>
-                  <Text fontSize={12} color="#999">
-                    (0 avis)
-                  </Text>
-                </XStack>
-              </YStack>
-            </XStack>
-
-            {/* Informations établissement */}
-            <YStack gap="$3" marginBottom="$4">
-              {(displayAddress ||
-                (displayCity && displayCity !== "Ville non renseignée") ||
-                establishment?.postal_code ||
-                mission?.postal_code) &&
-                (displayAddress !== "Adresse non renseignée" ||
-                  displayCity !== "Ville non renseignée") && (
-                  <XStack alignItems="center" gap="$2">
-                    <MapPin size={16} color="#666" style={{ flexShrink: 0 }} />
-                    <Text fontSize={14} color="#666" flex={1}>
-                      {[
-                        displayAddress !== "Adresse non renseignée"
-                          ? displayAddress
-                          : undefined,
-                        [
-                          establishment?.postal_code || mission?.postal_code,
-                          displayCity !== "Ville non renseignée"
-                            ? displayCity
-                            : undefined,
-                        ]
-                          .filter(Boolean)
-                          .join(" "),
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </Text>
-                  </XStack>
-                )}
-            </YStack>
-          </>
         ) : (
-          <>
-            {/* Si pas d'établissement, afficher simplement l'adresse de la mission */}
-            <YStack gap="$3" marginBottom="$4">
-              {(mission.address || mission.postal_code || mission.city) && (
-                <XStack alignItems="center" gap="$2">
-                  <MapPin size={16} color="#666" style={{ flexShrink: 0 }} />
-                  <Text fontSize={14} color="#666" flex={1}>
-                    {[
-                      mission.address,
-                      [mission.postal_code, mission.city]
-                        .filter(Boolean)
-                        .join(" "),
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </Text>
-                </XStack>
-              )}
-
-              {!mission.address && !mission.city && (
-                <Text fontSize={14} color="#999" fontStyle="italic">
-                  Adresse non renseignée
-                </Text>
-              )}
-            </YStack>
-          </>
-        )}
-
-        {/* Statistiques - seulement si établissement */}
-        {hasEstablishment && (
-          <YStack
-            backgroundColor="#F8F8F8"
-            borderRadius={8}
-            padding="$3"
-            gap="$2"
-            marginBottom="$4"
-          >
-            <XStack justifyContent="space-between">
-              <Text fontSize={14} color="#666">
-                Missions publiées
-              </Text>
-              <Text fontSize={14} fontWeight="600" color="#000">
-                0
-              </Text>
-            </XStack>
-            <XStack justifyContent="space-between">
-              <Text fontSize={14} color="#666">
-                Taux de réponse
-              </Text>
-              <Text fontSize={14} fontWeight="600" color="#00A86B">
-                95%
-              </Text>
-            </XStack>
-          </YStack>
+          <MissionAddressDisplay
+            establishment={establishment}
+            mission={mission}
+            displayAddress={displayAddress}
+            displayCity={displayCity}
+            displayName={displayName}
+          />
         )}
 
         {/* Bouton Contact */}

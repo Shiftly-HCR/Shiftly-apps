@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getEstablishmentById, type Establishment } from "@shiftly/data";
+import {
+  getEstablishmentById,
+  getEstablishmentByIdPublic,
+  type Establishment,
+} from "@shiftly/data";
 import type { Mission } from "@shiftly/data";
 
 /**
@@ -24,9 +28,19 @@ export function useMissionEstablishment(mission: Mission | null) {
       setError(null);
 
       try {
-        const establishmentData = await getEstablishmentById(
+        // Essayer d'abord de récupérer en tant que propriétaire
+        let establishmentData = await getEstablishmentById(
           mission.establishment_id
         );
+
+        // Si pas trouvé (pas le propriétaire), essayer la version publique
+        // qui permet de voir l'établissement s'il est lié à une mission publiée
+        if (!establishmentData && mission.status === "published") {
+          establishmentData = await getEstablishmentByIdPublic(
+            mission.establishment_id
+          );
+        }
+
         setEstablishment(establishmentData);
       } catch (err) {
         console.error("Erreur lors du chargement de l'établissement:", err);
@@ -37,7 +51,7 @@ export function useMissionEstablishment(mission: Mission | null) {
     };
 
     loadEstablishment();
-  }, [mission?.establishment_id]);
+  }, [mission?.establishment_id, mission?.status]);
 
   // Déterminer les informations à afficher
   const hasEstablishment = !!establishment;

@@ -240,7 +240,7 @@ export async function deleteEstablishment(
 }
 
 /**
- * Récupère un établissement par son ID
+ * Récupère un établissement par son ID (pour le propriétaire uniquement)
  */
 export async function getEstablishmentById(
   establishmentId: string
@@ -270,6 +270,97 @@ export async function getEstablishmentById(
   } catch (err) {
     console.error("Erreur lors de la récupération de l'établissement:", err);
     return null;
+  }
+}
+
+/**
+ * Récupère un établissement par son ID pour affichage public
+ * Permet à tous les utilisateurs authentifiés de voir un établissement
+ * s'il est lié à une mission publiée (pour l'affichage dans les détails de mission)
+ * 
+ * Note: Cette fonction nécessite que les RLS permettent la lecture des établissements
+ * liés à des missions publiées. Voir la politique RLS correspondante.
+ */
+export async function getEstablishmentByIdPublic(
+  establishmentId: string
+): Promise<Establishment | null> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return null;
+    }
+
+    // Vérifier d'abord que l'établissement est lié à au moins une mission publiée
+    const { data: missionCheck, error: missionError } = await supabase
+      .from("missions")
+      .select("id")
+      .eq("establishment_id", establishmentId)
+      .eq("status", "published")
+      .limit(1)
+      .single();
+
+    if (missionError || !missionCheck) {
+      // L'établissement n'est pas lié à une mission publiée, ne pas le retourner
+      return null;
+    }
+
+    // Si l'établissement est lié à une mission publiée, on peut le récupérer
+    // La politique RLS doit permettre cette lecture pour les établissements liés à des missions publiées
+    const { data, error } = await supabase
+      .from("establishments")
+      .select("*")
+      .eq("id", establishmentId)
+      .single();
+
+    if (error) {
+      console.error(
+        "Erreur lors de la récupération publique de l'établissement:",
+        error
+      );
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error(
+      "Erreur lors de la récupération publique de l'établissement:",
+      err
+    );
+    return null;
+  }
+}
+
+/**
+ * Compte le nombre de missions publiées pour un établissement
+ */
+export async function countPublishedMissionsByEstablishment(
+  establishmentId: string
+): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from("missions")
+      .select("*", { count: "exact", head: true })
+      .eq("establishment_id", establishmentId)
+      .eq("status", "published");
+
+    if (error) {
+      console.error(
+        "Erreur lors du comptage des missions de l'établissement:",
+        error
+      );
+      return 0;
+    }
+
+    return count || 0;
+  } catch (err) {
+    console.error(
+      "Erreur lors du comptage des missions de l'établissement:",
+      err
+    );
+    return 0;
   }
 }
 
