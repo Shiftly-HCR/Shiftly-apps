@@ -18,6 +18,7 @@ export default function MessageriePage() {
     isLoadingConversations,
     senderNames,
     getOtherParticipantName,
+    refreshConversations,
   } = useConversations();
 
   // Hook pour le chat
@@ -35,6 +36,7 @@ export default function MessageriePage() {
             getOtherParticipantName={getOtherParticipantName}
             formatTime={formatLastMessageTime}
             isLoading={isLoadingConversations}
+            onConversationDeleted={refreshConversations}
           />
 
           {/* Conversation sélectionnée */}

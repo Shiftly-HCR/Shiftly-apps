@@ -8,6 +8,7 @@ export * from "./PageHeader";
 export * from "./StatisticsCard";
 export * from "./EmptyState";
 export * from "./ViewToggle";
+export * from "./ConfirmDialog";
 export * from "./ActiveFilters";
 export * from "./StatusBadge";
 export * from "./HelpCard";

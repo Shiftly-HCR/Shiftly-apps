@@ -26,38 +26,38 @@ export function useConversations() {
     new Map()
   );
 
+  const loadConversations = async () => {
+    setIsLoadingConversations(true);
+    try {
+      const loadedConversations = await listUserConversations();
+      setConversations(loadedConversations);
+
+      // Charger les noms de tous les participants
+      const names = new Map<string, string>();
+      for (const conv of loadedConversations) {
+        if (conv.recruiter) {
+          const recruiterName =
+            `${conv.recruiter.first_name || ""} ${conv.recruiter.last_name || ""}`.trim() ||
+            "Recruteur";
+          names.set(conv.recruiter_id, recruiterName);
+        }
+        if (conv.freelance) {
+          const freelanceName =
+            `${conv.freelance.first_name || ""} ${conv.freelance.last_name || ""}`.trim() ||
+            "Freelance";
+          names.set(conv.freelance_id, freelanceName);
+        }
+      }
+      setSenderNames(names);
+    } catch (err) {
+      console.error("Erreur lors du chargement des conversations:", err);
+    } finally {
+      setIsLoadingConversations(false);
+    }
+  };
+
   // Charger les conversations
   useEffect(() => {
-    const loadConversations = async () => {
-      setIsLoadingConversations(true);
-      try {
-        const loadedConversations = await listUserConversations();
-        setConversations(loadedConversations);
-
-        // Charger les noms de tous les participants
-        const names = new Map<string, string>();
-        for (const conv of loadedConversations) {
-          if (conv.recruiter) {
-            const recruiterName =
-              `${conv.recruiter.first_name || ""} ${conv.recruiter.last_name || ""}`.trim() ||
-              "Recruteur";
-            names.set(conv.recruiter_id, recruiterName);
-          }
-          if (conv.freelance) {
-            const freelanceName =
-              `${conv.freelance.first_name || ""} ${conv.freelance.last_name || ""}`.trim() ||
-              "Freelance";
-            names.set(conv.freelance_id, freelanceName);
-          }
-        }
-        setSenderNames(names);
-      } catch (err) {
-        console.error("Erreur lors du chargement des conversations:", err);
-      } finally {
-        setIsLoadingConversations(false);
-      }
-    };
-
     loadConversations();
   }, []);
 
@@ -133,6 +133,7 @@ export function useConversations() {
     isLoadingConversations,
     senderNames,
     getOtherParticipantName,
+    refreshConversations: loadConversations,
   };
 }
 

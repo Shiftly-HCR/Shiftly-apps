@@ -430,3 +430,97 @@ export async function markConversationAsRead(conversationId: string): Promise<{
     };
   }
 }
+
+/**
+ * Supprime une conversation et tous ses messages
+ */
+export async function deleteConversation(
+  conversationId: string
+): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    // Vérifier que l'utilisateur est connecté
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Vous devez être connecté pour supprimer une conversation",
+      };
+    }
+
+    // Vérifier que l'utilisateur fait partie de la conversation
+    const { data: conversation, error: convError } = await supabase
+      .from("conversations")
+      .select("recruiter_id, freelance_id")
+      .eq("id", conversationId)
+      .single();
+
+    if (convError || !conversation) {
+      return {
+        success: false,
+        error: "Conversation introuvable",
+      };
+    }
+
+    if (
+      conversation.recruiter_id !== user.id &&
+      conversation.freelance_id !== user.id
+    ) {
+      return {
+        success: false,
+        error: "Vous n'êtes pas autorisé à supprimer cette conversation",
+      };
+    }
+
+    // Supprimer tous les messages de la conversation
+    const { error: messagesError } = await supabase
+      .from("messages")
+      .delete()
+      .eq("conversation_id", conversationId);
+
+    if (messagesError) {
+      console.error("Erreur lors de la suppression des messages:", messagesError);
+      return {
+        success: false,
+        error:
+          messagesError.message ||
+          "Erreur lors de la suppression des messages. Vérifiez les politiques RLS.",
+      };
+    }
+
+    // Supprimer la conversation
+    const { error: deleteError } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId);
+
+    if (deleteError) {
+      console.error(
+        "Erreur lors de la suppression de la conversation:",
+        deleteError
+      );
+      return {
+        success: false,
+        error:
+          deleteError.message ||
+          "Erreur lors de la suppression de la conversation. Vérifiez les politiques RLS.",
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (err: any) {
+    console.error("Erreur lors de la suppression de la conversation:", err);
+    return {
+      success: false,
+      error:
+        err.message || "Une erreur est survenue lors de la suppression",
+    };
+  }
+}

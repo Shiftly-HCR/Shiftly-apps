@@ -2,12 +2,15 @@
 
 import { XStack, YStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
+import { Trash2 } from "lucide-react";
 import type { ConversationWithDetails } from "@shiftly/data";
+import { useConversationItemActions } from "@/hooks";
 
 interface ConversationItemProps {
   conversation: ConversationWithDetails;
   isSelected: boolean;
   onSelect: () => void;
+  onDelete?: (conversationId: string) => void;
   otherParticipantName: string;
   formatTime: (dateString?: string) => string;
 }
@@ -16,10 +19,15 @@ export function ConversationItem({
   conversation,
   isSelected,
   onSelect,
+  onDelete,
   otherParticipantName,
   formatTime,
 }: ConversationItemProps) {
   const lastMessage = conversation.last_message;
+  const { handleDelete } = useConversationItemActions({
+    conversationId: conversation.id,
+    onDelete,
+  });
 
   return (
     <XStack
@@ -32,6 +40,8 @@ export function ConversationItem({
         backgroundColor: colors.gray050,
       }}
       onPress={onSelect}
+      alignItems="center"
+      gap="$3"
     >
       <YStack flex={1} gap="$1">
         <XStack justifyContent="space-between" alignItems="center">
@@ -55,6 +65,19 @@ export function ConversationItem({
           </Text>
         )}
       </YStack>
+      {onDelete && (
+        <XStack
+          padding="$2"
+          borderRadius="$2"
+          cursor="pointer"
+          hoverStyle={{
+            backgroundColor: colors.gray100,
+          }}
+          onPress={handleDelete}
+        >
+          <Trash2 size={16} color="#EF4444" />
+        </XStack>
+      )}
     </XStack>
   );
 }
