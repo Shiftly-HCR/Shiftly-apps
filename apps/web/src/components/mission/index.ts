@@ -5,4 +5,6 @@ export * from "./MissionCandidatesFilters";
 export * from "./MissionCandidatesTabs";
 export * from "./MissionActivityTab";
 export * from "./MissionDetailsTab";
+export * from "./MissionListView";
+export * from "./MissionMapView";
 
