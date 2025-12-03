@@ -365,6 +365,236 @@ export async function countPublishedMissionsByEstablishment(
 }
 
 /**
+ * Recherche un établissement par son code secret
+ */
+export async function findEstablishmentBySecretCode(
+  secretCode: string
+): Promise<{
+  success: boolean;
+  error?: string;
+  establishment?: Establishment;
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    // Vérifier que l'utilisateur est un commercial
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || profile?.role !== "commercial") {
+      return {
+        success: false,
+        error: "Accès refusé : seuls les commerciaux peuvent rechercher des établissements",
+      };
+    }
+
+    // Rechercher l'établissement par code secret
+    const { data, error } = await supabase
+      .from("establishments")
+      .select("*")
+      .eq("secret_code", secretCode)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        // Aucun résultat trouvé
+        return {
+          success: false,
+          error: "Aucun établissement trouvé avec ce code",
+        };
+      }
+      console.error("Erreur lors de la recherche de l'établissement:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    // Vérifier que l'établissement n'est pas déjà rattaché à un commercial
+    if (data.commercial_id) {
+      return {
+        success: false,
+        error: "Cet établissement est déjà rattaché à un commercial",
+      };
+    }
+
+    return {
+      success: true,
+      establishment: data,
+    };
+  } catch (err) {
+    console.error("Erreur lors de la recherche de l'établissement:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la recherche de l'établissement",
+    };
+  }
+}
+
+/**
+ * Rattache un commercial à un établissement via le code secret
+ */
+export async function attachCommercialToEstablishment(
+  establishmentId: string
+): Promise<{
+  success: boolean;
+  error?: string;
+  establishment?: Establishment;
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    // Vérifier que l'utilisateur est un commercial
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || profile?.role !== "commercial") {
+      return {
+        success: false,
+        error: "Accès refusé : seuls les commerciaux peuvent se rattacher à un établissement",
+      };
+    }
+
+    // Vérifier que l'établissement existe et n'est pas déjà rattaché
+    const { data: establishment, error: checkError } = await supabase
+      .from("establishments")
+      .select("commercial_id")
+      .eq("id", establishmentId)
+      .single();
+
+    if (checkError) {
+      return {
+        success: false,
+        error: "Établissement introuvable",
+      };
+    }
+
+    if (establishment.commercial_id) {
+      return {
+        success: false,
+        error: "Cet établissement est déjà rattaché à un commercial",
+      };
+    }
+
+    // Rattacher le commercial à l'établissement
+    const { data, error } = await supabase
+      .from("establishments")
+      .update({
+        commercial_id: user.id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", establishmentId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erreur lors du rattachement:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      establishment: data,
+    };
+  } catch (err) {
+    console.error("Erreur lors du rattachement:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors du rattachement",
+    };
+  }
+}
+
+/**
+ * Liste les établissements rattachés au commercial courant
+ */
+export async function listMyCommercialEstablishments(): Promise<{
+  success: boolean;
+  error?: string;
+  establishments?: Establishment[];
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    // Vérifier que l'utilisateur est un commercial
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || profile?.role !== "commercial") {
+      return {
+        success: false,
+        error: "Accès refusé : seuls les commerciaux peuvent voir leurs établissements",
+      };
+    }
+
+    // Récupérer les établissements où commercial_id = user.id
+    const { data, error } = await supabase
+      .from("establishments")
+      .select("*")
+      .eq("commercial_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Erreur lors de la récupération des établissements:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      establishments: data || [],
+    };
+  } catch (err) {
+    console.error("Erreur lors de la récupération des établissements:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la récupération des établissements",
+    };
+  }
+}
+
+/**
  * Liste tous les établissements non rattachés à un commercial (pour les commerciaux uniquement)
  * Le secret_code n'est pas retourné pour les commerciaux
  */

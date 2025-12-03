@@ -33,7 +33,7 @@ export default function RootLayout({
         <TamaguiProvider>
           <SessionProvider>
             {children}
-            <SessionCacheDebug />
+            {/* <SessionCacheDebug /> */}
           </SessionProvider>
         </TamaguiProvider>
       </body>

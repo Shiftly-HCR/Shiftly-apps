@@ -1,16 +1,17 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { Button, colors } from "@shiftly/ui";
+import { colors } from "@shiftly/ui";
 import { PageLoading, EmptyState } from "@/components";
-import { useAllEstablishments } from "@/hooks";
+import { useMyCommercialEstablishments } from "@/hooks";
 import { Building2, MapPin, Briefcase } from "lucide-react";
 
 /**
- * Composant pour afficher la liste de tous les établissements (pour les commerciaux)
+ * Composant pour afficher la liste des établissements rattachés au commercial
  */
-export function AllEstablishmentsList() {
-  const { establishments, isLoading, error, refetch } = useAllEstablishments();
+export function MyCommercialEstablishments() {
+  const { establishments, isLoading, error, refetch } =
+    useMyCommercialEstablishments();
 
   if (isLoading) {
     return <PageLoading />;
@@ -35,8 +36,8 @@ export function AllEstablishmentsList() {
   if (establishments.length === 0) {
     return (
       <EmptyState
-        title="Aucun établissement disponible"
-        description="Tous les établissements sont déjà rattachés à un commercial."
+        title="Aucun établissement rattaché"
+        description="Utilisez le code secret pour vous rattacher à un établissement."
       />
     );
   }
@@ -55,28 +56,23 @@ export function AllEstablishmentsList() {
               borderColor={colors.gray200}
               gap="$3"
             >
-              {/* Header avec nom et code */}
-              <XStack alignItems="flex-start" justifyContent="space-between" gap="$3">
-                <XStack alignItems="center" gap="$3" flex={1}>
-                  <YStack
-                    width={48}
-                    height={48}
-                    borderRadius={24}
-                    backgroundColor={colors.gray100}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Building2 size={24} color={colors.shiftlyViolet} />
-                  </YStack>
-                  <YStack flex={1} gap="$1">
-                    <Text fontSize={16} fontWeight="600" color={colors.gray900}>
-                      {establishment.name}
-                    </Text>
-                    <Text fontSize={12} color={colors.gray500} fontStyle="italic">
-                      Non rattaché à un commercial
-                    </Text>
-                  </YStack>
-                </XStack>
+              {/* Header avec nom */}
+              <XStack alignItems="center" gap="$3" flex={1}>
+                <YStack
+                  width={48}
+                  height={48}
+                  borderRadius={24}
+                  backgroundColor={colors.gray100}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Building2 size={24} color={colors.shiftlyViolet} />
+                </YStack>
+                <YStack flex={1} gap="$1">
+                  <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                    {establishment.name}
+                  </Text>
+                </YStack>
               </XStack>
 
               {/* Informations de localisation */}
@@ -102,11 +98,14 @@ export function AllEstablishmentsList() {
                   <Briefcase size={14} color={colors.gray500} />
                   <Text fontSize={12} color={colors.gray500}>
                     Créé le{" "}
-                    {new Date(establishment.created_at).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                    {new Date(establishment.created_at).toLocaleDateString(
+                      "fr-FR",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )}
                   </Text>
                 </XStack>
               </XStack>
