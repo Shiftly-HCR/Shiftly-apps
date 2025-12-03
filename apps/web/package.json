@@ -19,6 +19,7 @@
     "@tamagui/shorthands": "^1.135.3",
     "@tamagui/themes": "^1.135.3",
     "@tamagui/toast": "^1.135.3",
+    "@tanstack/react-query": "^5.90.11",
     "lucide-react": "^0.555.0",
     "mapbox-gl": "^3.1.2",
     "next": "15.5.5",

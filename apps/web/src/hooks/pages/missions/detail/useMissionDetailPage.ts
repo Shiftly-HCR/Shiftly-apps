@@ -19,7 +19,7 @@ export function useMissionDetailPage() {
   const params = useParams();
   const missionId = params.id as string;
 
-  const { mission, isLoading } = useCachedMission(missionId);
+  const { data: mission, isLoading } = useCachedMission(missionId);
   const { profile } = useCurrentProfile();
   const {
     apply,
@@ -27,7 +27,7 @@ export function useMissionDetailPage() {
     error: applyError,
     success: applySuccess,
   } = useApplyToMission();
-  const { hasApplied, isLoading: isCheckingApplication } =
+  const { data: hasApplied = false, isLoading: isCheckingApplication } =
     useCheckApplication(missionId);
 
   // Déterminer les rôles et permissions

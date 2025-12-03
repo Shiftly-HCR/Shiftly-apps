@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useCallback,
   ReactNode,
+  useRef,
 } from "react";
 import {
   createSessionCacheService,
@@ -21,6 +22,7 @@ import type {
   FreelanceEducation,
   Mission,
 } from "@shiftly/data";
+import { supabase } from "@shiftly/data";
 
 interface SessionContextValue extends SessionCacheState {
   refresh: () => Promise<void>;
@@ -241,12 +243,49 @@ export function SessionProvider({ children, config }: SessionProviderProps) {
     [cacheService, loadSession]
   );
 
-  // Charger la session au montage
+  // Référence pour éviter les doubles abonnements
+  const authSubscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
+
+  // Charger la session au montage et s'abonner aux changements d'auth
   useEffect(() => {
     // Ne charger que si pas encore initialisé pour éviter les doubles chargements
     if (!state.isInitialized) {
       loadSession(false);
     }
+
+    // S'abonner aux changements d'état d'authentification
+    // Cela évite d'avoir à appeler getSession() partout dans l'app
+    if (!authSubscriptionRef.current) {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (process.env.NODE_ENV === "development") {
+            console.log("[SessionProvider] Auth state changed:", event);
+          }
+
+          // Recharger le cache lors des événements importants
+          if (
+            event === "SIGNED_IN" ||
+            event === "SIGNED_OUT" ||
+            event === "TOKEN_REFRESHED" ||
+            event === "USER_UPDATED"
+          ) {
+            await loadSession(true);
+          }
+        }
+      );
+
+      authSubscriptionRef.current = subscription;
+    }
+
+    // Nettoyer l'abonnement au démontage
+    return () => {
+      if (authSubscriptionRef.current) {
+        authSubscriptionRef.current.unsubscribe();
+        authSubscriptionRef.current = null;
+      }
+    };
   }, [loadSession, state.isInitialized]);
 
   const value: SessionContextValue = {

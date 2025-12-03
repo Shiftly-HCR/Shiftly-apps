@@ -30,7 +30,7 @@ export function useMissionCandidatesPage() {
     "all"
   );
 
-  const { mission, isLoading: isLoadingMission } = useCachedMission(missionId);
+  const { data: mission, isLoading: isLoadingMission } = useCachedMission(missionId);
   const { profile } = useCurrentProfile();
   const {
     applications,

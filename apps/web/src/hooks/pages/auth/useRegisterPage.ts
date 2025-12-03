@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signUp, getCurrentProfile } from "@shiftly/data";
+import { signUp } from "@shiftly/data";
 import { useSessionContext } from "@/providers/SessionProvider";
 
 /**
@@ -63,16 +63,17 @@ export function useRegisterPage() {
 
     if (result.success) {
       // Rafraîchir le cache après inscription
+      // Le cache contient déjà le profil, pas besoin d'appeler getCurrentProfile()
       await refresh();
 
-      // Récupérer le profil pour déterminer la redirection selon le rôle
-      const profile = await getCurrentProfile();
-
-      if (profile?.role === "commercial") {
-        router.push("/commercial");
-      } else {
+      // Attendre un peu pour que le cache soit mis à jour
+      // Le SessionProvider s'abonne déjà à onAuthStateChange, donc le cache sera mis à jour automatiquement
+      // On utilise un petit délai pour s'assurer que le cache est prêt
+      setTimeout(() => {
+        // Le cache sera mis à jour par onAuthStateChange dans SessionProvider
+        // On redirige vers /home par défaut, le cache déterminera la bonne route
         router.push("/home");
-      }
+      }, 100);
     } else {
       setError(result.error || "Une erreur est survenue");
     }

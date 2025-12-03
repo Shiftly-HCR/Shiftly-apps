@@ -2,32 +2,29 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, getCurrentProfile } from "@shiftly/data";
+import { useSessionCache } from "@/hooks/cache/useSessionCache";
 import { YStack, Text } from "tamagui";
 
 export default function Home() {
   const router = useRouter();
+  const { cache, isLoading } = useSessionCache();
 
   useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      const user = await getCurrentUser();
+    // Attendre que le cache soit chargé
+    if (isLoading) return;
 
-      if (user) {
-        // Utilisateur connecté → redirection selon le rôle
-        const profile = await getCurrentProfile();
-        if (profile?.role === "commercial") {
-          router.push("/commercial");
-        } else {
-          router.push("/home");
-        }
+    if (cache?.user && cache?.profile) {
+      // Utilisateur connecté → redirection selon le rôle
+      if (cache.profile.role === "commercial") {
+        router.push("/commercial");
       } else {
-        // Utilisateur non connecté → redirection vers /login
-        router.push("/login");
+        router.push("/home");
       }
-    };
-
-    checkAuthAndRedirect();
-  }, [router]);
+    } else {
+      // Utilisateur non connecté → redirection vers /login
+      router.push("/login");
+    }
+  }, [cache, isLoading, router]);
 
   // Affichage temporaire pendant la redirection
   return (

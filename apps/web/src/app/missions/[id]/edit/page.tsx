@@ -33,7 +33,7 @@ export default function EditMissionPage() {
   const { establishments } = useEstablishments();
   const params = useParams();
   const missionId = params.id as string;
-  const { mission: cachedMission, isLoading: isLoadingMission } =
+  const { data: cachedMission, isLoading: isLoadingMission } =
     useCachedMission(missionId);
 
   const [currentStep, setCurrentStep] = useState<Step>(1);

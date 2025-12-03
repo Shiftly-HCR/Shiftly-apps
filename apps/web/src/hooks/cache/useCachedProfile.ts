@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSessionContext } from "@/providers/SessionProvider";
 import {
   getProfileById,
@@ -10,64 +10,49 @@ import {
 } from "@shiftly/data";
 
 /**
- * Hook pour récupérer un profil avec cache
- * Vérifie d'abord le cache, puis fait une requête Supabase si nécessaire
+ * Hook pour récupérer un profil avec cache React Query
+ * 
+ * Ce hook utilise React Query pour mettre en cache les profils et éviter
+ * les requêtes Supabase redondantes. Vérifie d'abord le cache SessionProvider,
+ * puis fait une requête Supabase si nécessaire.
+ * 
+ * @param profileId - ID du profil à récupérer
+ * @returns Le profil, l'état de chargement et les erreurs
  */
 export function useCachedProfile(profileId: string | null) {
   const { getProfileFromCache, cacheProfiles } = useSessionContext();
-  const [profile, setProfile] = useState<Profile | FreelanceProfile | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!profileId) {
-      setProfile(null);
-      setIsLoading(false);
-      return;
-    }
+  return useQuery({
+    queryKey: ["profiles", profileId],
+    queryFn: async () => {
+      if (!profileId) return null;
 
-    const loadProfile = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      // 1. Vérifier le cache d'abord
+      // 1. Vérifier le cache SessionProvider d'abord
       const cached = getProfileFromCache(profileId);
       if (cached) {
-        setProfile(cached);
-        setIsLoading(false);
-        return;
+        return cached;
       }
 
       // 2. Si pas dans le cache, charger depuis Supabase
-      try {
-        // Essayer d'abord comme profil freelance
-        let loadedProfile: Profile | FreelanceProfile | null =
-          await getFreelanceProfileById(profileId);
-        
-        // Si pas trouvé, essayer comme profil normal
-        if (!loadedProfile) {
-          loadedProfile = await getProfileById(profileId);
-        }
-
-        if (loadedProfile) {
-          setProfile(loadedProfile);
-          // Mettre en cache
-          cacheProfiles([loadedProfile]);
-        } else {
-          setError("Profil non trouvé");
-        }
-      } catch (err: any) {
-        setError(err.message || "Erreur lors du chargement du profil");
-      } finally {
-        setIsLoading(false);
+      // Essayer d'abord comme profil freelance
+      let loadedProfile: Profile | FreelanceProfile | null =
+        await getFreelanceProfileById(profileId);
+      
+      // Si pas trouvé, essayer comme profil normal
+      if (!loadedProfile) {
+        loadedProfile = await getProfileById(profileId);
       }
-    };
 
-    loadProfile();
-  }, [profileId, getProfileFromCache, cacheProfiles]);
+      if (loadedProfile) {
+        // Mettre en cache dans SessionProvider
+        cacheProfiles([loadedProfile]);
+      }
 
-  return { profile, isLoading, error };
+      return loadedProfile;
+    },
+    enabled: !!profileId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
 }
 

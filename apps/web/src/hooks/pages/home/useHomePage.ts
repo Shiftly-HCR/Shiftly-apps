@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getPublishedMissions } from "@shiftly/data";
 import type { Mission } from "@shiftly/data";
-import { useSessionContext } from "@/providers/SessionProvider";
+import { useCachedMissions } from "@/hooks/cache/useCachedMissions";
 import type { MissionFiltersState } from "@shiftly/ui";
 
 export const positionOptions = [
@@ -41,35 +40,14 @@ export const dateRangeOptions = [
  */
 export function useHomePage() {
   const router = useRouter();
-  const { cacheMissions } = useSessionContext();
-  const [missions, setMissions] = useState<Mission[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: missions = [], isLoading, error } = useCachedMissions();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<MissionFiltersState>({});
 
-  // Charger les missions publiées depuis Supabase
-  useEffect(() => {
-    const loadMissions = async () => {
-      setIsLoading(true);
-      try {
-        // Toujours charger depuis Supabase car la liste peut changer
-        // (nouvelles missions, missions mises à jour, etc.)
-        const publishedMissions = await getPublishedMissions();
-        setMissions(publishedMissions);
-
-        // Mettre toutes les missions en cache pour les prochaines navigations
-        if (publishedMissions.length > 0) {
-          cacheMissions(publishedMissions);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des missions:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadMissions();
-  }, [cacheMissions]);
+  // Gérer les erreurs silencieusement (on peut afficher un message si nécessaire)
+  if (error) {
+    console.error("Erreur lors du chargement des missions:", error);
+  }
 
   // Formater les dates pour l'affichage
   const formatDate = (startDate?: string, endDate?: string) => {

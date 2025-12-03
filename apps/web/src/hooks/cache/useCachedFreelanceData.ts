@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSessionContext } from "@/providers/SessionProvider";
 import {
   getFreelanceExperiencesById,
@@ -10,7 +10,13 @@ import {
 } from "@shiftly/data";
 
 /**
- * Hook pour récupérer les données freelance (expériences + formations) avec cache
+ * Hook pour récupérer les données freelance (expériences + formations) avec cache React Query
+ * 
+ * Ce hook utilise React Query pour mettre en cache les expériences et formations
+ * d'un freelance, évitant les requêtes Supabase redondantes.
+ * 
+ * @param userId - ID de l'utilisateur freelance
+ * @returns Les expériences, formations, l'état de chargement et les erreurs
  */
 export function useCachedFreelanceData(userId: string | null) {
   const {
@@ -20,76 +26,63 @@ export function useCachedFreelanceData(userId: string | null) {
     cacheFreelanceEducations,
   } = useSessionContext();
 
-  const [experiences, setExperiences] = useState<FreelanceExperience[]>([]);
-  const [educations, setEducations] = useState<FreelanceEducation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Query pour les expériences
+  const experiencesQuery = useQuery({
+    queryKey: ["freelance", userId, "experiences"],
+    queryFn: async () => {
+      if (!userId) return [];
 
-  useEffect(() => {
-    if (!userId) {
-      setExperiences([]);
-      setEducations([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const loadData = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      // 1. Vérifier le cache d'abord
-      const cachedExperiences = getFreelanceExperiencesFromCache(userId);
-      const cachedEducations = getFreelanceEducationsFromCache(userId);
-
-      // Toujours charger depuis Supabase pour avoir les données à jour
-      // Le cache est utilisé comme fallback si la requête échoue
-      try {
-        const [loadedExperiences, loadedEducations] = await Promise.all([
-          getFreelanceExperiencesById(userId),
-          getFreelanceEducationsById(userId),
-        ]);
-
-        console.log("📊 Données chargées pour userId:", userId);
-        console.log("📊 Expériences:", loadedExperiences);
-        console.log("📊 Formations:", loadedEducations);
-
-        setExperiences(loadedExperiences);
-        setEducations(loadedEducations);
-
-        // Mettre en cache
-        if (loadedExperiences.length > 0) {
-          cacheFreelanceExperiences(userId, loadedExperiences);
-        } else {
-          // Mettre en cache même si vide pour éviter de recharger inutilement
-          cacheFreelanceExperiences(userId, []);
-        }
-        if (loadedEducations.length > 0) {
-          cacheFreelanceEducations(userId, loadedEducations);
-        } else {
-          // Mettre en cache même si vide pour éviter de recharger inutilement
-          cacheFreelanceEducations(userId, []);
-        }
-      } catch (err: any) {
-        // En cas d'erreur, utiliser le cache s'il existe
-        if (cachedExperiences.length > 0 || cachedEducations.length > 0) {
-          setExperiences(cachedExperiences);
-          setEducations(cachedEducations);
-        }
-        setError(err.message || "Erreur lors du chargement des données");
-      } finally {
-        setIsLoading(false);
+      // Vérifier le cache SessionProvider d'abord
+      const cached = getFreelanceExperiencesFromCache(userId);
+      if (cached.length > 0) {
+        return cached;
       }
-    };
 
-    loadData();
-  }, [
-    userId,
-    getFreelanceExperiencesFromCache,
-    getFreelanceEducationsFromCache,
-    cacheFreelanceExperiences,
-    cacheFreelanceEducations,
-  ]);
+      // Charger depuis Supabase
+      const experiences = await getFreelanceExperiencesById(userId);
+      
+      // Mettre en cache (même si vide pour éviter de recharger inutilement)
+      cacheFreelanceExperiences(userId, experiences);
+      
+      return experiences;
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
 
-  return { experiences, educations, isLoading, error };
+  // Query pour les formations
+  const educationsQuery = useQuery({
+    queryKey: ["freelance", userId, "educations"],
+    queryFn: async () => {
+      if (!userId) return [];
+
+      // Vérifier le cache SessionProvider d'abord
+      const cached = getFreelanceEducationsFromCache(userId);
+      if (cached.length > 0) {
+        return cached;
+      }
+
+      // Charger depuis Supabase
+      const educations = await getFreelanceEducationsById(userId);
+      
+      // Mettre en cache (même si vide pour éviter de recharger inutilement)
+      cacheFreelanceEducations(userId, educations);
+      
+      return educations;
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
+
+  return {
+    experiences: experiencesQuery.data || [],
+    educations: educationsQuery.data || [],
+    isLoading: experiencesQuery.isLoading || educationsQuery.isLoading,
+    error: experiencesQuery.error || educationsQuery.error
+      ? (experiencesQuery.error as Error)?.message || (educationsQuery.error as Error)?.message || "Erreur lors du chargement des données"
+      : null,
+  };
 }
 

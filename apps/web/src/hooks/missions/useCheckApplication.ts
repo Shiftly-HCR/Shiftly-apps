@@ -1,56 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { checkApplicationExists } from "@shiftly/data";
-import { supabase } from "@shiftly/data";
+import { useSessionCache } from "@/hooks/cache/useSessionCache";
 
 /**
  * Hook pour vérifier si l'utilisateur a déjà postulé à une mission
+ * 
+ * Utilise le cache de session pour récupérer l'utilisateur au lieu
+ * d'appeler directement supabase.auth.getUser()
  */
 export function useCheckApplication(missionId: string | null) {
-  const [hasApplied, setHasApplied] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { cache } = useSessionCache();
+  const userId = cache?.user?.id;
 
-  useEffect(() => {
-    if (!missionId) {
-      setHasApplied(false);
-      setIsLoading(false);
-      return;
-    }
-
-    const check = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          setHasApplied(false);
-          setIsLoading(false);
-          return;
-        }
-
-        const exists = await checkApplicationExists(missionId, user.id);
-        setHasApplied(exists);
-      } catch (err: any) {
-        setError(err.message || "Une erreur est survenue");
-        setHasApplied(false);
-      } finally {
-        setIsLoading(false);
+  return useQuery({
+    queryKey: ["applications", "check", missionId, userId],
+    queryFn: async () => {
+      if (!missionId || !userId) {
+        return false;
       }
-    };
 
-    check();
-  }, [missionId]);
-
-  return {
-    hasApplied,
-    isLoading,
-    error,
-  };
+      return await checkApplicationExists(missionId, userId);
+    },
+    enabled: !!missionId && !!userId,
+    staleTime: 2 * 60 * 1000, // 2 minutes (plus court car peut changer rapidement)
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
 }
 

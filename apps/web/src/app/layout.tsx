@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TamaguiProvider } from "@/providers/TamaguiProvider";
+import { QueryProvider } from "@/providers/QueryProvider";
 import { SessionProvider } from "@/providers/SessionProvider";
 import { SessionCacheDebug } from "@/components";
 
@@ -31,10 +32,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TamaguiProvider>
-          <SessionProvider>
-            {children}
-            {/* <SessionCacheDebug /> */}
-          </SessionProvider>
+          <QueryProvider>
+            <SessionProvider>
+              {children}
+              {/* <SessionCacheDebug /> */}
+            </SessionProvider>
+          </QueryProvider>
         </TamaguiProvider>
       </body>
     </html>
