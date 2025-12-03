@@ -92,10 +92,10 @@ export default function MissionDetailPage() {
           <XStack
             gap="$4"
             alignItems="flex-start"
-            $sm={{ flexDirection: "column" }}
+            flexWrap="wrap"
           >
             {/* COLONNE GAUCHE */}
-            <YStack flex={1} gap="$4" minWidth={300} $sm={{ width: "100%" }}>
+            <YStack flex={1} gap="$4" minWidth={300} width="100%">
               <MissionDetailImage mission={mission} />
               <MissionDetailDescription mission={mission} />
               <MissionDetailSchedule

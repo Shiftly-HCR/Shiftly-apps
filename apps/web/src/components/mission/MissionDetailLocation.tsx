@@ -9,6 +9,37 @@ interface MissionDetailLocationProps {
   mission: Mission;
 }
 
+// Fonctions utilitaires pour formater les dates et détecter les nouvelles missions
+const formatDate = (startDate?: string, endDate?: string) => {
+  if (!startDate && !endDate) return "Dates non définies";
+
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  };
+
+  if (startDate && endDate) {
+    const start = new Date(startDate).toLocaleDateString("fr-FR", formatOptions);
+    const end = new Date(endDate).toLocaleDateString("fr-FR", formatOptions);
+    return `${start} - ${end}`;
+  }
+
+  if (startDate) {
+    return `À partir du ${new Date(startDate).toLocaleDateString("fr-FR", formatOptions)}`;
+  }
+
+  return `Jusqu'au ${new Date(endDate!).toLocaleDateString("fr-FR", formatOptions)}`;
+};
+
+const isNewMission = (createdAt?: string) => {
+  if (!createdAt) return false;
+  const created = new Date(createdAt);
+  const now = new Date();
+  const diffInHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+  return diffInHours <= 48;
+};
+
 export function MissionDetailLocation({ mission }: MissionDetailLocationProps) {
   return (
     <YStack
@@ -39,6 +70,8 @@ export function MissionDetailLocation({ mission }: MissionDetailLocationProps) {
         longitude={mission.longitude || 2.3522}
         zoom={15}
         height={300}
+        formatDate={formatDate}
+        isNewMission={isNewMission}
       />
     </YStack>
   );
