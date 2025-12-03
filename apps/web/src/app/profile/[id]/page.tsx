@@ -21,13 +21,17 @@ export default function FreelanceProfilePage() {
     activeTab,
     setActiveTab,
     isLoading,
+    isFetching,
+    profileError,
   } = useFreelanceProfilePage();
 
+  // Afficher le loading seulement si on charge pour la première fois
   if (isLoading) {
     return <PageLoading />;
   }
 
-  if (!profile) {
+  // Si on a une erreur ou si le profil n'existe pas après le chargement
+  if (profileError || (!profile && !isFetching)) {
     return (
       <AppLayout>
         <YStack
@@ -37,11 +41,16 @@ export default function FreelanceProfilePage() {
           padding="$6"
         >
           <Text fontSize={18} color={colors.gray700}>
-            Profil introuvable
+            {profileError ? `Erreur: ${profileError.message}` : "Profil introuvable"}
           </Text>
         </YStack>
       </AppLayout>
     );
+  }
+
+  // Si on est en train de recharger mais qu'on a déjà des données, les afficher
+  if (!profile) {
+    return <PageLoading />;
   }
 
   return (

@@ -18,7 +18,12 @@ export function useFreelanceProfilePage() {
   const params = useParams();
   const freelanceId = params?.id as string;
 
-  const { profile, isLoading: isLoadingProfile } = useCachedProfile(freelanceId);
+  const { 
+    data: profile, 
+    isLoading: isLoadingProfile,
+    isFetching: isFetchingProfile,
+    error: profileError 
+  } = useCachedProfile(freelanceId);
   const {
     experiences,
     educations,
@@ -27,17 +32,22 @@ export function useFreelanceProfilePage() {
   const { profile: currentProfile } = useCurrentProfile();
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
+  // isLoading est true si on charge pour la première fois
+  // isFetching est true si on recharge (même avec placeholderData)
   const isLoading = isLoadingProfile || isLoadingExperiences;
+  const isFetching = isFetchingProfile;
 
   return {
     freelanceId,
-    profile,
+    profile: profile || null, // S'assurer que profile n'est jamais undefined
     experiences,
     educations,
     currentProfile,
     activeTab,
     setActiveTab,
     isLoading,
+    isFetching,
+    profileError,
   };
 }
 
