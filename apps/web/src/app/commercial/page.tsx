@@ -3,7 +3,7 @@
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import {
   AppLayout,
-  AllEstablishmentsList,
+  CommercialRevenueDashboard,
   EstablishmentCodeInput,
   MyCommercialEstablishments,
 } from "@/components";
@@ -51,28 +51,13 @@ export default function CommercialDashboardPage() {
             </Text>
           </YStack>
 
+          {/* Dashboard de rémunération */}
+          <CommercialRevenueDashboard />
+
           {/* Layout 2 colonnes */}
           <XStack gap="$4" alignItems="flex-start" flexWrap="wrap">
             {/* COLONNE GAUCHE - Contenu principal */}
             <YStack flex={1} gap="$6" minWidth={300}>
-              {/* Section établissements disponibles */}
-              <YStack
-                backgroundColor="white"
-                borderRadius="$4"
-                padding="$6"
-                borderWidth={1}
-                borderColor={colors.gray200}
-                gap="$4"
-              >
-                <Text fontSize={20} fontWeight="600" color={colors.gray900}>
-                  Établissements disponibles
-                </Text>
-                <Text fontSize={14} color={colors.gray500} marginBottom="$2">
-                  Établissements non encore rattachés à un commercial
-                </Text>
-                <AllEstablishmentsList key={`available-${refreshKey}`} />
-              </YStack>
-
               {/* Section mes établissements */}
               <YStack
                 backgroundColor="white"
