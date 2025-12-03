@@ -16,6 +16,13 @@ export type MapMarker = {
   content?: React.ReactNode; // Contenu personnalisé (ex: MissionBubbleMarker)
 };
 
+export type MapBounds = {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+};
+
 interface MapProps {
   latitude?: number;
   longitude?: number;
@@ -29,6 +36,7 @@ interface MapProps {
     longitude: number;
     zoom: number;
   }) => void;
+  onBoundsChange?: (bounds: MapBounds) => void;
   interactive?: boolean;
   style?: React.CSSProperties;
 }
@@ -44,6 +52,7 @@ export default function Map({
   markers = [],
   onMapClick,
   onViewStateChange,
+  onBoundsChange,
   interactive = true,
   style,
 }: MapProps) {
@@ -96,6 +105,33 @@ export default function Map({
       <ReactMapGL
         {...viewState}
         onMove={(evt) => interactive && setViewState(evt.viewState)}
+        onMoveEnd={(evt) => {
+          if (onBoundsChange && evt.target) {
+            const bounds = evt.target.getBounds();
+            if (bounds) {
+              onBoundsChange({
+                north: bounds.getNorth(),
+                south: bounds.getSouth(),
+                east: bounds.getEast(),
+                west: bounds.getWest(),
+              });
+            }
+          }
+        }}
+        onLoad={(evt) => {
+          // Calculer les bounds au chargement initial
+          if (onBoundsChange && evt.target) {
+            const bounds = evt.target.getBounds();
+            if (bounds) {
+              onBoundsChange({
+                north: bounds.getNorth(),
+                south: bounds.getSouth(),
+                east: bounds.getEast(),
+                west: bounds.getWest(),
+              });
+            }
+          }
+        }}
         onClick={handleMapClick}
         mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={MAPBOX_TOKEN}

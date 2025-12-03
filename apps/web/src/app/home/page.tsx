@@ -81,6 +81,8 @@ export default function HomePage() {
                 <MissionMapView
                   missions={filteredMissions}
                   onMissionClick={handleMissionClick}
+                  formatDate={formatDate}
+                  isNewMission={isNewMission}
                 />
               )}
             </YStack>

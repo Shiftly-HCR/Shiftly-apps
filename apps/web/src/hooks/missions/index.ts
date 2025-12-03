@@ -6,6 +6,7 @@ export * from "./useCheckApplication";
 export * from "./useUserApplications";
 export * from "./useRecruiterMissions";
 export * from "./useMissionClustering";
+export * from "./useVisibleMissions";
 export * from "./useEstablishments";
 export * from "./useEstablishmentsManager";
 export * from "./useMissionEstablishment";

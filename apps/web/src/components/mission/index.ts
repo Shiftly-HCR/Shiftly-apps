@@ -7,6 +7,7 @@ export * from "./MissionActivityTab";
 export * from "./MissionDetailsTab";
 export * from "./MissionListView";
 export * from "./MissionMapView";
+export * from "./MissionVisibleList";
 export * from "./MissionBubbleMarker";
 export * from "./MissionClusterMarker";
 export * from "./MissionDetailHeader";

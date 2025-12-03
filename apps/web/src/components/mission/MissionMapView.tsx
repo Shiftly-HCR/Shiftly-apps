@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { YStack } from "tamagui";
 import {
   MapLoader,
   MissionBubbleMarker,
   MissionClusterMarker,
+  MissionVisibleList,
 } from "@/components";
-import { useMissionClustering } from "@/hooks";
+import { useMissionClustering, useVisibleMissions } from "@/hooks";
 import type { Mission } from "@shiftly/data";
-import type { MapMarker } from "@/components/ui/Map";
+import type { MapMarker, MapBounds } from "@/components/ui/Map";
 
 interface MissionMapViewProps {
   missions: Mission[];
@@ -17,6 +19,8 @@ interface MissionMapViewProps {
   longitude?: number;
   zoom?: number;
   height?: number;
+  formatDate: (startDate?: string, endDate?: string) => string;
+  isNewMission: (createdAt?: string) => boolean;
 }
 
 export function MissionMapView({
@@ -26,12 +30,21 @@ export function MissionMapView({
   longitude = 2.3522,
   zoom = 11,
   height = 600,
+  formatDate,
+  isNewMission,
 }: MissionMapViewProps) {
   const [currentZoom, setCurrentZoom] = useState(zoom);
+  const [bounds, setBounds] = useState<MapBounds | null>(null);
 
   const clusteredMarkers = useMissionClustering({
     missions,
     currentZoom,
+  });
+
+  // Calculer les missions visibles dans les bounds actuels
+  const visibleMissions = useVisibleMissions({
+    missions,
+    bounds,
   });
 
   // Convertir les données clusterisées en markers avec JSX
@@ -76,14 +89,23 @@ export function MissionMapView({
   );
 
   return (
-    <MapLoader
-      latitude={latitude}
-      longitude={longitude}
-      zoom={zoom}
-      height={height}
-      markers={markers}
-      onViewStateChange={handleViewStateChange}
-      interactive={true}
-    />
+    <YStack gap="$4">
+      <MapLoader
+        latitude={latitude}
+        longitude={longitude}
+        zoom={zoom}
+        height={height}
+        markers={markers}
+        onViewStateChange={handleViewStateChange}
+        onBoundsChange={setBounds}
+        interactive={true}
+      />
+      <MissionVisibleList
+        missions={visibleMissions}
+        onMissionClick={onMissionClick}
+        formatDate={formatDate}
+        isNewMission={isNewMission}
+      />
+    </YStack>
   );
 }

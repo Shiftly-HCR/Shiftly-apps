@@ -14,6 +14,8 @@ export type MapMarker = {
   content?: React.ReactNode; // Contenu personnalisé (ex: MissionBubbleMarker)
 };
 
+import type { MapBounds } from "./Map";
+
 // Type pour les props du Map
 interface MapLoaderProps {
   latitude?: number;
@@ -24,6 +26,7 @@ interface MapLoaderProps {
   markers?: MapMarker[];
   onMapClick?: (event: { lngLat: { lng: number; lat: number } }) => void;
   onViewStateChange?: (viewState: { latitude: number; longitude: number; zoom: number }) => void;
+  onBoundsChange?: (bounds: MapBounds) => void;
   interactive?: boolean;
   style?: React.CSSProperties;
 }
