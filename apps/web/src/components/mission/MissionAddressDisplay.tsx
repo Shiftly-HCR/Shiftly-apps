@@ -4,8 +4,6 @@ import { YStack, XStack, Text } from "tamagui";
 import { MapPin, Building2, Star } from "lucide-react";
 import { colors } from "@shiftly/ui";
 import type { Mission, Establishment } from "@shiftly/data";
-import { useState, useEffect } from "react";
-import { countPublishedMissionsByEstablishment } from "@shiftly/data";
 
 interface MissionAddressDisplayProps {
   establishment?: Establishment | null;
@@ -13,7 +11,6 @@ interface MissionAddressDisplayProps {
   displayAddress?: string;
   displayCity?: string;
   displayName?: string;
-  showStatistics?: boolean;
 }
 
 /**
@@ -26,34 +23,8 @@ export function MissionAddressDisplay({
   displayAddress,
   displayCity,
   displayName,
-  showStatistics = true,
 }: MissionAddressDisplayProps) {
   const hasEstablishment = !!establishment;
-  const [publishedMissionsCount, setPublishedMissionsCount] = useState<number>(0);
-  const [isLoadingCount, setIsLoadingCount] = useState(false);
-
-  // Charger le nombre de missions publiées si établissement
-  useEffect(() => {
-    const loadMissionsCount = async () => {
-      if (!hasEstablishment || !establishment?.id || !showStatistics) {
-        return;
-      }
-
-      setIsLoadingCount(true);
-      try {
-        const count = await countPublishedMissionsByEstablishment(
-          establishment.id
-        );
-        setPublishedMissionsCount(count);
-      } catch (err) {
-        console.error("Erreur lors du chargement du nombre de missions:", err);
-      } finally {
-        setIsLoadingCount(false);
-      }
-    };
-
-    loadMissionsCount();
-  }, [hasEstablishment, establishment?.id, showStatistics]);
 
   // Déterminer les valeurs à afficher
   const address =
@@ -137,26 +108,6 @@ export function MissionAddressDisplay({
         <Text fontSize={14} color="#999" fontStyle="italic">
           Adresse non renseignée
         </Text>
-      )}
-
-      {/* Statistiques - seulement si établissement */}
-      {hasEstablishment && showStatistics && (
-        <YStack
-          backgroundColor="#F8F8F8"
-          borderRadius={8}
-          padding="$3"
-          gap="$2"
-          marginTop="$2"
-        >
-          <XStack justifyContent="space-between">
-            <Text fontSize={14} color="#666">
-              Missions publiées
-            </Text>
-            <Text fontSize={14} fontWeight="600" color="#000">
-              {isLoadingCount ? "..." : publishedMissionsCount}
-            </Text>
-          </XStack>
-        </YStack>
       )}
     </YStack>
   );
