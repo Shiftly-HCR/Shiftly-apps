@@ -364,3 +364,63 @@ export async function countPublishedMissionsByEstablishment(
   }
 }
 
+/**
+ * Liste tous les établissements (pour les commerciaux uniquement)
+ */
+export async function listAllEstablishments(): Promise<{
+  success: boolean;
+  error?: string;
+  establishments?: Establishment[];
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    // Vérifier que l'utilisateur est un commercial
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || profile?.role !== "commercial") {
+      return {
+        success: false,
+        error: "Accès refusé : seuls les commerciaux peuvent voir tous les établissements",
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("establishments")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Erreur lors de la récupération des établissements:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      establishments: data || [],
+    };
+  } catch (err) {
+    console.error("Erreur lors de la récupération des établissements:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la récupération des établissements",
+    };
+  }
+}
+

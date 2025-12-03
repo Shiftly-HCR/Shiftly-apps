@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, Text, ScrollView } from "tamagui";
-import { AppLayout } from "@/components";
+import { AppLayout, AllEstablishmentsList } from "@/components";
 import { useRequireRole } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
@@ -54,12 +54,9 @@ export default function CommercialDashboardPage() {
             gap="$4"
           >
             <Text fontSize={20} fontWeight="600" color={colors.gray900}>
-              Établissements
+              Tous les établissements
             </Text>
-            <Text fontSize={14} color={colors.gray600}>
-              La liste des établissements rattachés sera affichée ici.
-            </Text>
-            {/* TODO: Afficher la liste des établissements */}
+            <AllEstablishmentsList />
           </YStack>
 
           {/* Section code établissement */}

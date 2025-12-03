@@ -1,5 +1,6 @@
 // Mission components
 export * from "./mission";
+export * from "./commercial";
 
 // Freelance components
 export * from "./freelance";

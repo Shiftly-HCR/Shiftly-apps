@@ -13,6 +13,9 @@ export * from "./missions";
 // Freelance hooks
 export * from "./freelance";
 
+// Commercial hooks
+export * from "./commercial";
+
 // Layout hooks
 export * from "./layout";
 
