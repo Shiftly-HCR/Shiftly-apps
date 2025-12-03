@@ -365,7 +365,8 @@ export async function countPublishedMissionsByEstablishment(
 }
 
 /**
- * Liste tous les établissements (pour les commerciaux uniquement)
+ * Liste tous les établissements non rattachés à un commercial (pour les commerciaux uniquement)
+ * Le secret_code n'est pas retourné pour les commerciaux
  */
 export async function listAllEstablishments(): Promise<{
   success: boolean;
@@ -398,9 +399,12 @@ export async function listAllEstablishments(): Promise<{
       };
     }
 
+    // Récupérer uniquement les établissements sans commercial_id
+    // et masquer le secret_code pour les commerciaux
     const { data, error } = await supabase
       .from("establishments")
-      .select("*")
+      .select("id, owner_id, commercial_id, name, address, city, postal_code, latitude, longitude, created_at, updated_at")
+      .is("commercial_id", null)
       .order("created_at", { ascending: false });
 
     if (error) {

@@ -4,25 +4,13 @@ import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { PageLoading, EmptyState } from "@/components";
 import { useAllEstablishments } from "@/hooks";
-import { Building2, MapPin, Briefcase, Copy } from "lucide-react";
-import { useState } from "react";
+import { Building2, MapPin, Briefcase } from "lucide-react";
 
 /**
  * Composant pour afficher la liste de tous les établissements (pour les commerciaux)
  */
 export function AllEstablishmentsList() {
   const { establishments, isLoading, error, refetch } = useAllEstablishments();
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-
-  const handleCopyCode = async (code: string) => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopiedCode(code);
-      setTimeout(() => setCopiedCode(null), 2000);
-    } catch (err) {
-      console.error("Erreur lors de la copie:", err);
-    }
-  };
 
   if (isLoading) {
     return <PageLoading />;
@@ -47,8 +35,8 @@ export function AllEstablishmentsList() {
   if (establishments.length === 0) {
     return (
       <EmptyState
-        title="Aucun établissement"
-        description="Aucun établissement n'a été créé pour le moment."
+        title="Aucun établissement disponible"
+        description="Tous les établissements sont déjà rattachés à un commercial."
       />
     );
   }
@@ -84,32 +72,9 @@ export function AllEstablishmentsList() {
                     <Text fontSize={16} fontWeight="600" color={colors.gray900}>
                       {establishment.name}
                     </Text>
-                    {establishment.secret_code && (
-                      <XStack alignItems="center" gap="$2">
-                        <Text fontSize={12} color={colors.gray600}>
-                          Code: {establishment.secret_code}
-                        </Text>
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onPress={() => handleCopyCode(establishment.secret_code!)}
-                        >
-                          <Copy
-                            size={14}
-                            color={
-                              copiedCode === establishment.secret_code
-                                ? colors.shiftlyViolet
-                                : colors.gray600
-                            }
-                          />
-                        </Button>
-                        {copiedCode === establishment.secret_code && (
-                          <Text fontSize={12} color={colors.shiftlyViolet}>
-                            Copié !
-                          </Text>
-                        )}
-                      </XStack>
-                    )}
+                    <Text fontSize={12} color={colors.gray500} fontStyle="italic">
+                      Non rattaché à un commercial
+                    </Text>
                   </YStack>
                 </XStack>
               </XStack>

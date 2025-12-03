@@ -5,6 +5,7 @@
 export interface Establishment {
   id: string;
   owner_id: string;
+  commercial_id?: string | null;
   name: string;
   address?: string;
   city?: string;
