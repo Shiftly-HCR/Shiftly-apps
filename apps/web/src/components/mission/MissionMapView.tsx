@@ -21,6 +21,7 @@ interface MissionMapViewProps {
   height?: number;
   formatDate: (startDate?: string, endDate?: string) => string;
   isNewMission: (createdAt?: string) => boolean;
+  showVisibleList?: boolean; // Afficher ou non la liste des missions visibles sous la carte
 }
 
 export function MissionMapView({
@@ -32,6 +33,7 @@ export function MissionMapView({
   height = 600,
   formatDate,
   isNewMission,
+  showVisibleList = true, // Par défaut, afficher la liste
 }: MissionMapViewProps) {
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const [bounds, setBounds] = useState<MapBounds | null>(null);
@@ -89,7 +91,7 @@ export function MissionMapView({
   );
 
   return (
-    <YStack gap="$4">
+    <YStack gap={showVisibleList ? "$4" : 0}>
       <MapLoader
         latitude={latitude}
         longitude={longitude}
@@ -97,15 +99,17 @@ export function MissionMapView({
         height={height}
         markers={markers}
         onViewStateChange={handleViewStateChange}
-        onBoundsChange={setBounds}
+        onBoundsChange={showVisibleList ? setBounds : undefined}
         interactive={true}
       />
-      <MissionVisibleList
-        missions={visibleMissions}
-        onMissionClick={onMissionClick}
-        formatDate={formatDate}
-        isNewMission={isNewMission}
-      />
+      {showVisibleList && (
+        <MissionVisibleList
+          missions={visibleMissions}
+          onMissionClick={onMissionClick}
+          formatDate={formatDate}
+          isNewMission={isNewMission}
+        />
+      )}
     </YStack>
   );
 }

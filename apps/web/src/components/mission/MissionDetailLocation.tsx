@@ -72,6 +72,7 @@ export function MissionDetailLocation({ mission }: MissionDetailLocationProps) {
         height={300}
         formatDate={formatDate}
         isNewMission={isNewMission}
+        showVisibleList={false}
       />
     </YStack>
   );
