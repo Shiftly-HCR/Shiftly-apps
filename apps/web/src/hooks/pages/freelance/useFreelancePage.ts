@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getPublishedFreelances } from "@shiftly/data";
 import type { FreelanceProfile } from "@shiftly/data";
-import { useSessionContext } from "@/providers/SessionProvider";
+import { useCachedFreelances } from "@/hooks/cache/useCachedFreelances";
 import type { FreelanceFiltersState } from "@shiftly/ui";
 
 export const positionOptions = [
@@ -34,35 +33,14 @@ export const locationOptions = [
  */
 export function useFreelancePage() {
   const router = useRouter();
-  const { cacheProfiles } = useSessionContext();
-  const [freelances, setFreelances] = useState<FreelanceProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: freelances = [], isLoading, error } = useCachedFreelances();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<FreelanceFiltersState>({});
 
-  // Charger les freelances depuis Supabase (et les mettre en cache)
-  useEffect(() => {
-    const loadFreelances = async () => {
-      setIsLoading(true);
-      try {
-        // Toujours charger depuis Supabase car la liste peut changer
-        // (nouvelles inscriptions, profils mis à jour, etc.)
-        const publishedFreelances = await getPublishedFreelances();
-        setFreelances(publishedFreelances);
-
-        // Mettre tous les profils en cache pour les prochaines navigations
-        if (publishedFreelances.length > 0) {
-          cacheProfiles(publishedFreelances);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des freelances:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadFreelances();
-  }, [cacheProfiles]);
+  // Gérer les erreurs silencieusement (on peut afficher un message si nécessaire)
+  if (error) {
+    console.error("Erreur lors du chargement des freelances:", error);
+  }
 
   // Filtrer les freelances selon les critères
   const filteredFreelances = useMemo(() => {
