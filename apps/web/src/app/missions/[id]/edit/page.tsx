@@ -12,7 +12,6 @@ import {
   geocodeAddress,
   reverseGeocode,
   debounce,
-  getEstablishmentById,
 } from "@shiftly/data";
 import { AppLayout } from "@/components";
 import {
@@ -20,6 +19,7 @@ import {
   useCachedMission,
   useEstablishments,
 } from "@/hooks";
+import { useCachedEstablishment } from "@/hooks/cache/useCachedEstablishment";
 import {
   MissionFormSteps,
   MissionFormStepIndicator,
@@ -51,6 +51,12 @@ export default function EditMissionPage() {
   const [selectedEstablishmentId, setSelectedEstablishmentId] = useState<
     string | null
   >(null);
+
+  // Utiliser le hook de cache pour charger l'établissement
+  const { data: selectedEstablishment } = useCachedEstablishment(
+    selectedEstablishmentId,
+    false
+  );
 
   // Étape 3: Localisation
   const [address, setAddress] = useState("");
@@ -139,46 +145,26 @@ export default function EditMissionPage() {
 
   // Charger l'adresse de l'établissement si sélectionné
   useEffect(() => {
-    const loadEstablishmentAddress = async () => {
-      if (selectedEstablishmentId) {
-        // Chercher d'abord dans la liste des établissements déjà chargés
-        const establishmentFromList = establishments.find(
-          (est) => est.id === selectedEstablishmentId
-        );
+    if (selectedEstablishmentId) {
+      // Chercher d'abord dans la liste des établissements déjà chargés
+      const establishmentFromList = establishments.find(
+        (est) => est.id === selectedEstablishmentId
+      );
 
-        if (establishmentFromList) {
-          // Utiliser les données de l'établissement depuis la liste
-          setAddress(establishmentFromList.address || "");
-          setCity(establishmentFromList.city || "");
-          setPostalCode(establishmentFromList.postal_code || "");
-          if (
-            establishmentFromList.latitude &&
-            establishmentFromList.longitude
-          ) {
-            setLatitude(establishmentFromList.latitude);
-            setLongitude(establishmentFromList.longitude);
-          }
-        } else {
-          // Sinon, charger depuis l'API
-          const establishment = await getEstablishmentById(
-            selectedEstablishmentId
-          );
-          if (establishment) {
-            setAddress(establishment.address || "");
-            setCity(establishment.city || "");
-            setPostalCode(establishment.postal_code || "");
-            if (establishment.latitude && establishment.longitude) {
-              setLatitude(establishment.latitude);
-              setLongitude(establishment.longitude);
-            }
-          }
+      const establishment = establishmentFromList || selectedEstablishment;
+
+      if (establishment) {
+        // Utiliser les données de l'établissement
+        setAddress(establishment.address || "");
+        setCity(establishment.city || "");
+        setPostalCode(establishment.postal_code || "");
+        if (establishment.latitude && establishment.longitude) {
+          setLatitude(establishment.latitude);
+          setLongitude(establishment.longitude);
         }
       }
-    };
-
-    loadEstablishmentAddress();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEstablishmentId]);
+    }
+  }, [selectedEstablishmentId, establishments, selectedEstablishment]);
 
   // Effet pour déclencher le géocodage quand l'adresse change (sauf au chargement initial)
   useEffect(() => {
@@ -335,7 +321,6 @@ export default function EditMissionPage() {
       </AppLayout>
     );
   }
-
 
   return (
     <AppLayout>
