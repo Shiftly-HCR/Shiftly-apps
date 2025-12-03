@@ -59,8 +59,7 @@ export function ProgressionScale({
           Échelle de progression
         </Text>
         <Text fontSize={14} color={colors.gray500}>
-          Débloquez des primes en atteignant des objectifs de chiffre
-          d'affaires
+          Débloquez des primes en atteignant des objectifs de chiffre d'affaires
         </Text>
       </YStack>
 
@@ -114,8 +113,10 @@ export function ProgressionScale({
                     position="absolute"
                     left={`${percentage}%`}
                     alignItems="center"
+                    justifyContent="center"
+                    width={25}
+                    height={25}
                     transform={[{ translateX: -8 }]}
-                    top={-2}
                   >
                     <YStack
                       width={16}
@@ -136,8 +137,7 @@ export function ProgressionScale({
           <XStack position="relative" height={40}>
             {bonusTiers.map((tier, index) => {
               const percentage =
-                (tier.threshold /
-                  bonusTiers[bonusTiers.length - 1].threshold) *
+                (tier.threshold / bonusTiers[bonusTiers.length - 1].threshold) *
                 100;
               const isUnlocked = currentRevenue >= tier.threshold;
               return (
@@ -146,8 +146,9 @@ export function ProgressionScale({
                   position="absolute"
                   left={`${percentage}%`}
                   alignItems="center"
-                  transform={[{ translateX: -20 }]}
+                  justifyContent="center"
                   minWidth={40}
+                  transform={[{ translateX: -20 }]}
                 >
                   <Text
                     fontSize={12}
@@ -166,4 +167,3 @@ export function ProgressionScale({
     </YStack>
   );
 }
-
