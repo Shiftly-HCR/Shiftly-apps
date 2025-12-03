@@ -50,7 +50,7 @@ export function MissionDetailSidebar({
   } = useMissionEstablishment(mission);
 
   return (
-    <YStack width={320} gap="$4" $sm={{ width: "100%" }}>
+    <YStack width={320} gap="$4" flexShrink={0}>
       {/* Carte Rémunération */}
       <YStack
         backgroundColor="white"

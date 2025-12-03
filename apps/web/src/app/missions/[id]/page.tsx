@@ -95,7 +95,7 @@ export default function MissionDetailPage() {
             flexWrap="wrap"
           >
             {/* COLONNE GAUCHE */}
-            <YStack flex={1} gap="$4" minWidth={300} width="100%">
+            <YStack flex={1} gap="$4" minWidth={300}>
               <MissionDetailImage mission={mission} />
               <MissionDetailDescription mission={mission} />
               <MissionDetailSchedule
