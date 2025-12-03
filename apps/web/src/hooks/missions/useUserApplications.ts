@@ -1,64 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getUserApplications } from "@shiftly/core";
+import { useCachedUserApplications } from "@/hooks/cache/useCachedApplications";
 import type { MissionApplicationWithMission } from "@shiftly/data";
 
 /**
  * Hook pour récupérer les candidatures d'un freelance
+ * 
+ * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
+ * L'API reste identique pour la compatibilité avec les composants existants.
  */
 export function useUserApplications(userId?: string) {
-  const [applications, setApplications] = useState<MissionApplicationWithMission[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadApplications = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const result = await getUserApplications(userId);
-        if (result.success) {
-          setApplications(result.applications || []);
-        } else {
-          setError(result.error || "Erreur lors du chargement des candidatures");
-          setApplications([]);
-        }
-      } catch (err: any) {
-        setError(err.message || "Une erreur est survenue");
-        setApplications([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadApplications();
-  }, [userId]);
-
-  const refetch = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await getUserApplications(userId);
-      if (result.success) {
-        setApplications(result.applications || []);
-      } else {
-        setError(result.error || "Erreur lors du chargement des candidatures");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    data: applications = [],
+    isLoading,
+    error,
+    refetch,
+  } = useCachedUserApplications(userId);
 
   return {
     applications,
     isLoading,
-    error,
-    refetch,
+    error: error ? (error as Error).message : null,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }
 

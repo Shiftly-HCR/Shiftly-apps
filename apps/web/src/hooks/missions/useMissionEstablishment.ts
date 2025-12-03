@@ -1,57 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  getEstablishmentById,
-  getEstablishmentByIdPublic,
-  type Establishment,
-} from "@shiftly/data";
+import { useCachedEstablishment } from "@/hooks/cache/useCachedEstablishment";
 import type { Mission } from "@shiftly/data";
 
 /**
  * Hook pour récupérer et gérer les informations d'établissement d'une mission
+ * 
+ * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
+ * L'API reste identique pour la compatibilité avec les composants existants.
  */
 export function useMissionEstablishment(mission: Mission | null) {
-  const [establishment, setEstablishment] = useState<Establishment | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadEstablishment = async () => {
-      if (!mission?.establishment_id) {
-        setEstablishment(null);
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // Essayer d'abord de récupérer en tant que propriétaire
-        let establishmentData = await getEstablishmentById(
-          mission.establishment_id
-        );
-
-        // Si pas trouvé (pas le propriétaire), essayer la version publique
-        // qui permet de voir l'établissement s'il est lié à une mission publiée
-        if (!establishmentData && mission.status === "published") {
-          establishmentData = await getEstablishmentByIdPublic(
-            mission.establishment_id
-          );
-        }
-
-        setEstablishment(establishmentData);
-      } catch (err) {
-        console.error("Erreur lors du chargement de l'établissement:", err);
-        setError("Erreur lors du chargement de l'établissement");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadEstablishment();
-  }, [mission?.establishment_id, mission?.status]);
+  const {
+    data: establishment = null,
+    isLoading,
+    error,
+  } = useCachedEstablishment(
+    mission?.establishment_id,
+    mission?.status === "published"
+  );
 
   // Déterminer les informations à afficher
   const hasEstablishment = !!establishment;

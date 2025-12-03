@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { listAllEstablishments } from "@shiftly/data";
+import { useCachedAllEstablishments } from "@/hooks/cache/useCachedEstablishments";
 import type { Establishment } from "@shiftly/data";
 
 interface UseAllEstablishmentsReturn {
@@ -13,36 +12,24 @@ interface UseAllEstablishmentsReturn {
 
 /**
  * Hook pour récupérer tous les établissements (pour les commerciaux)
+ *
+ * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
+ * L'API reste identique pour la compatibilité avec les composants existants.
  */
 export function useAllEstablishments(): UseAllEstablishmentsReturn {
-  const [establishments, setEstablishments] = useState<Establishment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchEstablishments = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    const result = await listAllEstablishments();
-
-    if (result.success && result.establishments) {
-      setEstablishments(result.establishments);
-    } else {
-      setError(result.error || "Erreur lors du chargement des établissements");
-    }
-
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    fetchEstablishments();
-  }, []);
+  const {
+    data: establishments = [],
+    isLoading,
+    error,
+    refetch,
+  } = useCachedAllEstablishments();
 
   return {
     establishments,
     isLoading,
-    error,
-    refetch: fetchEstablishments,
+    error: error ? (error as Error).message : null,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }
-

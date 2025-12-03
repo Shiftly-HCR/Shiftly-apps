@@ -1,72 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getMissionApplications } from "@shiftly/core";
+import { useCachedMissionApplications } from "@/hooks/cache/useCachedApplications";
 import type { MissionApplicationWithProfile } from "@shiftly/data";
 
 /**
  * Hook pour récupérer les candidatures d'une mission (pour les recruteurs)
+ * 
+ * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
+ * L'API reste identique pour la compatibilité avec les composants existants.
  */
 export function useMissionApplications(missionId: string | null) {
-  const [applications, setApplications] = useState<MissionApplicationWithProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!missionId) {
-      setApplications([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const loadApplications = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const result = await getMissionApplications(missionId);
-        if (result.success) {
-          setApplications(result.applications || []);
-        } else {
-          setError(result.error || "Erreur lors du chargement des candidatures");
-          setApplications([]);
-        }
-      } catch (err: any) {
-        setError(err.message || "Une erreur est survenue");
-        setApplications([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadApplications();
-  }, [missionId]);
-
-  const refetch = async () => {
-    if (!missionId) return;
-    
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await getMissionApplications(missionId);
-      if (result.success) {
-        setApplications(result.applications || []);
-      } else {
-        setError(result.error || "Erreur lors du chargement des candidatures");
-      }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    data: applications = [],
+    isLoading,
+    error,
+    refetch,
+  } = useCachedMissionApplications(missionId);
 
   return {
     applications,
     isLoading,
-    error,
-    refetch,
+    error: error ? (error as Error).message : null,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }
 
