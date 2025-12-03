@@ -13,6 +13,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { SecretCodeDisplay } from "./SecretCodeDisplay";
 
 export function EstablishmentsManager() {
   const router = useRouter();
@@ -206,23 +207,10 @@ export function EstablishmentsManager() {
                 )}
 
                 {establishment.secret_code && (
-                  <YStack
-                    padding="$2"
-                    backgroundColor={colors.backgroundLight}
-                    borderRadius="$2"
-                    gap="$1"
-                  >
-                    <Text fontSize={12} color={colors.gray500} fontWeight="600">
-                      Code secret
-                    </Text>
-                    <Text
-                      fontSize={16}
-                      fontWeight="700"
-                      color={colors.shiftlyViolet}
-                    >
-                      {establishment.secret_code}
-                    </Text>
-                  </YStack>
+                  <SecretCodeDisplay
+                    code={establishment.secret_code}
+                    id={establishment.id}
+                  />
                 )}
 
                 <XStack gap="$2" marginTop="$2" flexWrap="wrap">
