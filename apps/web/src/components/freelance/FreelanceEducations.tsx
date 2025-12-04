@@ -13,8 +13,24 @@ export function FreelanceEducations({ educations }: FreelanceEducationsProps) {
   const { formatDateShort } = useFormatDate();
 
   if (!educations || educations.length === 0) {
-    console.log("⚠️ FreelanceEducations - Aucune formation, retour null");
-    return null;
+    return (
+      <YStack gap="$2">
+        <Text fontSize={20} fontWeight="700" color={colors.gray900}>
+          Formations
+        </Text>
+        <YStack
+          padding="$3"
+          backgroundColor={colors.white}
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor={colors.gray200}
+        >
+          <Text fontSize={14} color={colors.gray500}>
+            Aucune formation renseignée pour le moment.
+          </Text>
+        </YStack>
+      </YStack>
+    );
   }
 
   return (

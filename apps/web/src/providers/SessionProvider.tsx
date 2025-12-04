@@ -59,39 +59,62 @@ interface SessionProviderProps {
 }
 
 export function SessionProvider({ children, config }: SessionProviderProps) {
-  const [state, setState] = useState<SessionCacheState>({
-    cache: null,
-    isLoading: true,
-    error: null,
-    isInitialized: false,
-  });
-
   // Créer le service de cache (une seule instance)
   const [cacheService] = useState(() => createSessionCacheService(config));
+  const hasLoadedRef = useRef(false);
+
+  // Initialiser le state avec le cache synchrone si disponible
+  const [state, setState] = useState<SessionCacheState>(() => {
+    const cached = cacheService.getCachedSession();
+
+    if (cached) {
+      return {
+        cache: cached,
+        isLoading: false, // Pas de loading si on a déjà des données
+        error: null,
+        isInitialized: true, // Déjà initialisé si un cache existe
+      };
+    }
+
+    return {
+      cache: null,
+      isLoading: true,
+      error: null,
+      isInitialized: false,
+    };
+  });
 
   /**
    * Charge la session depuis le cache ou Supabase
    */
   const loadSession = useCallback(
     async (forceRefresh: boolean = false) => {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({
+        ...prev,
+        // Ne pas bloquer l'UI si on dispose déjà d'un cache
+        isLoading: prev.cache ? prev.isLoading : true,
+        error: null,
+      }));
 
       try {
         const cache = await cacheService.getSession(forceRefresh);
-        setState({
+        setState((prev) => ({
           cache,
           isLoading: false,
           error: null,
           isInitialized: true,
-        });
+        }));
       } catch (error: any) {
         console.error("[SessionProvider] Erreur lors du chargement:", error);
-        setState({
-          cache: null,
+        const errorMessage =
+          (error as Error)?.message ||
+          "Erreur lors du chargement de la session";
+        setState((prev) => ({
+          cache: prev.cache ?? cacheService.getCachedSession(),
           isLoading: false,
-          error: error.message || "Erreur lors du chargement de la session",
+          error: errorMessage,
           isInitialized: true,
-        });
+        }));
       }
     },
     [cacheService]
@@ -248,9 +271,10 @@ export function SessionProvider({ children, config }: SessionProviderProps) {
 
   // Charger la session au montage et s'abonner aux changements d'auth
   useEffect(() => {
-    // Ne charger que si pas encore initialisé pour éviter les doubles chargements
-    if (!state.isInitialized) {
+    // Charger une fois au montage (même si on a déjà un cache pour resynchroniser en arrière-plan)
+    if (!hasLoadedRef.current) {
       loadSession(false);
+      hasLoadedRef.current = true;
     }
 
     // S'abonner aux changements d'état d'authentification
@@ -258,23 +282,21 @@ export function SessionProvider({ children, config }: SessionProviderProps) {
     if (!authSubscriptionRef.current) {
       const {
         data: { subscription },
-      } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("[SessionProvider] Auth state changed:", event);
-          }
-
-          // Recharger le cache lors des événements importants
-          if (
-            event === "SIGNED_IN" ||
-            event === "SIGNED_OUT" ||
-            event === "TOKEN_REFRESHED" ||
-            event === "USER_UPDATED"
-          ) {
-            await loadSession(true);
-          }
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log("[SessionProvider] Auth state changed:", event);
         }
-      );
+
+        // Recharger le cache lors des événements importants
+        if (
+          event === "SIGNED_IN" ||
+          event === "SIGNED_OUT" ||
+          event === "TOKEN_REFRESHED" ||
+          event === "USER_UPDATED"
+        ) {
+          await loadSession(true);
+        }
+      });
 
       authSubscriptionRef.current = subscription;
     }
@@ -286,7 +308,7 @@ export function SessionProvider({ children, config }: SessionProviderProps) {
         authSubscriptionRef.current = null;
       }
     };
-  }, [loadSession, state.isInitialized]);
+  }, [loadSession]);
 
   const value: SessionContextValue = {
     ...state,

@@ -1,6 +1,6 @@
 "use client";
 
-import { YStack } from "tamagui";
+import { YStack, Text } from "tamagui";
 import { Navbar, Footer } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useAppLayout } from "@/hooks";
@@ -30,7 +30,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         justifyContent="center"
         minHeight="100vh"
       >
-        {/* Vous pouvez ajouter un composant de chargement ici */}
+        <Text fontSize={16} color="#6B7280">
+          Chargement de votre session...
+        </Text>
       </YStack>
     );
   }

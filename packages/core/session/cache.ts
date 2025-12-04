@@ -62,7 +62,24 @@ export class SessionCacheManager {
       return false;
     }
 
-    return true;
+   return true;
+  }
+
+  /**
+   * Lit le cache sans validation (utile pour une réhydratation immédiate)
+   */
+  readUnsafe(): SessionCache | null {
+    if (this.memoryCache) {
+      return this.memoryCache;
+    }
+
+    const persistentCache = this.storage.read();
+    if (persistentCache) {
+      this.memoryCache = persistentCache;
+      return persistentCache;
+    }
+
+    return null;
   }
 
   /**
@@ -114,4 +131,3 @@ export class SessionCacheManager {
     this.write(updated);
   }
 }
-

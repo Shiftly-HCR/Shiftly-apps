@@ -1,14 +1,7 @@
 import type { SessionCache } from "./types";
 import { SessionCacheManager } from "./cache";
-import {
-  getSession,
-  getCurrentUser,
-} from "@shiftly/data";
-import {
-  getCurrentProfile,
-  getProfileById,
-  type Profile,
-} from "@shiftly/data";
+import { getSession, getCurrentUser } from "@shiftly/data";
+import { getCurrentProfile, getProfileById, type Profile } from "@shiftly/data";
 import {
   getFreelanceProfile,
   getFreelanceExperiences,
@@ -42,10 +35,8 @@ export class SessionCacheService {
    */
   private incrementRequestCounter(): void {
     this.requestCounter++;
-    if (process.env.NODE_ENV === "development") {
-      console.log(
-        `[SessionCache] Requête Supabase #${this.requestCounter}`
-      );
+   if (process.env.NODE_ENV === "development") {
+      console.log(`[SessionCache] Requête Supabase #${this.requestCounter}`);
     }
   }
 
@@ -61,6 +52,15 @@ export class SessionCacheService {
    */
   resetRequestCount(): void {
     this.requestCounter = 0;
+  }
+
+  /**
+   * Récupère la session depuis le cache de manière synchrone (sans appel réseau)
+   * Retourne null si aucun cache valide n'est trouvé
+   */
+  getCachedSession(): SessionCache | null {
+    const cached = this.cacheManager.readUnsafe();
+    return cached || null;
   }
 
   /**
@@ -160,7 +160,10 @@ export class SessionCacheService {
 
       return emptyCache;
     } catch (error) {
-      console.error("[SessionCache] Erreur lors du chargement de la session:", error);
+      console.error(
+        "[SessionCache] Erreur lors du chargement de la session:",
+        error
+      );
       return emptyCache;
     }
   }
@@ -215,7 +218,7 @@ export class SessionCacheService {
       const profile = await getCurrentProfile();
       if (profile) {
         this.cacheManager.update({ profile });
-        
+
         // Mettre à jour le cache global des profils
         const updatedCache = this.cacheManager.read();
         if (updatedCache && profile) {
@@ -231,11 +234,12 @@ export class SessionCacheService {
             this.cacheManager.update({
               freelanceProfile: freelanceProfile || null,
             });
-            
+
             // Mettre à jour le cache global
             const updatedCache2 = this.cacheManager.read();
             if (updatedCache2 && freelanceProfile) {
-              updatedCache2.profilesCache[freelanceProfile.id] = freelanceProfile;
+              updatedCache2.profilesCache[freelanceProfile.id] =
+                freelanceProfile;
               this.cacheManager.write(updatedCache2);
             }
           }
@@ -262,7 +266,7 @@ export class SessionCacheService {
       this.incrementRequestCounter();
       const experiences = await getFreelanceExperiences();
       this.cacheManager.update({ freelanceExperiences: experiences });
-      
+
       // Mettre à jour le cache global
       const updatedCache = this.cacheManager.read();
       if (updatedCache && experiences.length > 0) {
@@ -290,7 +294,7 @@ export class SessionCacheService {
       this.incrementRequestCounter();
       const educations = await getFreelanceEducations();
       this.cacheManager.update({ freelanceEducations: educations });
-      
+
       // Mettre à jour le cache global
       const updatedCache = this.cacheManager.read();
       if (updatedCache && educations.length > 0) {
@@ -318,7 +322,7 @@ export class SessionCacheService {
       this.incrementRequestCounter();
       const missions = await getRecruiterMissions();
       this.cacheManager.update({ recruiterMissions: missions });
-      
+
       // Mettre à jour le cache global des missions
       const updatedCache = this.cacheManager.read();
       if (updatedCache) {
@@ -443,4 +447,3 @@ export class SessionCacheService {
     this.cacheManager.write(current);
   }
 }
-

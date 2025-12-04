@@ -12,7 +12,24 @@ interface FreelanceSkillsProps {
  */
 export function FreelanceSkills({ skills }: FreelanceSkillsProps) {
   if (!skills || skills.length === 0) {
-    return null;
+    return (
+      <YStack gap="$2">
+        <Text fontSize={20} fontWeight="700" color={colors.gray900}>
+          Compétences
+        </Text>
+        <YStack
+          padding="$3"
+          backgroundColor={colors.white}
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor={colors.gray200}
+        >
+          <Text fontSize={14} color={colors.gray500}>
+            Aucune compétence renseignée pour le moment.
+          </Text>
+        </YStack>
+      </YStack>
+    );
   }
 
   return (
@@ -40,4 +57,3 @@ export function FreelanceSkills({ skills }: FreelanceSkillsProps) {
     </YStack>
   );
 }
-

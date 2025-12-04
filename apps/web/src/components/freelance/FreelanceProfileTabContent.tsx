@@ -83,6 +83,18 @@ export function FreelanceProfileTabContent({
     );
   }
 
-  return null;
+  return (
+    <YStack
+      gap="$2"
+      padding="$4"
+      backgroundColor={colors.white}
+      borderRadius={12}
+      borderWidth={1}
+      borderColor={colors.gray200}
+    >
+      <Text fontSize={16} color={colors.gray700}>
+        Contenu indisponible pour cet onglet.
+      </Text>
+    </YStack>
+  );
 }
-
