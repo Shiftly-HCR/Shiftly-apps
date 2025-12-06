@@ -44,7 +44,7 @@ export function Navbar({
   useEffect(() => {
     // Marquer le composant comme monté après l'hydratation
     setMounted(true);
-    
+
     const checkScreenSize = () => {
       if (typeof window !== "undefined") {
         setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
@@ -302,7 +302,10 @@ export function Navbar({
               <XStack
                 cursor="pointer"
                 hoverStyle={{ opacity: 0.8 }}
-                onPress={onLogoutClick}
+                onPress={() => handleMenuClick(onLogoutClick)}
+                onClick={() => handleMenuClick(onLogoutClick)}
+                role="button"
+                tabIndex={0}
                 padding="$2"
               >
                 <LogOut size={mounted && isMobile ? 18 : 20} color="#EF4444" />
@@ -443,10 +446,7 @@ export function Navbar({
                         onPress={onSubscriptionClick}
                       />
                       <MenuLink label="Freelance" onPress={onFreelanceClick} />
-                      <MenuLink
-                        label="Messagerie"
-                        onPress={onMessagingClick}
-                      />
+                      <MenuLink label="Messagerie" onPress={onMessagingClick} />
                     </>
                   )}
                 </YStack>

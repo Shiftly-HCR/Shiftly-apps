@@ -27,17 +27,38 @@ export function useAppLayout() {
 
   const handleLogout = async () => {
     try {
+      // 1. Vider le cache AVANT la déconnexion pour éviter que le SessionProvider
+      // ne recharge automatiquement une session encore présente
+      await clear();
+
+      // 2. Déconnecter de Supabase
       const result = await signOut();
 
       if (!result.success) {
         console.error("Erreur lors de la déconnexion:", result.error);
       }
+
+      // 3. Vérifier que la session est bien supprimée
+      // Attendre un peu pour que Supabase termine la déconnexion
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // 4. Rediriger vers /login
+      router.replace("/login");
+
+      // 5. Fallback hard redirect pour éviter tout état React coincé
+      if (typeof window !== "undefined") {
+        // Petit délai pour s'assurer que tout est bien nettoyé
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 50);
+      }
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
-    } finally {
-      // Vider le cache et rediriger systématiquement
+      // Même en cas d'erreur, vider le cache et rediriger
       await clear();
-      router.replace("/login");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
   };
 

@@ -287,10 +287,21 @@ export function SessionProvider({ children, config }: SessionProviderProps) {
           console.log("[SessionProvider] Auth state changed:", event);
         }
 
+        // Pour SIGNED_OUT, vider le cache au lieu de recharger
+        if (event === "SIGNED_OUT") {
+          cacheService.clear();
+          setState({
+            cache: null,
+            isLoading: false,
+            error: null,
+            isInitialized: true,
+          });
+          return;
+        }
+
         // Recharger le cache lors des événements importants
         if (
           event === "SIGNED_IN" ||
-          event === "SIGNED_OUT" ||
           event === "TOKEN_REFRESHED" ||
           event === "USER_UPDATED"
         ) {

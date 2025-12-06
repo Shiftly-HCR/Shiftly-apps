@@ -123,7 +123,9 @@ export async function signIn({
  */
 export async function signOut(): Promise<AuthResponse> {
   try {
-    const { error } = await supabase.auth.signOut();
+    // Utiliser scope: 'global' pour déconnecter de tous les appareils
+    // et s'assurer que la session est bien supprimée
+    const { error } = await supabase.auth.signOut({ scope: "global" });
 
     if (error) {
       return {
