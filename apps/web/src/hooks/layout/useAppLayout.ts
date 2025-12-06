@@ -27,19 +27,17 @@ export function useAppLayout() {
 
   const handleLogout = async () => {
     try {
-      // Déconnecter de Supabase
       const result = await signOut();
 
-      if (result.success) {
-        // Vider le cache
-        await clear();
-        router.push("/login");
+      if (!result.success) {
+        console.error("Erreur lors de la déconnexion:", result.error);
       }
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
-      // Vider le cache même en cas d'erreur
+    } finally {
+      // Vider le cache et rediriger systématiquement
       await clear();
-      router.push("/login");
+      router.replace("/login");
     }
   };
 
@@ -52,4 +50,3 @@ export function useAppLayout() {
     handleLogout,
   };
 }
-
