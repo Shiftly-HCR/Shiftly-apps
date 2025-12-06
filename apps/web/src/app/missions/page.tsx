@@ -19,8 +19,7 @@ export default function MissionsPage() {
   // Router vers la bonne page selon le rôle
   if (userRole === "freelance") {
     return <FreelanceMissionsPage />;
+  } else {
+    return <RecruiterMissionsPage />;
   }
-
-  // Par défaut, afficher la page recruteur
-  return <RecruiterMissionsPage />;
 }

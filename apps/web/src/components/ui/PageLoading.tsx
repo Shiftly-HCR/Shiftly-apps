@@ -14,18 +14,10 @@ interface PageLoadingProps {
  */
 export function PageLoading({ message = "Chargement..." }: PageLoadingProps) {
   return (
-    <AppLayout>
-      <YStack
-        flex={1}
-        alignItems="center"
-        justifyContent="center"
-        padding="$6"
-      >
-        <Text fontSize={16} color={colors.gray700}>
-          {message}
-        </Text>
-      </YStack>
-    </AppLayout>
+    <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
+      <Text fontSize={16} color={colors.gray700}>
+        {message}
+      </Text>
+    </YStack>
   );
 }
-
