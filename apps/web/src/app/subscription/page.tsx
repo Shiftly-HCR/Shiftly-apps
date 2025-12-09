@@ -9,12 +9,7 @@ import {
   SubscriptionCard,
   FAQSection,
 } from "@/components";
-import {
-  FiHome,
-  FiUser,
-  FiBriefcase,
-  FiAlertTriangle,
-} from "react-icons/fi";
+import { FiHome, FiUser, FiBriefcase, FiAlertTriangle } from "react-icons/fi";
 import {
   SUBSCRIPTION_PLANS,
   type SubscriptionPlanId,
@@ -121,7 +116,9 @@ export default function SubscriptionPage() {
                 }
                 features={plan.features}
                 popular={plan.popular}
-                onSubscribe={handleSubscribe}
+                onSubscribe={(planId: string) =>
+                  handleSubscribe(planId as SubscriptionPlanId)
+                }
                 isLoading={loadingPlanId === plan.id}
               />
             ))}
@@ -132,12 +129,12 @@ export default function SubscriptionPage() {
               gap="$3"
               alignItems="flex-start"
               padding="$4"
-              backgroundColor={colors.shiftlyRed + "10"}
+              backgroundColor={colors.shiftlyMarron + "10"}
               borderRadius="$4"
             >
-              <FiAlertTriangle size={18} color={colors.shiftlyRed} />
+              <FiAlertTriangle size={18} color={colors.shiftlyMarron} />
               <YStack gap="$1" flex={1}>
-                <Text fontWeight="700" color={colors.shiftlyRed}>
+                <Text fontWeight="700" color={colors.shiftlyMarron}>
                   Paiement indisponible
                 </Text>
                 <Text color={colors.gray700}>{error}</Text>
