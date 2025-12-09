@@ -1,6 +1,7 @@
 "use client";
 
-import { YStack, XStack, ScrollView } from "tamagui";
+import { useState } from "react";
+import { YStack, XStack, ScrollView, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import {
   AppLayout,
@@ -8,17 +9,16 @@ import {
   SubscriptionCard,
   FAQSection,
 } from "@/components";
-import { FiHome, FiUser, FiBriefcase } from "react-icons/fi";
-
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  icon: React.ReactNode;
-  features: string[];
-  popular?: boolean;
-}
+import {
+  FiHome,
+  FiUser,
+  FiBriefcase,
+  FiAlertTriangle,
+} from "react-icons/fi";
+import {
+  SUBSCRIPTION_PLANS,
+  type SubscriptionPlanId,
+} from "@shiftly/payments/plans";
 
 const faqItems = [
   {
@@ -38,60 +38,44 @@ const faqItems = [
   },
 ];
 
-const subscriptionPlans: SubscriptionPlan[] = [
-  {
-    id: "establishment",
-    name: "Établissement",
-    price: 50,
-    description: "Pour les restaurants, hôtels et établissements HCR",
-    icon: <FiHome size={32} color={colors.shiftlyViolet} />,
-    features: [
-      "Publication illimitée de missions",
-      "Accès à tous les freelances",
-      "Gestion des candidatures",
-      "Support prioritaire",
-      "Statistiques détaillées",
-      "Recherche avancée",
-    ],
-  },
-  {
-    id: "freelance-student",
-    name: "Freelance Étudiant",
-    price: 25,
-    description: "Tarif préférentiel pour les étudiants",
-    icon: <FiUser size={32} color={colors.shiftlyViolet} />,
-    features: [
-      "Accès à toutes les missions",
-      "Profil visible pour les recruteurs",
-      "Notifications en temps réel",
-      "Support client",
-      "Gestion de disponibilité",
-      "Historique des missions",
-    ],
-    popular: true,
-  },
-  {
-    id: "freelance-classic",
-    name: "Freelance Classique",
-    price: 35,
-    description: "Pour freelances et bénéficiaires Pôle Emploi",
-    icon: <FiBriefcase size={32} color={colors.shiftlyViolet} />,
-    features: [
-      "Accès à toutes les missions",
-      "Profil visible pour les recruteurs",
-      "Notifications en temps réel",
-      "Support client",
-      "Gestion de disponibilité",
-      "Historique des missions",
-      "Badge Pôle Emploi",
-    ],
-  },
-];
-
 export default function SubscriptionPage() {
-  const handleSubscribe = (planId: string) => {
-    // TODO: Implémenter la logique d'abonnement
-    console.log(`Abonnement à ${planId}`);
+  const [loadingPlanId, setLoadingPlanId] = useState<SubscriptionPlanId | null>(
+    null
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubscribe = async (planId: SubscriptionPlanId) => {
+    setError(null);
+    setLoadingPlanId(planId);
+
+    try {
+      const response = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ planId }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.url) {
+        throw new Error(
+          data?.error || "Impossible de démarrer le paiement Stripe"
+        );
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Erreur d'abonnement Stripe:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Une erreur est survenue lors du démarrage du paiement"
+      );
+    } finally {
+      setLoadingPlanId(null);
+    }
   };
 
   return (
@@ -119,20 +103,47 @@ export default function SubscriptionPage() {
             alignItems="stretch"
             marginTop="$4"
           >
-            {subscriptionPlans.map((plan) => (
+            {SUBSCRIPTION_PLANS.map((plan) => (
               <SubscriptionCard
                 key={plan.id}
                 id={plan.id}
                 name={plan.name}
                 price={plan.price}
                 description={plan.description}
-                icon={plan.icon}
+                icon={
+                  plan.id === "establishment" ? (
+                    <FiHome size={32} color={colors.shiftlyViolet} />
+                  ) : plan.id === "freelance-student" ? (
+                    <FiUser size={32} color={colors.shiftlyViolet} />
+                  ) : (
+                    <FiBriefcase size={32} color={colors.shiftlyViolet} />
+                  )
+                }
                 features={plan.features}
                 popular={plan.popular}
                 onSubscribe={handleSubscribe}
+                isLoading={loadingPlanId === plan.id}
               />
             ))}
           </XStack>
+
+          {error && (
+            <XStack
+              gap="$3"
+              alignItems="flex-start"
+              padding="$4"
+              backgroundColor={colors.shiftlyRed + "10"}
+              borderRadius="$4"
+            >
+              <FiAlertTriangle size={18} color={colors.shiftlyRed} />
+              <YStack gap="$1" flex={1}>
+                <Text fontWeight="700" color={colors.shiftlyRed}>
+                  Paiement indisponible
+                </Text>
+                <Text color={colors.gray700}>{error}</Text>
+              </YStack>
+            </XStack>
+          )}
 
           {/* Section FAQ ou informations supplémentaires */}
           <FAQSection title="Questions fréquentes" items={faqItems} />

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { YStack, XStack, Text } from "tamagui";
 import { Button, BaseCard, colors } from "@shiftly/ui";
 import { FiCheck } from "react-icons/fi";
@@ -9,10 +10,11 @@ interface SubscriptionCardProps {
   name: string;
   price: number;
   description: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   features: string[];
   popular?: boolean;
   onSubscribe: (planId: string) => void;
+  isLoading?: boolean;
 }
 
 /**
@@ -27,6 +29,7 @@ export function SubscriptionCard({
   features,
   popular = false,
   onSubscribe,
+  isLoading = false,
 }: SubscriptionCardProps) {
   return (
     <YStack
@@ -145,9 +148,14 @@ export function SubscriptionCard({
           variant={popular ? "primary" : "outline"}
           size="lg"
           onPress={() => onSubscribe(id)}
+          disabled={isLoading}
           width="100%"
         >
-          {popular ? "Choisir ce plan" : "S'abonner"}
+          {isLoading
+            ? "Redirection en cours..."
+            : popular
+              ? "Choisir ce plan"
+              : "S'abonner"}
         </Button>
       </BaseCard>
     </YStack>
