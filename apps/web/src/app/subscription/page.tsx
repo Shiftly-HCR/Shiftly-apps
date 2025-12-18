@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
+import { useSearchParams, useRouter } from "next/navigation";
 import { colors } from "@shiftly/ui";
 import {
   AppLayout,
@@ -20,7 +21,7 @@ import {
   SUBSCRIPTION_PLANS,
   type SubscriptionPlanId,
 } from "@shiftly/payments/plans";
-import { useCurrentProfile } from "@/hooks";
+import { useCurrentProfile, useUpdatePremiumStatus } from "@/hooks";
 
 const faqItems = [
   {
@@ -41,11 +42,16 @@ const faqItems = [
 ];
 
 export default function SubscriptionPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
+  const { updatePremium, isLoading: isUpdatingPremium } =
+    useUpdatePremiumStatus();
   const [loadingPlanId, setLoadingPlanId] = useState<SubscriptionPlanId | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [hasProcessedPayment, setHasProcessedPayment] = useState(false);
 
   // Données d'abonnement en dur (sera récupéré depuis Stripe plus tard)
   const subscriptionData = {
@@ -55,6 +61,38 @@ export default function SubscriptionPage() {
     interval: "mois",
     renewalDate: "15 janvier 2025", // Date de renouvellement
   };
+
+  // Traiter le paiement réussi
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const plan = searchParams.get("plan");
+
+    // Si le paiement est réussi et qu'on n'a pas encore traité
+    if (status === "success" && !hasProcessedPayment && !isUpdatingPremium) {
+      setHasProcessedPayment(true);
+
+      // Mettre à jour le statut premium
+      updatePremium(true).then((result) => {
+        if (result.success) {
+          // Nettoyer les paramètres d'URL pour éviter de traiter plusieurs fois
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete("status");
+          newUrl.searchParams.delete("plan");
+          router.replace(newUrl.pathname + newUrl.search);
+        } else {
+          setError(
+            result.error || "Erreur lors de l'activation de l'abonnement"
+          );
+        }
+      });
+    }
+  }, [
+    searchParams,
+    hasProcessedPayment,
+    isUpdatingPremium,
+    updatePremium,
+    router,
+  ]);
 
   const handleSubscribe = async (planId: SubscriptionPlanId) => {
     setError(null);

@@ -186,6 +186,55 @@ export async function updateProfile(
 }
 
 /**
+ * Met à jour le statut premium de l'utilisateur actuel
+ */
+export async function updatePremiumStatus(
+  isPremium: boolean
+): Promise<{ success: boolean; error?: string; profile?: Profile }> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({
+        is_premium: isPremium,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erreur lors de la mise à jour du statut premium:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      profile: data,
+    };
+  } catch (err) {
+    console.error("Erreur lors de la mise à jour du statut premium:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la mise à jour du statut premium",
+    };
+  }
+}
+
+/**
  * Supprime le profil de l'utilisateur actuel
  */
 export async function deleteProfile(): Promise<{

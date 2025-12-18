@@ -3,6 +3,7 @@ export {
   getProfileById,
   getCurrentProfile,
   updateProfile,
+  updatePremiumStatus,
   deleteProfile,
   uploadProfilePhoto,
   deleteProfilePhoto,
@@ -10,6 +11,3 @@ export {
   type CreateProfileParams,
   type UpdateProfileParams,
 } from "./profiles";
-
-
-
