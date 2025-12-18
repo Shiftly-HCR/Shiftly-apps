@@ -14,6 +14,7 @@ export interface Profile {
   note?: number;
   phone?: string;
   email?: string;
+  is_premium?: boolean;
 }
 
 export interface CreateProfileParams {

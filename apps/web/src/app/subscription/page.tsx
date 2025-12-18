@@ -9,11 +9,18 @@ import {
   SubscriptionCard,
   FAQSection,
 } from "@/components";
-import { FiHome, FiUser, FiBriefcase, FiAlertTriangle } from "react-icons/fi";
+import {
+  FiHome,
+  FiUser,
+  FiBriefcase,
+  FiAlertTriangle,
+  FiCheck,
+} from "react-icons/fi";
 import {
   SUBSCRIPTION_PLANS,
   type SubscriptionPlanId,
 } from "@shiftly/payments/plans";
+import { useCurrentProfile } from "@/hooks";
 
 const faqItems = [
   {
@@ -34,10 +41,20 @@ const faqItems = [
 ];
 
 export default function SubscriptionPage() {
+  const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
   const [loadingPlanId, setLoadingPlanId] = useState<SubscriptionPlanId | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
+
+  // Données d'abonnement en dur (sera récupéré depuis Stripe plus tard)
+  const subscriptionData = {
+    planName: "Freelance Classique",
+    price: 35,
+    currency: "EUR",
+    interval: "mois",
+    renewalDate: "15 janvier 2025", // Date de renouvellement
+  };
 
   const handleSubscribe = async (planId: SubscriptionPlanId) => {
     setError(null);
@@ -72,6 +89,116 @@ export default function SubscriptionPage() {
       setLoadingPlanId(null);
     }
   };
+
+  // Si l'utilisateur est premium, afficher les informations d'abonnement
+  if (!isLoadingProfile && profile?.is_premium) {
+    return (
+      <AppLayout>
+        <ScrollView flex={1}>
+          <YStack
+            maxWidth={1400}
+            width="100%"
+            alignSelf="center"
+            padding="$6"
+            gap="$8"
+          >
+            {/* En-tête */}
+            <PageHeader
+              title="Mon Abonnement"
+              description="Gérez votre abonnement Shiftly"
+              align="center"
+            />
+
+            {/* Carte d'abonnement actif */}
+            <YStack
+              backgroundColor="white"
+              borderRadius="$4"
+              padding="$6"
+              borderWidth={1}
+              borderColor={colors.gray200}
+              shadowColor="rgba(0, 0, 0, 0.1)"
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={1}
+              shadowRadius={12}
+              gap="$4"
+              maxWidth={600}
+              alignSelf="center"
+              width="100%"
+            >
+              <XStack
+                alignItems="center"
+                justifyContent="space-between"
+                marginBottom="$2"
+              >
+                <YStack gap="$1">
+                  <Text fontSize={24} fontWeight="700" color={colors.gray900}>
+                    Vous êtes abonné
+                  </Text>
+                  <XStack alignItems="center" gap="$2">
+                    <FiCheck size={18} color={colors.shiftlyViolet} />
+                    <Text fontSize={14} color={colors.gray700}>
+                      Abonnement actif
+                    </Text>
+                  </XStack>
+                </YStack>
+              </XStack>
+
+              <YStack
+                padding="$4"
+                backgroundColor={colors.shiftlyViolet + "10"}
+                borderRadius="$3"
+                gap="$3"
+              >
+                <XStack justifyContent="space-between" alignItems="center">
+                  <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                    Plan
+                  </Text>
+                  <Text
+                    fontSize={16}
+                    fontWeight="700"
+                    color={colors.shiftlyViolet}
+                  >
+                    {subscriptionData.planName}
+                  </Text>
+                </XStack>
+
+                <XStack justifyContent="space-between" alignItems="center">
+                  <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                    Prix
+                  </Text>
+                  <Text fontSize={18} fontWeight="700" color={colors.gray900}>
+                    {subscriptionData.price} {subscriptionData.currency}
+                    <Text fontSize={14} fontWeight="400" color={colors.gray700}>
+                      {" "}
+                      / {subscriptionData.interval}
+                    </Text>
+                  </Text>
+                </XStack>
+
+                <XStack justifyContent="space-between" alignItems="center">
+                  <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                    Renouvellement
+                  </Text>
+                  <Text fontSize={14} color={colors.gray700}>
+                    {subscriptionData.renewalDate}
+                  </Text>
+                </XStack>
+              </YStack>
+
+              <Text
+                fontSize={14}
+                color={colors.gray700}
+                textAlign="center"
+                marginTop="$2"
+              >
+                Votre abonnement se renouvelle automatiquement tous les mois.
+              </Text>
+            </YStack>
+          </YStack>
+        </ScrollView>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
