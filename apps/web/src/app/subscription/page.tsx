@@ -19,6 +19,7 @@ import {
 } from "react-icons/fi";
 import {
   SUBSCRIPTION_PLANS,
+  subscriptionPlansById,
   type SubscriptionPlanId,
 } from "@shiftly/payments/plans";
 import { useCurrentProfile, useUpdatePremiumStatus } from "@/hooks";
@@ -53,26 +54,27 @@ export default function SubscriptionPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasProcessedPayment, setHasProcessedPayment] = useState(false);
 
-  // Données d'abonnement en dur (sera récupéré depuis Stripe plus tard)
-  const subscriptionData = {
-    planName: "Freelance Classique",
-    price: 35,
-    currency: "EUR",
-    interval: "mois",
-    renewalDate: "15 janvier 2025", // Date de renouvellement
-  };
+  // Récupérer le plan d'abonnement actuel depuis le profil
+  const currentPlan =
+    profile?.subscription_plan_id &&
+    subscriptionPlansById[profile.subscription_plan_id as SubscriptionPlanId];
 
   // Traiter le paiement réussi
   useEffect(() => {
     const status = searchParams.get("status");
-    const plan = searchParams.get("plan");
+    const plan = searchParams.get("plan") as SubscriptionPlanId | null;
 
     // Si le paiement est réussi et qu'on n'a pas encore traité
-    if (status === "success" && !hasProcessedPayment && !isUpdatingPremium) {
+    if (
+      status === "success" &&
+      plan &&
+      !hasProcessedPayment &&
+      !isUpdatingPremium
+    ) {
       setHasProcessedPayment(true);
 
-      // Mettre à jour le statut premium
-      updatePremium(true).then((result) => {
+      // Mettre à jour le statut premium avec le planId
+      updatePremium(true, plan).then((result) => {
         if (result.success) {
           // Nettoyer les paramètres d'URL pour éviter de traiter plusieurs fois
           const newUrl = new URL(window.location.href);
@@ -129,7 +131,7 @@ export default function SubscriptionPage() {
   };
 
   // Si l'utilisateur est premium, afficher les informations d'abonnement
-  if (!isLoadingProfile && profile?.is_premium) {
+  if (!isLoadingProfile && profile?.is_premium && currentPlan) {
     return (
       <AppLayout>
         <ScrollView flex={1}>
@@ -196,7 +198,7 @@ export default function SubscriptionPage() {
                     fontWeight="700"
                     color={colors.shiftlyViolet}
                   >
-                    {subscriptionData.planName}
+                    {currentPlan.name}
                   </Text>
                 </XStack>
 
@@ -205,23 +207,47 @@ export default function SubscriptionPage() {
                     Prix
                   </Text>
                   <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                    {subscriptionData.price} {subscriptionData.currency}
+                    {currentPlan.price} {currentPlan.currency.toUpperCase()}
                     <Text fontSize={14} fontWeight="400" color={colors.gray700}>
                       {" "}
-                      / {subscriptionData.interval}
+                      / mois
                     </Text>
                   </Text>
                 </XStack>
 
                 <XStack justifyContent="space-between" alignItems="center">
                   <Text fontSize={16} fontWeight="600" color={colors.gray900}>
-                    Renouvellement
+                    Description
                   </Text>
-                  <Text fontSize={14} color={colors.gray700}>
-                    {subscriptionData.renewalDate}
+                  <Text
+                    fontSize={14}
+                    color={colors.gray700}
+                    textAlign="right"
+                    flex={1}
+                  >
+                    {currentPlan.description}
                   </Text>
                 </XStack>
               </YStack>
+
+              {/* Liste des fonctionnalités */}
+              {currentPlan.features && currentPlan.features.length > 0 && (
+                <YStack gap="$2" marginTop="$2">
+                  <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                    Fonctionnalités incluses :
+                  </Text>
+                  <YStack gap="$2">
+                    {currentPlan.features.map((feature, index) => (
+                      <XStack key={index} alignItems="center" gap="$2">
+                        <FiCheck size={16} color={colors.shiftlyViolet} />
+                        <Text fontSize={14} color={colors.gray700}>
+                          {feature}
+                        </Text>
+                      </XStack>
+                    ))}
+                  </YStack>
+                </YStack>
+              )}
 
               <Text
                 fontSize={14}

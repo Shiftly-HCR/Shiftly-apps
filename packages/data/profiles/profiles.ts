@@ -15,6 +15,7 @@ export interface Profile {
   phone?: string;
   email?: string;
   is_premium?: boolean;
+  subscription_plan_id?: string;
 }
 
 export interface CreateProfileParams {
@@ -189,7 +190,8 @@ export async function updateProfile(
  * Met à jour le statut premium de l'utilisateur actuel
  */
 export async function updatePremiumStatus(
-  isPremium: boolean
+  isPremium: boolean,
+  planId?: string
 ): Promise<{ success: boolean; error?: string; profile?: Profile }> {
   try {
     const {
@@ -203,12 +205,19 @@ export async function updatePremiumStatus(
       };
     }
 
+    const updateData: any = {
+      is_premium: isPremium,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Si un planId est fourni, le stocker
+    if (planId) {
+      updateData.subscription_plan_id = planId;
+    }
+
     const { data, error } = await supabase
       .from("profiles")
-      .update({
-        is_premium: isPremium,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", user.id)
       .select()
       .single();

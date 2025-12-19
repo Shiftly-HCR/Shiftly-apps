@@ -13,12 +13,12 @@ export function useUpdatePremiumStatus() {
   const [error, setError] = useState<string | null>(null);
 
   const updatePremium = useCallback(
-    async (isPremium: boolean) => {
+    async (isPremium: boolean, planId?: string) => {
       setError(null);
       setIsLoading(true);
 
       try {
-        const result = await updatePremiumStatus(isPremium);
+        const result = await updatePremiumStatus(isPremium, planId);
 
         if (result.success) {
           // Rafraîchir le profil dans le cache
