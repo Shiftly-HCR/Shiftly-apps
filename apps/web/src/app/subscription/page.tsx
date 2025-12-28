@@ -22,7 +22,13 @@ import {
   subscriptionPlansById,
   type SubscriptionPlanId,
 } from "@shiftly/payments/plans";
-import { useCurrentProfile, useUpdatePremiumStatus } from "@/hooks";
+import {
+  useCurrentProfile,
+  useUpdatePremiumStatus,
+  useCurrentUser,
+} from "@/hooks";
+import { useBillingPortal } from "@/hooks/stripe";
+import { Button } from "@shiftly/ui";
 
 const faqItems = [
   {
@@ -46,8 +52,10 @@ export default function SubscriptionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
+  const { session } = useCurrentUser();
   const { updatePremium, isLoading: isUpdatingPremium } =
     useUpdatePremiumStatus();
+  const { openPortal, isLoading: isLoadingPortal } = useBillingPortal();
   const [loadingPlanId, setLoadingPlanId] = useState<SubscriptionPlanId | null>(
     null
   );
@@ -101,22 +109,51 @@ export default function SubscriptionPage() {
     setLoadingPlanId(planId);
 
     try {
+      console.log("Début de l'abonnement pour le plan:", planId);
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      // Ajouter le token dans les headers si disponible depuis la session
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+        console.log("Token ajouté aux headers");
+      } else {
+        console.log("Aucun token disponible");
+      }
+
+      console.log("Envoi de la requête vers /api/payments/checkout");
       const response = await fetch("/api/payments/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
+        credentials: "include", // Important: pour envoyer les cookies d'authentification
         body: JSON.stringify({ planId }),
       });
 
-      const data = await response.json().catch(() => null);
+      console.log("Réponse reçue, status:", response.status);
 
-      if (!response.ok || !data?.url) {
+      const data = await response.json().catch((jsonErr) => {
+        console.error("Erreur lors du parsing JSON:", jsonErr);
+        return null;
+      });
+
+      console.log("Données reçues:", data);
+
+      if (!response.ok) {
+        console.error("Erreur HTTP:", response.status, data);
         throw new Error(
-          data?.error || "Impossible de démarrer le paiement Stripe"
+          data?.error ||
+            `Erreur ${response.status}: Impossible de démarrer le paiement Stripe`
         );
       }
 
+      if (!data?.url) {
+        console.error("Pas d'URL dans la réponse:", data);
+        throw new Error("Aucune URL de paiement reçue");
+      }
+
+      console.log("Redirection vers:", data.url);
       window.location.href = data.url;
     } catch (err) {
       console.error("Erreur d'abonnement Stripe:", err);
@@ -125,13 +162,61 @@ export default function SubscriptionPage() {
           ? err.message
           : "Une erreur est survenue lors du démarrage du paiement"
       );
-    } finally {
       setLoadingPlanId(null);
     }
   };
 
-  // Si l'utilisateur est premium, afficher les informations d'abonnement
-  if (!isLoadingProfile && profile?.is_premium && currentPlan) {
+  // Fonction pour formater la date
+  const formatDate = (dateString: string | undefined | null): string => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("fr-FR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return "N/A";
+    }
+  };
+
+  // Obtenir le statut d'abonnement avec label
+  const getSubscriptionStatusLabel = (
+    status: string | undefined | null
+  ): string => {
+    switch (status) {
+      case "active":
+        return "Actif";
+      case "trialing":
+        return "Période d'essai";
+      case "past_due":
+        return "Paiement en retard";
+      case "canceled":
+        return "Annulé";
+      case "unpaid":
+        return "Impayé";
+      case "incomplete":
+        return "Incomplet";
+      case "incomplete_expired":
+        return "Incomplet expiré";
+      case "paused":
+        return "En pause";
+      default:
+        return "Inconnu";
+    }
+  };
+
+  // Si l'utilisateur a un abonnement Stripe (même s'il n'est pas premium)
+  const hasStripeSubscription =
+    profile?.stripe_customer_id && profile?.stripe_subscription_id;
+
+  // Si l'utilisateur est premium ou a un abonnement Stripe, afficher les informations d'abonnement
+  if (
+    !isLoadingProfile &&
+    (profile?.is_premium || hasStripeSubscription) &&
+    currentPlan
+  ) {
     return (
       <AppLayout>
         <ScrollView flex={1}>
@@ -172,12 +257,27 @@ export default function SubscriptionPage() {
               >
                 <YStack gap="$1">
                   <Text fontSize={24} fontWeight="700" color={colors.gray900}>
-                    Vous êtes abonné
+                    {profile?.is_premium
+                      ? "Vous êtes abonné"
+                      : "Votre abonnement"}
                   </Text>
                   <XStack alignItems="center" gap="$2">
-                    <FiCheck size={18} color={colors.shiftlyViolet} />
-                    <Text fontSize={14} color={colors.gray700}>
-                      Abonnement actif
+                    {profile?.subscription_status === "active" ||
+                    profile?.subscription_status === "trialing" ? (
+                      <FiCheck size={18} color={colors.shiftlyViolet} />
+                    ) : (
+                      <FiAlertTriangle size={18} color={colors.shiftlyMarron} />
+                    )}
+                    <Text
+                      fontSize={14}
+                      color={
+                        profile?.subscription_status === "active" ||
+                        profile?.subscription_status === "trialing"
+                          ? colors.shiftlyViolet
+                          : colors.shiftlyMarron
+                      }
+                    >
+                      {getSubscriptionStatusLabel(profile?.subscription_status)}
                     </Text>
                   </XStack>
                 </YStack>
@@ -228,6 +328,41 @@ export default function SubscriptionPage() {
                     {currentPlan.description}
                   </Text>
                 </XStack>
+
+                {profile?.current_period_end && (
+                  <XStack justifyContent="space-between" alignItems="center">
+                    <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                      Date de renouvellement
+                    </Text>
+                    <Text fontSize={14} color={colors.gray700}>
+                      {formatDate(profile.current_period_end)}
+                    </Text>
+                  </XStack>
+                )}
+
+                {profile?.cancel_at_period_end && (
+                  <XStack
+                    justifyContent="space-between"
+                    alignItems="center"
+                    padding="$3"
+                    backgroundColor={colors.shiftlyMarron + "10"}
+                    borderRadius="$2"
+                  >
+                    <XStack alignItems="center" gap="$2">
+                      <FiAlertTriangle size={16} color={colors.shiftlyMarron} />
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color={colors.shiftlyMarron}
+                      >
+                        Annulation programmée
+                      </Text>
+                    </XStack>
+                    <Text fontSize={12} color={colors.gray700}>
+                      Le {formatDate(profile.current_period_end)}
+                    </Text>
+                  </XStack>
+                )}
               </YStack>
 
               {/* Liste des fonctionnalités */}
@@ -255,8 +390,43 @@ export default function SubscriptionPage() {
                 textAlign="center"
                 marginTop="$2"
               >
-                Votre abonnement se renouvelle automatiquement tous les mois.
+                {profile?.cancel_at_period_end
+                  ? "Votre abonnement prendra fin à la date de renouvellement."
+                  : "Votre abonnement se renouvelle automatiquement tous les mois."}
               </Text>
+
+              {/* Boutons de gestion */}
+              {hasStripeSubscription && (
+                <XStack gap="$3" marginTop="$4" justifyContent="center">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onPress={openPortal}
+                    disabled={isLoadingPortal}
+                  >
+                    {isLoadingPortal ? "Chargement..." : "Gérer mon abonnement"}
+                  </Button>
+                </XStack>
+              )}
+
+              {error && (
+                <XStack
+                  gap="$3"
+                  alignItems="flex-start"
+                  padding="$4"
+                  backgroundColor={colors.shiftlyMarron + "10"}
+                  borderRadius="$4"
+                  marginTop="$4"
+                >
+                  <FiAlertTriangle size={18} color={colors.shiftlyMarron} />
+                  <YStack gap="$1" flex={1}>
+                    <Text fontWeight="700" color={colors.shiftlyMarron}>
+                      Erreur
+                    </Text>
+                    <Text color={colors.gray700}>{error}</Text>
+                  </YStack>
+                </XStack>
+              )}
             </YStack>
           </YStack>
         </ScrollView>

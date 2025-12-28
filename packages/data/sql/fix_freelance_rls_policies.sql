@@ -47,3 +47,5 @@ CREATE POLICY "Anyone can view freelance educations"
 
 
 
+
+

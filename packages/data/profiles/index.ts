@@ -8,6 +8,7 @@ export {
   uploadProfilePhoto,
   deleteProfilePhoto,
   type Profile,
+  type SubscriptionStatus,
   type CreateProfileParams,
   type UpdateProfileParams,
 } from "./profiles";

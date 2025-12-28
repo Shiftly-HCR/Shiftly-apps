@@ -1,6 +1,16 @@
 import { supabase } from "../supabaseClient";
 import { uploadImage, replaceImage, deleteImage } from "../helpers/imageUpload";
 
+export type SubscriptionStatus =
+  | "active"
+  | "trialing"
+  | "past_due"
+  | "canceled"
+  | "unpaid"
+  | "incomplete"
+  | "incomplete_expired"
+  | "paused";
+
 export interface Profile {
   id: string;
   created_at?: string;
@@ -16,6 +26,13 @@ export interface Profile {
   email?: string;
   is_premium?: boolean;
   subscription_plan_id?: string;
+  // Champs Stripe
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+  subscription_status?: SubscriptionStatus;
+  current_period_end?: string;
+  cancel_at_period_end?: boolean;
+  subscription_price_id?: string;
 }
 
 export interface CreateProfileParams {
