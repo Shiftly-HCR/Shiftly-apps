@@ -65,15 +65,25 @@ async function markEventAsProcessed(
   eventId: string,
   eventType: string
 ): Promise<void> {
-  const supabase = getSupabaseServiceRole();
-  const { error } = await supabase.from("stripe_events").insert({
-    event_id: eventId,
-    event_type: eventType,
-    processed_at: new Date().toISOString(),
-  });
+  try {
+    const supabase = getSupabaseServiceRole();
+    const { error } = await supabase.from("stripe_events").insert({
+      event_id: eventId,
+      event_type: eventType,
+      processed_at: new Date().toISOString(),
+    });
 
-  if (error) {
-    console.error("Erreur lors du marquage de l'event comme traité:", error);
+    if (error) {
+      console.error(
+        "❌ Erreur lors du marquage de l'event comme traité:",
+        error
+      );
+      // Ne pas throw pour éviter de bloquer le traitement
+    } else {
+      console.log(`✅ Event ${eventId} marqué comme traité`);
+    }
+  } catch (err) {
+    console.error("❌ Exception lors du marquage de l'event:", err);
     // Ne pas throw pour éviter de bloquer le traitement
   }
 }
@@ -102,6 +112,11 @@ async function updateProfileSubscription(
     planId?: string;
   }
 ): Promise<void> {
+  console.log(
+    `🔄 Mise à jour du profil pour l'utilisateur ${userId}:`,
+    subscriptionData
+  );
+
   const supabase = getSupabaseServiceRole();
 
   const updateData: Record<string, any> = {
@@ -139,17 +154,23 @@ async function updateProfileSubscription(
     updateData.subscription_plan_id = subscriptionData.planId;
   }
 
-  const { error } = await supabase
+  console.log(`📝 Données à mettre à jour:`, updateData);
+
+  const { data, error } = await supabase
     .from("profiles")
     .update(updateData)
-    .eq("id", userId);
+    .eq("id", userId)
+    .select();
 
   if (error) {
-    console.error("Erreur lors de la mise à jour du profil:", error);
+    console.error("❌ Erreur lors de la mise à jour du profil:", error);
+    console.error("Détails de l'erreur:", JSON.stringify(error, null, 2));
     throw new Error(
       `Erreur lors de la mise à jour du profil: ${error.message}`
     );
   }
+
+  console.log(`✅ Profil mis à jour avec succès:`, data);
 }
 
 /**
@@ -168,17 +189,46 @@ function getUserIdFromMetadata(
 export async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session
 ): Promise<void> {
-  const userId = getUserIdFromMetadata(session.metadata);
+  console.log(`🛒 Traitement checkout.session.completed: ${session.id}`);
+
+  let userId = getUserIdFromMetadata(session.metadata);
   const customerId =
     typeof session.customer === "string"
       ? session.customer
       : session.customer?.id;
 
+  console.log(`📋 Metadata de la session:`, {
+    userId,
+    customerId,
+    subscription: session.subscription,
+    metadata: session.metadata,
+  });
+
+  // Si userId n'est pas dans les metadata, essayer de le récupérer depuis customer_id
+  if (!userId && customerId) {
+    console.log(
+      `🔍 userId manquant dans metadata, recherche via customer_id: ${customerId}`
+    );
+    const supabase = getSupabaseServiceRole();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+
+    if (profile) {
+      userId = profile.id;
+      console.log(`✅ userId trouvé via customer_id: ${userId}`);
+    }
+  }
+
   if (!userId) {
     console.warn(
-      "checkout.session.completed: userId manquant dans les metadata",
+      "⚠️ checkout.session.completed: userId manquant dans les metadata et impossible de le récupérer via customer_id",
       {
         sessionId: session.id,
+        metadata: session.metadata,
+        customerId,
       }
     );
     return;
@@ -187,9 +237,13 @@ export async function handleCheckoutSessionCompleted(
   // Si c'est une session de subscription, on va mettre à jour avec subscription.created
   // Sinon, on met juste à jour le customer_id
   if (customerId) {
+    console.log(
+      `💳 Mise à jour du customer_id: ${customerId} pour l'utilisateur: ${userId}`
+    );
     await updateProfileSubscription(userId, {
       stripeCustomerId: customerId,
     });
+    console.log(`✅ Customer ID mis à jour avec succès`);
   }
 
   // Si on a le subscription_id, on peut aussi le mettre à jour
@@ -198,9 +252,13 @@ export async function handleCheckoutSessionCompleted(
       typeof session.subscription === "string"
         ? session.subscription
         : session.subscription.id;
+    console.log(
+      `📦 Mise à jour du subscription_id: ${subscriptionId} pour l'utilisateur: ${userId}`
+    );
     await updateProfileSubscription(userId, {
       stripeSubscriptionId: subscriptionId,
     });
+    console.log(`✅ Subscription ID mis à jour avec succès`);
   }
 }
 
@@ -233,7 +291,9 @@ export async function handleSubscriptionCreated(
     stripeCustomerId: customerId,
     stripeSubscriptionId: subscription.id,
     status: subscription.status as SubscriptionStatus,
-    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    currentPeriodEnd: subscription.current_period_end
+      ? new Date(subscription.current_period_end * 1000)
+      : undefined,
     cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     priceId: priceId,
     planId: planId || undefined,
@@ -291,7 +351,9 @@ export async function handleSubscriptionUpdated(
   await updateProfileSubscription(finalUserId, {
     stripeSubscriptionId: subscription.id,
     status: subscription.status as SubscriptionStatus,
-    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    currentPeriodEnd: subscription.current_period_end
+      ? new Date(subscription.current_period_end * 1000)
+      : undefined,
     cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     priceId: priceId,
     planId: planId || undefined,

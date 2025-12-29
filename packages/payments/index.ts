@@ -88,6 +88,14 @@ export async function createCheckoutSession(
           quantity: 1,
         };
 
+  // Construire les metadata (ne pas inclure userId si undefined)
+  const metadata: Stripe.MetadataParam = {
+    planId: params.planId,
+  };
+  if (params.userId) {
+    metadata.userId = params.userId;
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
@@ -97,15 +105,9 @@ export async function createCheckoutSession(
     cancel_url: params.cancelUrl,
     customer_email: params.customerEmail,
     customer: params.customerId,
-    metadata: {
-      planId: params.planId,
-      userId: params.userId,
-    },
+    metadata,
     subscription_data: {
-      metadata: {
-        planId: params.planId,
-        userId: params.userId,
-      },
+      metadata,
     },
   });
 
