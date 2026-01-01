@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
+import { X } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { colors } from "@shiftly/ui";
 import {
@@ -27,7 +28,7 @@ import {
   useUpdatePremiumStatus,
   useCurrentUser,
 } from "@/hooks";
-import { useBillingPortal } from "@/hooks/stripe";
+import { useBillingPortal, useCancelSubscription } from "@/hooks/stripe";
 import { Button } from "@shiftly/ui";
 
 const faqItems = [
@@ -51,16 +52,27 @@ const faqItems = [
 export default function SubscriptionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
+  const {
+    profile,
+    isLoading: isLoadingProfile,
+    refresh: refreshProfile,
+  } = useCurrentProfile();
   const { session } = useCurrentUser();
   const { updatePremium, isLoading: isUpdatingPremium } =
     useUpdatePremiumStatus();
   const { openPortal, isLoading: isLoadingPortal } = useBillingPortal();
+  const {
+    cancelSubscription,
+    isLoading: isCancellingSubscription,
+    error: cancelError,
+  } = useCancelSubscription();
   const [loadingPlanId, setLoadingPlanId] = useState<SubscriptionPlanId | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
   const [hasProcessedPayment, setHasProcessedPayment] = useState(false);
+  const [cancelSuccess, setCancelSuccess] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Récupérer le plan d'abonnement actuel depuis le profil
   const currentPlan =
@@ -210,6 +222,13 @@ export default function SubscriptionPage() {
   // Si l'utilisateur a un abonnement Stripe (même s'il n'est pas premium)
   const hasStripeSubscription =
     profile?.stripe_customer_id && profile?.stripe_subscription_id;
+
+  // Vérifier si l'abonnement peut être annulé
+  // Afficher le bouton si l'utilisateur a un abonnement Stripe actif et qu'il n'est pas déjà programmé pour être annulé
+  const canCancelSubscription =
+    hasStripeSubscription &&
+    profile?.subscription_status === "active" &&
+    !profile?.cancel_at_period_end;
 
   // Si l'utilisateur est premium ou a un abonnement Stripe, afficher les informations d'abonnement
   if (
@@ -397,15 +416,60 @@ export default function SubscriptionPage() {
 
               {/* Boutons de gestion */}
               {hasStripeSubscription && (
-                <XStack gap="$3" marginTop="$4" justifyContent="center">
+                <XStack
+                  gap="$3"
+                  marginTop="$4"
+                  justifyContent="center"
+                  flexWrap="wrap"
+                >
                   <Button
                     variant="primary"
                     size="md"
                     onPress={openPortal}
-                    disabled={isLoadingPortal}
+                    disabled={isLoadingPortal || isCancellingSubscription}
                   >
                     {isLoadingPortal ? "Chargement..." : "Gérer mon abonnement"}
                   </Button>
+
+                  {/* Bouton Se désabonner - seulement si l'abonnement est actif et n'est pas déjà annulé */}
+                  {canCancelSubscription && (
+                    <Button
+                      size="md"
+                      onPress={() => {
+                        console.log("🔄 Clic sur le bouton Se désabonner");
+                        setShowCancelModal(true);
+                      }}
+                      disabled={isCancellingSubscription || isLoadingPortal}
+                      style={{
+                        backgroundColor: colors.shiftlyDanger,
+                        borderColor: colors.shiftlyDanger,
+                      }}
+                    >
+                      Se désabonner
+                    </Button>
+                  )}
+                </XStack>
+              )}
+
+              {cancelSuccess && (
+                <XStack
+                  gap="$3"
+                  alignItems="flex-start"
+                  padding="$4"
+                  backgroundColor={colors.shiftlyViolet + "10"}
+                  borderRadius="$4"
+                  marginTop="$4"
+                >
+                  <FiCheck size={18} color={colors.shiftlyViolet} />
+                  <YStack gap="$1" flex={1}>
+                    <Text fontWeight="700" color={colors.shiftlyViolet}>
+                      Annulation programmée
+                    </Text>
+                    <Text color={colors.gray700}>
+                      Votre abonnement sera annulé à la fin de la période
+                      actuelle.
+                    </Text>
+                  </YStack>
                 </XStack>
               )}
 
@@ -430,6 +494,134 @@ export default function SubscriptionPage() {
             </YStack>
           </YStack>
         </ScrollView>
+
+        {/* Modal de confirmation de désabonnement */}
+        {showCancelModal && (
+          <YStack
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            backgroundColor="rgba(0, 0, 0, 0.5)"
+            alignItems="center"
+            justifyContent="center"
+            zIndex={1000}
+            onPress={() => {
+              console.log("❌ Fermeture de la modal (overlay)");
+              setShowCancelModal(false);
+            }}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          >
+            <YStack
+              backgroundColor="white"
+              borderRadius="$4"
+              padding="$6"
+              maxWidth={500}
+              width="90%"
+              gap="$4"
+              onPress={(e) => e.stopPropagation()}
+            >
+              <XStack alignItems="center" justifyContent="space-between">
+                <Text fontSize={20} fontWeight="700" color={colors.gray900}>
+                  Confirmer l'annulation
+                </Text>
+                <XStack
+                  onPress={() => {
+                    console.log("❌ Annulation de la modal de désabonnement");
+                    setShowCancelModal(false);
+                  }}
+                  cursor="pointer"
+                  padding="$2"
+                  hoverStyle={{ backgroundColor: colors.gray100 }}
+                  borderRadius="$2"
+                >
+                  <X size={20} color={colors.gray700} />
+                </XStack>
+              </XStack>
+
+              <Text fontSize={16} color={colors.gray700} lineHeight={24}>
+                Êtes-vous sûr de vouloir annuler votre abonnement ? Votre
+                abonnement restera actif jusqu'à la fin de la période actuelle (
+                {profile?.current_period_end
+                  ? formatDate(profile.current_period_end)
+                  : "la fin du mois"}
+                ), puis sera annulé automatiquement.
+              </Text>
+
+              <XStack gap="$3" justifyContent="flex-end" marginTop="$2">
+                <Button
+                  variant="outline"
+                  size="md"
+                  onPress={() => {
+                    console.log(
+                      "❌ Annulation de la modal de désabonnement (bouton Annuler)"
+                    );
+                    setShowCancelModal(false);
+                  }}
+                  disabled={isCancellingSubscription}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  size="md"
+                  onPress={async () => {
+                    console.log(
+                      "✅ Confirmation de l'annulation de l'abonnement"
+                    );
+                    setShowCancelModal(false);
+                    setCancelSuccess(false);
+                    setError(null);
+
+                    try {
+                      console.log(
+                        "📤 Appel de l'API pour annuler l'abonnement..."
+                      );
+                      const result = await cancelSubscription();
+                      console.log("📥 Résultat de l'annulation:", result);
+
+                      if (result.success) {
+                        console.log("✅ Abonnement annulé avec succès");
+                        setCancelSuccess(true);
+                        // Rafraîchir le profil pour voir les changements
+                        await refreshProfile();
+                        console.log("🔄 Profil rafraîchi");
+                      } else {
+                        console.error(
+                          "❌ Erreur lors de l'annulation:",
+                          result.error
+                        );
+                        setError(result.error || "Erreur lors de l'annulation");
+                      }
+                    } catch (err) {
+                      console.error("❌ Erreur lors de l'annulation:", err);
+                      setError(
+                        err instanceof Error
+                          ? err.message
+                          : "Une erreur est survenue lors de l'annulation"
+                      );
+                    }
+                  }}
+                  disabled={isCancellingSubscription}
+                  style={{
+                    backgroundColor: colors.shiftlyDanger,
+                    borderColor: colors.shiftlyDanger,
+                  }}
+                >
+                  {isCancellingSubscription
+                    ? "Annulation..."
+                    : "Confirmer l'annulation"}
+                </Button>
+              </XStack>
+            </YStack>
+          </YStack>
+        )}
       </AppLayout>
     );
   }

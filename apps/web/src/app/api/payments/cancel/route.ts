@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
  * Crée un client Supabase côté serveur pour récupérer l'utilisateur
  */
 function createServerSupabaseClient(req: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
   const supabaseAnonKey =
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.SUPABASE_ANON_KEY ||
@@ -58,7 +59,10 @@ export async function POST(req: NextRequest) {
         } = await supabase.auth.getUser(token);
         user = authUser;
       } catch (err) {
-        console.error("Erreur lors de la récupération de l'utilisateur avec token:", err);
+        console.error(
+          "Erreur lors de la récupération de l'utilisateur avec token:",
+          err
+        );
       }
     }
 
@@ -98,7 +102,7 @@ export async function POST(req: NextRequest) {
     // Récupérer le profil pour obtenir le stripe_subscription_id
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("stripe_subscription_id")
+      .select("stripe_subscription_id, stripe_customer_id, subscription_status")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -110,7 +114,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log("📋 Profil récupéré:", {
+      hasProfile: !!profile,
+      stripe_subscription_id: profile?.stripe_subscription_id,
+      stripe_customer_id: profile?.stripe_customer_id,
+      subscription_status: profile?.subscription_status,
+    });
+
     if (!profile?.stripe_subscription_id) {
+      console.warn("⚠️ Aucun stripe_subscription_id trouvé dans le profil");
       return NextResponse.json(
         { error: "Aucun abonnement actif trouvé" },
         { status: 400 }
@@ -135,7 +147,9 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "Votre abonnement sera annulé à la fin de la période actuelle",
       cancel_at_period_end: subscription.cancel_at_period_end,
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_end: new Date(
+        subscription.current_period_end * 1000
+      ).toISOString(),
     });
   } catch (error) {
     console.error("Erreur lors de l'annulation de l'abonnement:", error);
@@ -150,4 +164,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

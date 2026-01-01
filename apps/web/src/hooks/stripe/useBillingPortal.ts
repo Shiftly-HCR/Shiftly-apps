@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@shiftly/data";
 
 /**
  * Hook pour créer une session Stripe Billing Portal
@@ -15,18 +16,31 @@ export function useBillingPortal() {
     setError(null);
 
     try {
+      // Récupérer le token depuis la session pour l'authentification
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
+
       const response = await fetch("/api/payments/portal", {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Impossible de créer la session de gestion");
+        throw new Error(
+          data.error || "Impossible de créer la session de gestion"
+        );
       }
 
       return data.url || null;
@@ -34,7 +48,10 @@ export function useBillingPortal() {
       const errorMessage =
         err instanceof Error ? err.message : "Une erreur est survenue";
       setError(errorMessage);
-      console.error("Erreur lors de la création de la session Billing Portal:", err);
+      console.error(
+        "Erreur lors de la création de la session Billing Portal:",
+        err
+      );
       return null;
     } finally {
       setIsLoading(false);
@@ -54,7 +71,3 @@ export function useBillingPortal() {
     error,
   };
 }
-
-
-
-
