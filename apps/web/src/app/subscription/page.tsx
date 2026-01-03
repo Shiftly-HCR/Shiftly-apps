@@ -60,7 +60,11 @@ export default function SubscriptionPage() {
   const { session } = useCurrentUser();
   const { updatePremium, isLoading: isUpdatingPremium } =
     useUpdatePremiumStatus();
-  const { openPortal, isLoading: isLoadingPortal } = useBillingPortal();
+  const {
+    openPortal,
+    isLoading: isLoadingPortal,
+    error: portalError,
+  } = useBillingPortal();
   const {
     cancelSubscription,
     isLoading: isCancellingSubscription,
@@ -224,11 +228,12 @@ export default function SubscriptionPage() {
     profile?.stripe_customer_id && profile?.stripe_subscription_id;
 
   // Vérifier si l'abonnement peut être annulé
-  // Afficher le bouton si l'utilisateur a un abonnement Stripe actif et qu'il n'est pas déjà programmé pour être annulé
+  // Afficher le bouton si l'utilisateur a un abonnement (premium ou Stripe actif) et qu'il n'est pas déjà programmé pour être annulé
   const canCancelSubscription =
-    hasStripeSubscription &&
-    profile?.subscription_status === "active" &&
-    !profile?.cancel_at_period_end;
+    profile?.is_premium ||
+    (hasStripeSubscription &&
+      profile?.subscription_status === "active" &&
+      !profile?.cancel_at_period_end);
 
   // Si l'utilisateur est premium ou a un abonnement Stripe, afficher les informations d'abonnement
   if (
@@ -414,8 +419,8 @@ export default function SubscriptionPage() {
                   : "Votre abonnement se renouvelle automatiquement tous les mois."}
               </Text>
 
-              {/* Boutons de gestion */}
-              {hasStripeSubscription && (
+              {/* Boutons de gestion - visibles pour tous les utilisateurs avec un abonnement */}
+              {(profile?.is_premium || hasStripeSubscription) && (
                 <XStack
                   gap="$3"
                   marginTop="$4"
@@ -425,7 +430,25 @@ export default function SubscriptionPage() {
                   <Button
                     variant="primary"
                     size="md"
-                    onPress={openPortal}
+                    onPress={async () => {
+                      console.log(
+                        "🔄 Clic sur le bouton 'Gérer mon abonnement'"
+                      );
+                      setError(null);
+                      try {
+                        await openPortal();
+                      } catch (err) {
+                        console.error(
+                          "❌ Erreur lors de l'ouverture du portail:",
+                          err
+                        );
+                        setError(
+                          err instanceof Error
+                            ? err.message
+                            : "Une erreur est survenue lors de l'ouverture du portail"
+                        );
+                      }
+                    }}
                     disabled={isLoadingPortal || isCancellingSubscription}
                   >
                     {isLoadingPortal ? "Chargement..." : "Gérer mon abonnement"}
@@ -473,7 +496,7 @@ export default function SubscriptionPage() {
                 </XStack>
               )}
 
-              {error && (
+              {(error || portalError) && (
                 <XStack
                   gap="$3"
                   alignItems="flex-start"
@@ -487,7 +510,7 @@ export default function SubscriptionPage() {
                     <Text fontWeight="700" color={colors.shiftlyMarron}>
                       Erreur
                     </Text>
-                    <Text color={colors.gray700}>{error}</Text>
+                    <Text color={colors.gray700}>{error || portalError}</Text>
                   </YStack>
                 </XStack>
               )}
