@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient } from "@shiftly/payments";
 import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,8 +22,6 @@ function createServerSupabaseClient(req: NextRequest) {
   }
 
   // Créer un client qui peut lire les cookies de la requête
-  const cookieStore = cookies();
-  
   // Supabase stocke les cookies avec des noms spécifiques
   // On crée un client avec les headers de la requête pour passer les cookies
   const client = createClient(supabaseUrl, supabaseAnonKey, {

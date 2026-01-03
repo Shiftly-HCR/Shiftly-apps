@@ -29,21 +29,37 @@ export function useBillingPortal() {
         headers["Authorization"] = `Bearer ${session.access_token}`;
       }
 
+      console.log("📤 Création de la session Billing Portal...");
       const response = await fetch("/api/payments/portal", {
         method: "POST",
         credentials: "include",
         headers,
       });
 
-      const data = await response.json();
+      console.log("📥 Réponse reçue, status:", response.status);
+
+      const data = await response.json().catch((jsonErr) => {
+        console.error("Erreur lors du parsing JSON:", jsonErr);
+        return { error: "Erreur lors de la lecture de la réponse" };
+      });
+
+      console.log("📋 Données reçues:", data);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Impossible de créer la session de gestion"
-        );
+        const errorMessage =
+          data?.error ||
+          `Erreur ${response.status}: Impossible de créer la session de gestion`;
+        console.error("❌ Erreur API:", errorMessage);
+        throw new Error(errorMessage);
       }
 
-      return data.url || null;
+      if (!data?.url) {
+        console.error("❌ Pas d'URL dans la réponse:", data);
+        throw new Error("Aucune URL de portail reçue");
+      }
+
+      console.log("✅ URL du portail reçue:", data.url);
+      return data.url;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Une erreur est survenue";
@@ -61,7 +77,11 @@ export function useBillingPortal() {
   const openPortal = async (): Promise<void> => {
     const url = await createPortalSession();
     if (url) {
+      console.log("🔄 Redirection vers le portail Stripe:", url);
       window.location.href = url;
+    } else {
+      console.error("❌ Aucune URL de portail reçue");
+      // L'erreur est déjà définie dans createPortalSession
     }
   };
 
