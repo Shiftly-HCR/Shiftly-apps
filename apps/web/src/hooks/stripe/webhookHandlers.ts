@@ -155,6 +155,7 @@ async function updateProfileSubscription(
   }
 
   console.log(`📝 Données à mettre à jour:`, updateData);
+  console.log(`🔍 UserId pour la mise à jour:`, userId);
 
   const { data, error } = await supabase
     .from("profiles")
@@ -162,12 +163,125 @@ async function updateProfileSubscription(
     .eq("id", userId)
     .select();
 
+  console.log(`📊 Résultat de la mise à jour:`, {
+    data,
+    error,
+    dataLength: data?.length,
+  });
+
   if (error) {
     console.error("❌ Erreur lors de la mise à jour du profil:", error);
     console.error("Détails de l'erreur:", JSON.stringify(error, null, 2));
+    console.error("UserId:", userId);
+    console.error("UpdateData:", JSON.stringify(updateData, null, 2));
     throw new Error(
       `Erreur lors de la mise à jour du profil: ${error.message}`
     );
+  }
+
+  if (!data || data.length === 0) {
+    console.warn(
+      `⚠️ Aucune ligne mise à jour pour l'utilisateur ${userId}. Le profil existe-t-il ?`
+    );
+    // Vérifier si le profil existe
+    const { data: checkProfile, error: checkError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error(`❌ Erreur lors de la vérification du profil:`, checkError);
+      throw new Error(
+        `Erreur lors de la vérification du profil: ${checkError.message}`
+      );
+    }
+
+    if (!checkProfile) {
+      console.warn(
+        `⚠️ Profil introuvable pour l'utilisateur ${userId}. Tentative de création...`
+      );
+
+      // Créer le profil minimal avec un email temporaire
+      // Le trigger devrait normalement créer le profil, mais si ce n'est pas le cas, on le crée ici
+      const { data: newProfile, error: createError } = await supabase
+        .from("profiles")
+        .insert({
+          id: userId,
+          email: `user-${userId.substring(0, 8)}@shiftly.app`, // Email temporaire
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error(`❌ Erreur lors de la création du profil:`, createError);
+        // Si c'est une erreur de contrainte unique, le profil existe peut-être déjà
+        // Réessayer la mise à jour
+        if (createError.code === "23505") {
+          console.log(
+            `ℹ️ Le profil existe peut-être déjà (contrainte unique). Réessai de la mise à jour...`
+          );
+          const { data: retryData, error: retryError } = await supabase
+            .from("profiles")
+            .update(updateData)
+            .eq("id", userId)
+            .select();
+
+          if (retryError) {
+            throw new Error(
+              `Erreur lors de la mise à jour du profil: ${retryError.message}`
+            );
+          }
+
+          if (!retryData || retryData.length === 0) {
+            throw new Error(
+              `Le profil existe mais la mise à jour n'a modifié aucune ligne. Vérifiez les permissions RLS.`
+            );
+          }
+
+          console.log(`✅ Profil mis à jour avec succès:`, retryData);
+          return;
+        }
+        throw new Error(
+          `Impossible de créer le profil: ${createError.message}`
+        );
+      }
+
+      console.log(`✅ Profil créé avec succès:`, newProfile);
+
+      // Réessayer la mise à jour
+      const { data: retryData, error: retryError } = await supabase
+        .from("profiles")
+        .update(updateData)
+        .eq("id", userId)
+        .select();
+
+      if (retryError) {
+        throw new Error(
+          `Erreur lors de la mise à jour du profil après création: ${retryError.message}`
+        );
+      }
+
+      if (!retryData || retryData.length === 0) {
+        throw new Error(
+          `Le profil a été créé mais la mise à jour n'a modifié aucune ligne. Vérifiez les permissions RLS.`
+        );
+      }
+
+      console.log(
+        `✅ Profil mis à jour avec succès après création:`,
+        retryData
+      );
+      return;
+    } else {
+      // Le profil existe mais la mise à jour n'a rien modifié
+      // Cela peut arriver si toutes les valeurs sont identiques
+      console.log(
+        `ℹ️ Le profil existe mais aucune modification n'était nécessaire`
+      );
+    }
   }
 
   console.log(`✅ Profil mis à jour avec succès:`, data);
@@ -285,12 +399,76 @@ export async function handleSubscriptionCreated(
   }
 
   const priceId = subscription.items.data[0]?.price.id;
-  const planId = subscription.metadata?.planId || null;
+  let planId = subscription.metadata?.planId || null;
+  const subscriptionStatus = subscription.status as SubscriptionStatus;
+
+  // Si le planId n'est pas dans les métadonnées de la subscription, essayer de le récupérer depuis le price metadata
+  if (!planId) {
+    const priceMetadata = subscription.items.data[0]?.price.metadata;
+    if (priceMetadata?.planId) {
+      planId = priceMetadata.planId;
+      console.log(
+        `📋 [customer.subscription.created] planId trouvé dans price metadata: ${planId}`
+      );
+    }
+  }
+
+  console.log(`📋 [customer.subscription.created] Données extraites:`, {
+    subscriptionId: subscription.id,
+    userId,
+    customerId,
+    priceId,
+    planId,
+    status: subscriptionStatus,
+    metadata: subscription.metadata,
+    priceMetadata: subscription.items.data[0]?.price.metadata,
+  });
+
+  // Vérifier si le profil a déjà un statut "active" (cas où subscription.updated a été appelé avant)
+  // Si c'est le cas, ne pas écraser avec un statut "incomplete"
+  const supabase = getSupabaseServiceRole();
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("subscription_status, subscription_plan_id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  console.log(
+    `📋 [customer.subscription.created] Profil existant:`,
+    existingProfile
+  );
+
+  // Si le profil existe déjà avec un statut "active" et un planId, ne pas écraser
+  if (
+    existingProfile?.subscription_status === "active" &&
+    existingProfile?.subscription_plan_id
+  ) {
+    console.log(
+      `⚠️ [customer.subscription.created] Profil déjà actif avec planId, mise à jour partielle uniquement`
+    );
+    // Mettre à jour uniquement les champs manquants sans écraser le statut
+    const updateData: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!existingProfile.subscription_plan_id && planId) {
+      updateData.subscription_plan_id = planId;
+    }
+    if (priceId) {
+      updateData.subscription_price_id = priceId;
+    }
+    if (customerId) {
+      updateData.stripe_customer_id = customerId;
+    }
+
+    await supabase.from("profiles").update(updateData).eq("id", userId);
+    return;
+  }
 
   await updateProfileSubscription(userId, {
     stripeCustomerId: customerId,
     stripeSubscriptionId: subscription.id,
-    status: subscription.status as SubscriptionStatus,
+    status: subscriptionStatus,
     currentPeriodEnd: subscription.current_period_end
       ? new Date(subscription.current_period_end * 1000)
       : undefined,
@@ -302,62 +480,165 @@ export async function handleSubscriptionCreated(
 
 /**
  * Handler pour customer.subscription.updated
+ * Met à jour les informations d'abonnement dans la table profiles
+ * Source de vérité: Supabase (synchronisé depuis Stripe)
  */
 export async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription
 ): Promise<void> {
-  const userId = getUserIdFromMetadata(subscription.metadata);
+  console.log(
+    `🔄 [customer.subscription.updated] Traitement de l'abonnement: ${subscription.id}`
+  );
+
+  // Priorité 1: userId depuis subscription.metadata.userId
+  const userIdFromMetadata = getUserIdFromMetadata(subscription.metadata);
   const customerId =
     typeof subscription.customer === "string"
       ? subscription.customer
       : subscription.customer?.id;
 
-  if (!userId && !customerId) {
-    console.warn(
-      "customer.subscription.updated: userId et customerId manquants",
-      {
-        subscriptionId: subscription.id,
-      }
-    );
-    return;
-  }
+  console.log(`📋 [customer.subscription.updated] Identifiants:`, {
+    subscriptionId: subscription.id,
+    userIdFromMetadata,
+    customerId,
+    metadata: subscription.metadata,
+  });
 
-  // Si on n'a pas userId dans metadata, on le récupère depuis le customer_id
-  let finalUserId = userId;
+  // Si on n'a pas userId dans metadata, fallback: récupérer via stripe_customer_id
+  let finalUserId = userIdFromMetadata;
   if (!finalUserId && customerId) {
+    console.log(
+      `🔍 [customer.subscription.updated] userId manquant dans metadata, recherche via stripe_customer_id: ${customerId}`
+    );
     const supabase = getSupabaseServiceRole();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("id")
       .eq("stripe_customer_id", customerId)
-      .single();
-    finalUserId = data?.id || null;
+      .maybeSingle();
+
+    if (error) {
+      console.error(
+        `❌ [customer.subscription.updated] Erreur lors de la recherche du profil:`,
+        error
+      );
+    }
+
+    if (data) {
+      finalUserId = data.id;
+      console.log(
+        `✅ [customer.subscription.updated] userId trouvé via stripe_customer_id: ${finalUserId}`
+      );
+    }
   }
 
   if (!finalUserId) {
     console.warn(
-      "customer.subscription.updated: impossible de trouver l'utilisateur",
+      `⚠️ [customer.subscription.updated] Impossible de trouver l'utilisateur`,
       {
         subscriptionId: subscription.id,
         customerId,
+        userIdFromMetadata,
       }
     );
     return;
   }
 
+  // Préparer les données à mettre à jour
+  const subscriptionStatus = subscription.status as SubscriptionStatus;
+  const currentPeriodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000)
+    : undefined;
+  const cancelAtPeriodEnd = subscription.cancel_at_period_end || false;
   const priceId = subscription.items.data[0]?.price.id;
-  const planId = subscription.metadata?.planId || null;
 
-  await updateProfileSubscription(finalUserId, {
-    stripeSubscriptionId: subscription.id,
-    status: subscription.status as SubscriptionStatus,
-    currentPeriodEnd: subscription.current_period_end
-      ? new Date(subscription.current_period_end * 1000)
-      : undefined,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
-    priceId: priceId,
-    planId: planId || undefined,
+  // Récupérer le planId depuis les métadonnées ou depuis le profil existant
+  let planId = subscription.metadata?.planId || null;
+
+  console.log(
+    `📋 [customer.subscription.updated] planId depuis metadata:`,
+    planId
+  );
+  console.log(
+    `📋 [customer.subscription.updated] metadata complète:`,
+    subscription.metadata
+  );
+  console.log(
+    `📋 [customer.subscription.updated] subscription.items:`,
+    subscription.items.data.map((item) => ({
+      priceId: item.price.id,
+      priceMetadata: item.price.metadata,
+    }))
+  );
+
+  // Si le planId n'est pas dans les métadonnées, essayer de le récupérer depuis le profil existant
+  if (!planId) {
+    console.log(
+      `🔍 [customer.subscription.updated] planId manquant dans metadata, recherche dans le profil existant`
+    );
+    const supabase = getSupabaseServiceRole();
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("subscription_plan_id")
+      .eq("id", finalUserId)
+      .maybeSingle();
+
+    if (existingProfile?.subscription_plan_id) {
+      planId = existingProfile.subscription_plan_id;
+      console.log(
+        `📋 [customer.subscription.updated] planId récupéré depuis le profil existant: ${planId}`
+      );
+    } else {
+      console.warn(
+        `⚠️ [customer.subscription.updated] planId introuvable dans metadata et profil existant. Subscription ID: ${subscription.id}`
+      );
+      // Essayer de récupérer depuis le price metadata si disponible
+      const priceMetadata = subscription.items.data[0]?.price.metadata;
+      if (priceMetadata?.planId) {
+        planId = priceMetadata.planId;
+        console.log(
+          `📋 [customer.subscription.updated] planId trouvé dans price metadata: ${planId}`
+        );
+      }
+    }
+  }
+
+  console.log(`📝 [customer.subscription.updated] Données à mettre à jour:`, {
+    userId: finalUserId,
+    subscriptionId: subscription.id,
+    status: subscriptionStatus,
+    cancelAtPeriodEnd,
+    currentPeriodEnd: currentPeriodEnd?.toISOString(),
+    priceId,
+    planId,
   });
+
+  try {
+    await updateProfileSubscription(finalUserId, {
+      stripeSubscriptionId: subscription.id,
+      status: subscriptionStatus,
+      currentPeriodEnd: currentPeriodEnd,
+      cancelAtPeriodEnd: cancelAtPeriodEnd,
+      priceId: priceId,
+      planId: planId || undefined,
+    });
+
+    console.log(
+      `✅ [customer.subscription.updated] Profil mis à jour avec succès pour l'utilisateur ${finalUserId}`,
+      {
+        subscriptionId: subscription.id,
+        status: subscriptionStatus,
+        cancelAtPeriodEnd,
+        currentPeriodEnd: currentPeriodEnd?.toISOString(),
+      }
+    );
+  } catch (error) {
+    console.error(
+      `❌ [customer.subscription.updated] Erreur lors de la mise à jour du profil:`,
+      error
+    );
+    throw error; // Propager l'erreur pour que Stripe puisse réessayer
+  }
 }
 
 /**

@@ -106,6 +106,9 @@ export async function createCheckoutSession(
     metadata.userId = params.userId;
   }
 
+  console.log(`📋 [createCheckoutSession] Métadonnées créées:`, metadata);
+  console.log(`📋 [createCheckoutSession] PlanId:`, params.planId);
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
@@ -117,9 +120,11 @@ export async function createCheckoutSession(
     customer: params.customerId,
     metadata,
     subscription_data: {
-      metadata,
+      metadata, // IMPORTANT: Les métadonnées doivent être dans subscription_data pour être propagées à la subscription
     },
   });
+
+  console.log(`📋 [createCheckoutSession] Session créée avec metadata:`, session.metadata);
 
   return {
     url: session.url,
