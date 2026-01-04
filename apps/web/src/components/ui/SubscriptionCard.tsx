@@ -15,6 +15,8 @@ interface SubscriptionCardProps {
   popular?: boolean;
   onSubscribe: (planId: string) => void;
   isLoading?: boolean;
+  billingPeriod?: "monthly" | "annual";
+  monthlyPrice?: number; // Prix mensuel équivalent pour les plans annuels
 }
 
 /**
@@ -30,6 +32,8 @@ export function SubscriptionCard({
   popular = false,
   onSubscribe,
   isLoading = false,
+  billingPeriod = "monthly",
+  monthlyPrice,
 }: SubscriptionCardProps) {
   return (
     <YStack
@@ -97,18 +101,44 @@ export function SubscriptionCard({
         </YStack>
 
         {/* Prix */}
-        <YStack alignItems="center" gap="$1">
+        <YStack alignItems="center" gap="$2">
+          {billingPeriod === "annual" && monthlyPrice && (
+            <XStack
+              paddingHorizontal="$3"
+              paddingVertical="$1"
+              backgroundColor={colors.shiftlyViolet + "15"}
+              borderRadius="$3"
+              gap="$2"
+            >
+              <Text fontSize={12} fontWeight="600" color={colors.shiftlyViolet}>
+                💰 Économisez 2 mois
+              </Text>
+            </XStack>
+          )}
           <XStack alignItems="baseline" gap="$1">
             <Text fontSize={48} fontWeight="700" color={colors.gray900}>
-              {price}€
+              {billingPeriod === "annual" ? price : price}€
             </Text>
             <Text fontSize={18} color={colors.gray700}>
               TTC
             </Text>
           </XStack>
-          <Text fontSize={14} color={colors.gray500}>
-            par mois
-          </Text>
+          {billingPeriod === "annual" ? (
+            <YStack alignItems="center" gap="$1">
+              <Text fontSize={14} color={colors.gray500}>
+                par an
+              </Text>
+              {monthlyPrice && (
+                <Text fontSize={14} color={colors.gray700} fontWeight="600">
+                  Soit {monthlyPrice.toFixed(2)}€ / mois
+                </Text>
+              )}
+            </YStack>
+          ) : (
+            <Text fontSize={14} color={colors.gray500}>
+              par mois
+            </Text>
+          )}
         </YStack>
 
         {/* Liste des fonctionnalités */}

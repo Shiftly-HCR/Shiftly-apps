@@ -22,6 +22,7 @@ import {
   SUBSCRIPTION_PLANS,
   subscriptionPlansById,
   type SubscriptionPlanId,
+  type BillingPeriod,
 } from "@shiftly/payments/plans";
 import {
   useCurrentProfile,
@@ -77,6 +78,7 @@ export default function SubscriptionPage() {
   const [hasProcessedPayment, setHasProcessedPayment] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("annual");
 
   // Récupérer le plan d'abonnement actuel depuis le profil
   const currentPlan =
@@ -666,6 +668,89 @@ export default function SubscriptionPage() {
             align="center"
           />
 
+          {/* Toggle Mensuelle/Annuelle */}
+          <YStack alignItems="center" gap="$2" width="100%">
+            <XStack
+              position="relative"
+              backgroundColor={colors.shiftlyVioletLight}
+              borderRadius="$6"
+              padding={4}
+              width={280}
+              alignSelf="center"
+            >
+              {/* Fond blanc qui se déplace */}
+              <XStack
+                position="absolute"
+                backgroundColor={colors.white}
+                borderRadius="$5"
+                width={136}
+                height="calc(100% - 8px)"
+                left={billingPeriod === "monthly" ? 4 : 140}
+                top={4}
+                borderWidth={1}
+                borderColor={colors.shiftlyViolet}
+                shadowColor="rgba(0, 0, 0, 0.1)"
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={1}
+                shadowRadius={4}
+                style={{
+                  transition: "left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              />
+
+              {/* Options */}
+              <XStack width="100%" position="relative" zIndex={1}>
+                <XStack
+                  flex={1}
+                  alignItems="center"
+                  justifyContent="center"
+                  paddingVertical={12}
+                  paddingHorizontal={16}
+                  onPress={() => setBillingPeriod("monthly")}
+                  cursor="pointer"
+                >
+                  <Text
+                    fontSize={16}
+                    fontWeight={billingPeriod === "monthly" ? "600" : "400"}
+                    color={
+                      billingPeriod === "monthly"
+                        ? colors.shiftlyViolet
+                        : colors.gray700
+                    }
+                  >
+                    Mensuelle
+                  </Text>
+                </XStack>
+                <XStack
+                  flex={1}
+                  alignItems="center"
+                  justifyContent="center"
+                  paddingVertical={12}
+                  paddingHorizontal={16}
+                  onPress={() => setBillingPeriod("annual")}
+                  cursor="pointer"
+                >
+                  <Text
+                    fontSize={16}
+                    fontWeight={billingPeriod === "annual" ? "600" : "400"}
+                    color={
+                      billingPeriod === "annual"
+                        ? colors.shiftlyViolet
+                        : colors.gray700
+                    }
+                  >
+                    Annuelle
+                  </Text>
+                </XStack>
+              </XStack>
+            </XStack>
+            {billingPeriod === "annual" && (
+              <Text fontSize={14} color={colors.shiftlyViolet} fontWeight="600">
+                💰 Économisez 2 mois avec l'abonnement annuel !
+              </Text>
+            )}
+          </YStack>
+
           {/* Cartes d'abonnement */}
           <XStack
             flexWrap="wrap"
@@ -674,7 +759,37 @@ export default function SubscriptionPage() {
             alignItems="stretch"
             marginTop="$4"
           >
-            {SUBSCRIPTION_PLANS.map((plan) => (
+            {SUBSCRIPTION_PLANS.filter((plan) => {
+              // Filtrer les plans selon le rôle de l'utilisateur
+              const userRole = profile?.role || "recruiter"; // Par défaut, recruteur
+
+              // Filtrer selon la période de facturation
+              if (plan.billingPeriod !== billingPeriod) {
+                return false;
+              }
+
+              if (userRole === "freelance") {
+                // Les freelances voient uniquement les plans freelance
+                if (billingPeriod === "monthly") {
+                  return (
+                    plan.id === "freelance-student" ||
+                    plan.id === "freelance-classic"
+                  );
+                } else {
+                  return (
+                    plan.id === "freelance-student-annual" ||
+                    plan.id === "freelance-classic-annual"
+                  );
+                }
+              } else {
+                // Les recruteurs voient uniquement le plan establishment
+                if (billingPeriod === "monthly") {
+                  return plan.id === "establishment";
+                } else {
+                  return plan.id === "establishment-annual";
+                }
+              }
+            }).map((plan) => (
               <SubscriptionCard
                 key={plan.id}
                 id={plan.id}
@@ -682,9 +797,11 @@ export default function SubscriptionPage() {
                 price={plan.price}
                 description={plan.description}
                 icon={
-                  plan.id === "establishment" ? (
+                  plan.id === "establishment" ||
+                  plan.id === "establishment-annual" ? (
                     <FiHome size={32} color={colors.shiftlyViolet} />
-                  ) : plan.id === "freelance-student" ? (
+                  ) : plan.id === "freelance-student" ||
+                    plan.id === "freelance-student-annual" ? (
                     <FiUser size={32} color={colors.shiftlyViolet} />
                   ) : (
                     <FiBriefcase size={32} color={colors.shiftlyViolet} />
@@ -696,6 +813,8 @@ export default function SubscriptionPage() {
                   handleSubscribe(planId as SubscriptionPlanId)
                 }
                 isLoading={loadingPlanId === plan.id}
+                billingPeriod={plan.billingPeriod}
+                monthlyPrice={plan.monthlyPrice}
               />
             ))}
           </XStack>

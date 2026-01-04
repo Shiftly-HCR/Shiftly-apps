@@ -16,10 +16,16 @@ function getPriceId(planId: SubscriptionPlanId): string | undefined {
   switch (planId) {
     case "establishment":
       return process.env.STRIPE_PRICE_ESTABLISHMENT;
+    case "establishment-annual":
+      return process.env.STRIPE_PRICE_ESTABLISHMENT_ANNUAL;
     case "freelance-student":
       return process.env.STRIPE_PRICE_FREELANCE_STUDENT;
+    case "freelance-student-annual":
+      return process.env.STRIPE_PRICE_FREELANCE_STUDENT_ANNUAL;
     case "freelance-classic":
       return process.env.STRIPE_PRICE_FREELANCE_CLASSIC;
+    case "freelance-classic-annual":
+      return process.env.STRIPE_PRICE_FREELANCE_CLASSIC_ANNUAL;
     default:
       return undefined;
   }
@@ -68,6 +74,10 @@ export async function createCheckoutSession(
 
   const priceId = getPriceId(params.planId);
 
+  // Déterminer l'intervalle de facturation selon le plan
+  const billingInterval: "month" | "year" =
+    plan.billingPeriod === "annual" ? "year" : "month";
+
   const lineItem: Stripe.Checkout.SessionCreateParams.LineItem =
     priceId !== undefined
       ? {
@@ -79,10 +89,10 @@ export async function createCheckoutSession(
             currency: plan.currency,
             unit_amount: plan.priceCents,
             product_data: {
-              name: `Shiftly - ${plan.name}`,
+              name: `Shiftly - ${plan.name}${plan.billingPeriod === "annual" ? " (Annuel)" : ""}`,
             },
             recurring: {
-              interval: "month",
+              interval: billingInterval,
             },
           },
           quantity: 1,
