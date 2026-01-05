@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { signUp } from "@shiftly/data";
 import { useSessionContext } from "@/providers/SessionProvider";
 
@@ -10,7 +9,6 @@ import { useSessionContext } from "@/providers/SessionProvider";
  * Gère les champs du formulaire, la validation et la soumission
  */
 export function useRegisterPage() {
-  const router = useRouter();
   const { refresh } = useSessionContext();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -66,14 +64,9 @@ export function useRegisterPage() {
       // Le cache contient déjà le profil, pas besoin d'appeler getCurrentProfile()
       await refresh();
 
-      // Attendre un peu pour que le cache soit mis à jour
-      // Le SessionProvider s'abonne déjà à onAuthStateChange, donc le cache sera mis à jour automatiquement
-      // On utilise un petit délai pour s'assurer que le cache est prêt
-      setTimeout(() => {
-        // Le cache sera mis à jour par onAuthStateChange dans SessionProvider
-        // On redirige vers /home par défaut, le cache déterminera la bonne route
-        router.push("/home");
-      }, 100);
+      // Utiliser window.location.href pour forcer un rechargement complet
+      // Cela garantit que toutes les données sont rechargées et que le cache Next.js est invalidé
+      window.location.href = "/home";
     } else {
       setError(result.error || "Une erreur est survenue");
     }
