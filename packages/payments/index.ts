@@ -106,8 +106,21 @@ export async function createCheckoutSession(
     metadata.userId = params.userId;
   }
 
+  // Construire subscription_data.metadata avec userId et planId
+  const subscriptionMetadata: Stripe.MetadataParam = {
+    planId: params.planId,
+  };
+  if (params.userId) {
+    subscriptionMetadata.userId = params.userId;
+  }
+
   console.log(`📋 [createCheckoutSession] Métadonnées créées:`, metadata);
+  console.log(
+    `📋 [createCheckoutSession] subscription_data.metadata:`,
+    subscriptionMetadata
+  );
   console.log(`📋 [createCheckoutSession] PlanId:`, params.planId);
+  console.log(`📋 [createCheckoutSession] userId:`, params.userId);
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -118,13 +131,17 @@ export async function createCheckoutSession(
     cancel_url: params.cancelUrl,
     customer_email: params.customerEmail,
     customer: params.customerId,
-    metadata,
+    client_reference_id: params.userId || undefined, // Important: pour retrouver userId dans les webhooks
+    metadata, // Metadata au niveau session (double sécurité)
     subscription_data: {
-      metadata, // IMPORTANT: Les métadonnées doivent être dans subscription_data pour être propagées à la subscription
+      metadata: subscriptionMetadata, // IMPORTANT: Les métadonnées doivent être dans subscription_data pour être propagées à la subscription
     },
   });
 
-  console.log(`📋 [createCheckoutSession] Session créée avec metadata:`, session.metadata);
+  console.log(
+    `📋 [createCheckoutSession] Session créée avec metadata:`,
+    session.metadata
+  );
 
   return {
     url: session.url,

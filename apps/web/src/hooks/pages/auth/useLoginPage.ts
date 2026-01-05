@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "@shiftly/data";
 import { useSessionContext } from "@/providers/SessionProvider";
 
@@ -10,7 +9,6 @@ import { useSessionContext } from "@/providers/SessionProvider";
  * Gère les champs du formulaire, la validation et la soumission
  */
 export function useLoginPage() {
-  const router = useRouter();
   const { refresh } = useSessionContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,8 +36,9 @@ export function useLoginPage() {
       // Rafraîchir le cache après connexion et attendre qu'il soit prêt
       await refresh();
 
-      // Rediriger dès que la session est en place (SessionProvider est abonné à onAuthStateChange)
-      router.replace("/home");
+      // Utiliser window.location.href pour forcer un rechargement complet
+      // Cela garantit que toutes les données sont rechargées et que le cache Next.js est invalidé
+      window.location.href = "/home";
     } catch (err) {
       setError("Une erreur est survenue lors de la connexion");
     } finally {

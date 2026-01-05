@@ -180,106 +180,73 @@ async function updateProfileSubscription(
   }
 
   if (!data || data.length === 0) {
-    console.warn(
-      `⚠️ Aucune ligne mise à jour pour l'utilisateur ${userId}. Le profil existe-t-il ?`
+    // Vérifier si le profil existe (le profil devrait toujours exister grâce au trigger SQL)
+    console.log(
+      `🔍 [updateProfileSubscription] Aucune ligne mise à jour, vérification de l'existence du profil pour userId: ${userId}`
     );
-    // Vérifier si le profil existe
+
     const { data: checkProfile, error: checkError } = await supabase
       .from("profiles")
-      .select("id")
+      .select("id, email, stripe_customer_id, stripe_subscription_id")
       .eq("id", userId)
       .maybeSingle();
 
+    console.log(`🔍 [updateProfileSubscription] Résultat de la vérification:`, {
+      checkProfile,
+      checkError,
+      checkErrorCode: checkError?.code,
+      checkErrorMessage: checkError?.message,
+      checkErrorDetails: checkError,
+    });
+
     if (checkError) {
       console.error(`❌ Erreur lors de la vérification du profil:`, checkError);
+      console.error(`❌ Code d'erreur:`, checkError.code);
+      console.error(`❌ Message d'erreur:`, checkError.message);
+      console.error(
+        `❌ Détails complets:`,
+        JSON.stringify(checkError, null, 2)
+      );
       throw new Error(
-        `Erreur lors de la vérification du profil: ${checkError.message}`
+        `Erreur lors de la vérification du profil: ${checkError.message} (code: ${checkError.code})`
       );
     }
 
     if (!checkProfile) {
-      console.warn(
-        `⚠️ Profil introuvable pour l'utilisateur ${userId}. Tentative de création...`
+      // Le profil n'existe pas - c'est une erreur, on ne crée PAS de profil ici
+      // Le profil devrait être créé automatiquement par le trigger SQL handle_new_user()
+      console.error(
+        `❌ Profil introuvable pour l'utilisateur ${userId}. Le profil devrait exister grâce au trigger SQL handle_new_user().`
+      );
+      console.error(
+        `❌ Tentative de requête directe pour vérifier l'existence du profil...`
       );
 
-      // Créer le profil minimal avec un email temporaire
-      // Le trigger devrait normalement créer le profil, mais si ce n'est pas le cas, on le crée ici
-      const { data: newProfile, error: createError } = await supabase
+      // Tentative de requête brute pour debug
+      const {
+        data: debugData,
+        error: debugError,
+        count,
+      } = await supabase
         .from("profiles")
-        .insert({
-          id: userId,
-          email: `user-${userId.substring(0, 8)}@shiftly.app`, // Email temporaire
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
+        .select("id, email", { count: "exact" })
+        .eq("id", userId);
 
-      if (createError) {
-        console.error(`❌ Erreur lors de la création du profil:`, createError);
-        // Si c'est une erreur de contrainte unique, le profil existe peut-être déjà
-        // Réessayer la mise à jour
-        if (createError.code === "23505") {
-          console.log(
-            `ℹ️ Le profil existe peut-être déjà (contrainte unique). Réessai de la mise à jour...`
-          );
-          const { data: retryData, error: retryError } = await supabase
-            .from("profiles")
-            .update(updateData)
-            .eq("id", userId)
-            .select();
+      console.error(`❌ Requête debug:`, {
+        debugData,
+        debugError,
+        count,
+        userId,
+      });
 
-          if (retryError) {
-            throw new Error(
-              `Erreur lors de la mise à jour du profil: ${retryError.message}`
-            );
-          }
-
-          if (!retryData || retryData.length === 0) {
-            throw new Error(
-              `Le profil existe mais la mise à jour n'a modifié aucune ligne. Vérifiez les permissions RLS.`
-            );
-          }
-
-          console.log(`✅ Profil mis à jour avec succès:`, retryData);
-          return;
-        }
-        throw new Error(
-          `Impossible de créer le profil: ${createError.message}`
-        );
-      }
-
-      console.log(`✅ Profil créé avec succès:`, newProfile);
-
-      // Réessayer la mise à jour
-      const { data: retryData, error: retryError } = await supabase
-        .from("profiles")
-        .update(updateData)
-        .eq("id", userId)
-        .select();
-
-      if (retryError) {
-        throw new Error(
-          `Erreur lors de la mise à jour du profil après création: ${retryError.message}`
-        );
-      }
-
-      if (!retryData || retryData.length === 0) {
-        throw new Error(
-          `Le profil a été créé mais la mise à jour n'a modifié aucune ligne. Vérifiez les permissions RLS.`
-        );
-      }
-
-      console.log(
-        `✅ Profil mis à jour avec succès après création:`,
-        retryData
+      throw new Error(
+        `Profil introuvable pour l'utilisateur ${userId}. Le profil devrait être créé automatiquement lors de l'inscription. Vérifiez que le trigger SQL handle_new_user() fonctionne correctement.`
       );
-      return;
     } else {
       // Le profil existe mais la mise à jour n'a rien modifié
       // Cela peut arriver si toutes les valeurs sont identiques
       console.log(
-        `ℹ️ Le profil existe mais aucune modification n'était nécessaire`
+        `ℹ️ Le profil existe (id: ${checkProfile.id}, email: ${checkProfile.email}) mais aucune modification n'était nécessaire (toutes les valeurs sont identiques)`
       );
     }
   }
@@ -298,6 +265,36 @@ function getUserIdFromMetadata(
 }
 
 /**
+ * Récupère le userId depuis une Checkout Session Stripe
+ * Essaie plusieurs sources dans l'ordre de priorité
+ */
+function getUserIdFromCheckoutSession(
+  session: Stripe.Checkout.Session
+): string | null {
+  // Priorité 1: session.metadata.userId / session.metadata.user_id
+  const userIdFromMetadata = getUserIdFromMetadata(session.metadata);
+  if (userIdFromMetadata) {
+    console.log(
+      `🔍 [getUserIdFromCheckoutSession] userId trouvé dans session.metadata: ${userIdFromMetadata}`
+    );
+    return userIdFromMetadata;
+  }
+
+  // Priorité 2: session.client_reference_id
+  if (session.client_reference_id) {
+    console.log(
+      `🔍 [getUserIdFromCheckoutSession] userId trouvé dans client_reference_id: ${session.client_reference_id}`
+    );
+    return session.client_reference_id;
+  }
+
+  console.warn(
+    `⚠️ [getUserIdFromCheckoutSession] userId introuvable dans session.metadata et client_reference_id`
+  );
+  return null;
+}
+
+/**
  * Handler pour checkout.session.completed
  */
 export async function handleCheckoutSessionCompleted(
@@ -305,23 +302,25 @@ export async function handleCheckoutSessionCompleted(
 ): Promise<void> {
   console.log(`🛒 Traitement checkout.session.completed: ${session.id}`);
 
-  let userId = getUserIdFromMetadata(session.metadata);
+  // Utiliser le helper pour récupérer userId (essaie metadata puis client_reference_id)
+  let userId = getUserIdFromCheckoutSession(session);
   const customerId =
     typeof session.customer === "string"
       ? session.customer
       : session.customer?.id;
 
-  console.log(`📋 Metadata de la session:`, {
+  console.log(`📋 [checkout.session.completed] Identifiants récupérés:`, {
     userId,
     customerId,
     subscription: session.subscription,
     metadata: session.metadata,
+    client_reference_id: session.client_reference_id,
   });
 
-  // Si userId n'est pas dans les metadata, essayer de le récupérer depuis customer_id
+  // Si userId n'est toujours pas trouvé, essayer de le récupérer depuis customer_id (fallback)
   if (!userId && customerId) {
     console.log(
-      `🔍 userId manquant dans metadata, recherche via customer_id: ${customerId}`
+      `🔍 [checkout.session.completed] userId manquant, recherche via customer_id: ${customerId}`
     );
     const supabase = getSupabaseServiceRole();
     const { data: profile } = await supabase
@@ -332,16 +331,19 @@ export async function handleCheckoutSessionCompleted(
 
     if (profile) {
       userId = profile.id;
-      console.log(`✅ userId trouvé via customer_id: ${userId}`);
+      console.log(
+        `✅ [checkout.session.completed] userId trouvé via customer_id: ${userId}`
+      );
     }
   }
 
   if (!userId) {
     console.warn(
-      "⚠️ checkout.session.completed: userId manquant dans les metadata et impossible de le récupérer via customer_id",
+      "⚠️ [checkout.session.completed] userId manquant et impossible de le récupérer",
       {
         sessionId: session.id,
         metadata: session.metadata,
+        client_reference_id: session.client_reference_id,
         customerId,
       }
     );
@@ -382,17 +384,53 @@ export async function handleCheckoutSessionCompleted(
 export async function handleSubscriptionCreated(
   subscription: Stripe.Subscription
 ): Promise<void> {
-  const userId = getUserIdFromMetadata(subscription.metadata);
+  let userId = getUserIdFromMetadata(subscription.metadata);
   const customerId =
     typeof subscription.customer === "string"
       ? subscription.customer
       : subscription.customer?.id;
 
+  console.log(`📋 [customer.subscription.created] Identifiants:`, {
+    subscriptionId: subscription.id,
+    userIdFromMetadata: userId,
+    customerId,
+    metadata: subscription.metadata,
+  });
+
+  // Fallback: si userId n'est pas dans metadata, récupérer via stripe_customer_id
+  if (!userId && customerId) {
+    console.log(
+      `🔍 [customer.subscription.created] userId manquant dans metadata, recherche via stripe_customer_id: ${customerId}`
+    );
+    const supabase = getSupabaseServiceRole();
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+
+    if (profileError && profileError.code !== "PGRST116") {
+      console.error(
+        `❌ [customer.subscription.created] Erreur lors de la recherche du profil:`,
+        profileError
+      );
+    }
+
+    if (profile) {
+      userId = profile.id;
+      console.log(
+        `✅ [customer.subscription.created] userId trouvé via stripe_customer_id: ${userId}`
+      );
+    }
+  }
+
   if (!userId) {
     console.warn(
-      "customer.subscription.created: userId manquant dans les metadata",
+      "⚠️ [customer.subscription.created] userId manquant et impossible de le récupérer",
       {
         subscriptionId: subscription.id,
+        customerId,
+        metadata: subscription.metadata,
       }
     );
     return;
@@ -424,24 +462,51 @@ export async function handleSubscriptionCreated(
     priceMetadata: subscription.items.data[0]?.price.metadata,
   });
 
-  // Vérifier si le profil a déjà un statut "active" (cas où subscription.updated a été appelé avant)
-  // Si c'est le cas, ne pas écraser avec un statut "incomplete"
+  // Vérifier si le profil existe (le profil devrait toujours exister grâce au trigger SQL)
   const supabase = getSupabaseServiceRole();
-  const { data: existingProfile } = await supabase
+  const { data: existingProfile, error: existingProfileError } = await supabase
     .from("profiles")
-    .select("subscription_status, subscription_plan_id")
+    .select("id, subscription_status, subscription_plan_id, email")
     .eq("id", userId)
     .maybeSingle();
 
   console.log(
-    `📋 [customer.subscription.created] Profil existant:`,
-    existingProfile
+    `📋 [customer.subscription.created] Vérification du profil existant:`,
+    {
+      existingProfile,
+      existingProfileError,
+      userId,
+    }
+  );
+
+  if (existingProfileError) {
+    console.error(
+      `❌ [customer.subscription.created] Erreur lors de la vérification du profil:`,
+      existingProfileError
+    );
+    throw new Error(
+      `Erreur lors de la vérification du profil: ${existingProfileError.message}`
+    );
+  }
+
+  if (!existingProfile) {
+    // Le profil n'existe pas - c'est une erreur, on ne crée PAS de profil ici
+    console.error(
+      `❌ [customer.subscription.created] Profil introuvable pour l'utilisateur ${userId}. Le profil devrait exister grâce au trigger SQL handle_new_user().`
+    );
+    throw new Error(
+      `Profil introuvable pour l'utilisateur ${userId}. Le profil devrait être créé automatiquement lors de l'inscription. Vérifiez que le trigger SQL handle_new_user() fonctionne correctement.`
+    );
+  }
+
+  console.log(
+    `✅ [customer.subscription.created] Profil trouvé: id=${existingProfile.id}, email=${existingProfile.email}, subscription_status=${existingProfile.subscription_status}, subscription_plan_id=${existingProfile.subscription_plan_id}`
   );
 
   // Si le profil existe déjà avec un statut "active" et un planId, ne pas écraser
   if (
-    existingProfile?.subscription_status === "active" &&
-    existingProfile?.subscription_plan_id
+    existingProfile.subscription_status === "active" &&
+    existingProfile.subscription_plan_id
   ) {
     console.log(
       `⚠️ [customer.subscription.created] Profil déjà actif avec planId, mise à jour partielle uniquement`
@@ -503,6 +568,16 @@ export async function handleSubscriptionUpdated(
     customerId,
     metadata: subscription.metadata,
   });
+
+  // Log si subscription.metadata est vide (indique que subscription_data.metadata était vide lors de la création)
+  if (
+    !subscription.metadata ||
+    Object.keys(subscription.metadata).length === 0
+  ) {
+    console.warn(
+      `⚠️ [customer.subscription.updated] subscription.metadata est vide pour la subscription ${subscription.id}. Cela indique que subscription_data.metadata était vide lors de la création de la session Checkout.`
+    );
+  }
 
   // Si on n'a pas userId dans metadata, fallback: récupérer via stripe_customer_id
   let finalUserId = userIdFromMetadata;
