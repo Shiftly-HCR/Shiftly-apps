@@ -79,7 +79,7 @@ export default function FreelanceProfilePage() {
             </YStack>
 
             {/* Sidebar droite */}
-            <FreelanceProfileSidebar freelanceId={freelanceId} />
+            <FreelanceProfileSidebar freelanceId={freelanceId} profile={profile} />
           </XStack>
         </YStack>
       </ScrollView>

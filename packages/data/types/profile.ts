@@ -76,6 +76,9 @@ export interface FreelanceProfile {
   // Champs supplémentaires pour freelance
   summary?: string;
   skills?: string[];
+  daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
+  hourly_rate?: number; // Tarif horaire en euros
+  availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
   created_at?: string;
   updated_at?: string;
 }
@@ -91,4 +94,7 @@ export interface UpdateFreelanceProfileParams {
   summary?: string;
   photo_url?: string;
   skills?: string[];
+  daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
+  hourly_rate?: number; // Tarif horaire en euros
+  availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
 }

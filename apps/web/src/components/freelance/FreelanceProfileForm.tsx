@@ -1,7 +1,14 @@
 "use client";
 
 import { YStack, XStack, Text } from "tamagui";
-import { Button, Input, DatePicker, Checkbox, colors } from "@shiftly/ui";
+import {
+  Button,
+  Input,
+  DatePicker,
+  Checkbox,
+  Select,
+  colors,
+} from "@shiftly/ui";
 import { useFreelanceProfileForm } from "@/hooks";
 import { useFormatDate } from "@/hooks";
 
@@ -24,6 +31,8 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
     skills,
     skillInput,
     setSkillInput,
+    dailyRate,
+    setDailyRate,
     hourlyRate,
     setHourlyRate,
     availability,
@@ -184,6 +193,17 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           <XStack gap="$3">
             <YStack flex={1} gap="$2">
               <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+                TJM (€)
+              </Text>
+              <Input
+                placeholder="300"
+                value={dailyRate}
+                onChangeText={setDailyRate}
+                keyboardType="numeric"
+              />
+            </YStack>
+            <YStack flex={1} gap="$2">
+              <Text fontSize={14} fontWeight="600" color={colors.gray900}>
                 Tarif horaire (€)
               </Text>
               <Input
@@ -194,13 +214,20 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
               />
             </YStack>
             <YStack flex={1} gap="$2">
-              <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-                Disponibilité
-              </Text>
-              <Input
-                placeholder="Temps plein, Temps partiel..."
+              <Select
+                label="Disponibilité"
+                placeholder="Sélectionner une disponibilité"
                 value={availability}
-                onChangeText={setAvailability}
+                onValueChange={setAvailability}
+                options={[
+                  { label: "Temps plein", value: "temps_plein" },
+                  { label: "Temps partiel", value: "temps_partiel" },
+                  { label: "Week-end et soirée", value: "weekend_soiree" },
+                  { label: "Soirée uniquement", value: "soiree" },
+                  { label: "Week-end uniquement", value: "weekend" },
+                  { label: "Disponibilité flexible", value: "flexible" },
+                  { label: "Ponctuel / Événements", value: "ponctuel" },
+                ]}
               />
             </YStack>
           </XStack>
@@ -209,7 +236,11 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
         <Button
           variant="primary"
           size="lg"
-          onPress={handleSaveProfile}
+          onPress={(e?: any) => {
+            e?.preventDefault?.();
+            e?.stopPropagation?.();
+            handleSaveProfile();
+          }}
           disabled={isSaving}
           opacity={isSaving ? 0.6 : 1}
         >

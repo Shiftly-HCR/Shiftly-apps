@@ -10,6 +10,7 @@ interface FreelanceCardProps {
   rating?: number;
   isOnline?: boolean;
   tags?: string[];
+  dailyRate?: number; // TJM (Taux Journalier Moyen) en euros
   onPress?: () => void;
   onViewProfile?: () => void;
 }
@@ -21,6 +22,7 @@ export const FreelanceCard = ({
   rating,
   isOnline = false,
   tags = [],
+  dailyRate,
   onPress,
   onViewProfile,
 }: FreelanceCardProps) => {
@@ -75,6 +77,17 @@ export const FreelanceCard = ({
             </Text>
             <Text fontSize={13} fontWeight="600" color="#666666">
               {rating.toFixed(1)}
+            </Text>
+          </XStack>
+        )}
+
+        {dailyRate && (
+          <XStack alignItems="center" gap="$1" marginTop="$1">
+            <Text fontSize={14} fontWeight="700" color="$primary">
+              {dailyRate.toFixed(2)} €
+            </Text>
+            <Text fontSize={12} color="#999999">
+              / jour
             </Text>
           </XStack>
         )}
