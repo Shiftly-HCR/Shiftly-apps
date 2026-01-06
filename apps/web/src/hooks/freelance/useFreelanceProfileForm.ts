@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { FreelanceExperience, FreelanceEducation } from "@shiftly/data";
 import {
+  updateProfile,
   updateFreelanceProfile,
   upsertFreelanceExperience,
   upsertFreelanceEducation,
@@ -14,6 +15,11 @@ import { useFreelanceData } from "@/hooks";
 
 interface UseFreelanceProfileFormProps {
   onSave?: () => void;
+  externalFirstName?: string;
+  externalLastName?: string;
+  externalEmail?: string;
+  externalPhone?: string;
+  externalBio?: string;
 }
 
 /**
@@ -22,6 +28,11 @@ interface UseFreelanceProfileFormProps {
  */
 export function useFreelanceProfileForm({
   onSave,
+  externalFirstName,
+  externalLastName,
+  externalEmail,
+  externalPhone,
+  externalBio,
 }: UseFreelanceProfileFormProps = {}) {
   const {
     freelanceProfile,
@@ -121,6 +132,59 @@ export function useFreelanceProfileForm({
       }
     } catch (err: any) {
       console.error("❌ Erreur dans handleSaveProfile:", err);
+      setError(err.message || "Une erreur est survenue");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setIsSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      // Sauvegarder les informations personnelles
+      const personalInfoResult = await updateProfile({
+        firstName: externalFirstName,
+        lastName: externalLastName,
+        email: externalEmail,
+        phone: externalPhone,
+        bio: externalBio,
+      });
+
+      if (!personalInfoResult.success) {
+        setError(
+          personalInfoResult.error ||
+            "Erreur lors de la mise à jour des informations personnelles"
+        );
+        setIsSaving(false);
+        return;
+      }
+
+      // Sauvegarder les informations freelance
+      const freelanceResult = await updateFreelanceProfile({
+        bio: externalBio,
+        skills,
+        daily_rate: dailyRate ? parseFloat(dailyRate) : undefined,
+        hourly_rate: hourlyRate ? parseFloat(hourlyRate) : undefined,
+        availability: availability || undefined,
+      });
+
+      if (!freelanceResult.success) {
+        setError(
+          freelanceResult.error ||
+            "Erreur lors de la mise à jour des informations freelance"
+        );
+        setIsSaving(false);
+        return;
+      }
+
+      setSuccess("Profil mis à jour avec succès !");
+      await refreshProfile();
+      onSave?.();
+    } catch (err: any) {
+      console.error("❌ Erreur dans handleSaveAll:", err);
       setError(err.message || "Une erreur est survenue");
     } finally {
       setIsSaving(false);
@@ -383,6 +447,7 @@ export function useFreelanceProfileForm({
 
     // Handlers profil
     handleSaveProfile,
+    handleSaveAll,
     handleAddSkill,
     handleRemoveSkill,
 
