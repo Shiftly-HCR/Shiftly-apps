@@ -229,8 +229,10 @@ export default function ProfilePage() {
                 Biographie
               </Text>
               <Input
-                placeholder="Parlez-nous de vous..."
-                value={bio}
+                placeholder={
+                  bio && bio.trim() ? undefined : "Parlez-nous de vous..."
+                }
+                value={bio || ""}
                 onChangeText={setBio}
                 multiline
                 numberOfLines={4}
@@ -318,7 +320,6 @@ export default function ProfilePage() {
               </Text>
             </XStack>
           </YStack>
-
 
           {/* Bouton retour */}
           <Button

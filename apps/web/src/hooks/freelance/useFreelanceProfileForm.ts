@@ -180,7 +180,7 @@ export function useFreelanceProfileForm({
         return;
       }
 
-      setSuccess("Profil mis à jour avec succès !");
+      setSuccess("Toutes vos modifications ont été enregistrées avec succès !");
       await refreshProfile();
       onSave?.();
     } catch (err: any) {

@@ -108,35 +108,6 @@ export function FreelanceProfileForm({
 
   return (
     <YStack gap="$6" padding="$6" backgroundColor="white" borderRadius="$4">
-      {/* Messages */}
-      {error && (
-        <YStack
-          padding="$3"
-          backgroundColor="#FEE2E2"
-          borderRadius="$3"
-          borderWidth={1}
-          borderColor="#EF4444"
-        >
-          <Text fontSize={14} color="#DC2626" fontWeight="500">
-            {error}
-          </Text>
-        </YStack>
-      )}
-
-      {success && (
-        <YStack
-          padding="$3"
-          backgroundColor="#D1FAE5"
-          borderRadius="$3"
-          borderWidth={1}
-          borderColor="#10B981"
-        >
-          <Text fontSize={14} color="#059669" fontWeight="500">
-            {success}
-          </Text>
-        </YStack>
-      )}
-
       {/* Informations générales */}
       <YStack gap="$4">
         <XStack justifyContent="space-between" alignItems="center">
@@ -557,6 +528,35 @@ export function FreelanceProfileForm({
           ? "Enregistrement..."
           : "Enregistrer toutes les modifications"}
       </Button>
+
+      {/* Messages de succès/erreur */}
+      {error && (
+        <YStack
+          padding="$3"
+          backgroundColor="#FEE2E2"
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor="#EF4444"
+        >
+          <Text fontSize={14} color="#DC2626" fontWeight="500">
+            {error}
+          </Text>
+        </YStack>
+      )}
+
+      {success && (
+        <YStack
+          padding="$3"
+          backgroundColor="#D1FAE5"
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor="#10B981"
+        >
+          <Text fontSize={14} color="#059669" fontWeight="500">
+            {success}
+          </Text>
+        </YStack>
+      )}
     </YStack>
   );
 }
