@@ -107,7 +107,18 @@ export function FreelanceProfileForm({
   }
 
   return (
-    <YStack gap="$6" padding="$6" backgroundColor="white" borderRadius="$4">
+    <YStack
+      padding="$6"
+      backgroundColor="white"
+      borderRadius="$4"
+      borderWidth={1}
+      borderColor="#E5E5E5"
+      shadowColor="rgba(0, 0, 0, 0.1)"
+      shadowOffset={{ width: 0, height: 4 }}
+      shadowOpacity={1}
+      shadowRadius={12}
+      gap="$4"
+    >
       {/* Informations générales */}
       <YStack gap="$4">
         <XStack justifyContent="space-between" alignItems="center">
@@ -129,9 +140,8 @@ export function FreelanceProfileForm({
             <Text fontSize={14} fontWeight="600" color={colors.gray900}>
               Compétences
             </Text>
-            <XStack gap="$2">
+            <XStack gap="$2" style={{ width: "88%" }}>
               <Input
-                flex={1}
                 placeholder="Ajouter une compétence"
                 value={skillInput}
                 onChangeText={setSkillInput}
