@@ -181,6 +181,22 @@ export function FreelanceProfileForm({
                 onChangeText={setDailyRate}
                 keyboardType="numeric"
               />
+              {dailyRate &&
+                !isNaN(parseFloat(dailyRate)) &&
+                parseFloat(dailyRate) > 0 && (
+                  <YStack gap="$1" marginTop="$1">
+                    <Text fontSize={12} color={colors.gray700}>
+                      Frais de plateforme: 15%
+                    </Text>
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={colors.shiftlyViolet}
+                    >
+                      TJM net: {(parseFloat(dailyRate) * 0.85).toFixed(2)} €
+                    </Text>
+                  </YStack>
+                )}
             </YStack>
             <YStack flex={1} gap="$2">
               <Text fontSize={14} fontWeight="600" color={colors.gray900}>
