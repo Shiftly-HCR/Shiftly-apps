@@ -143,7 +143,7 @@ export function MissionCandidatesRow({
             {application.profile.daily_rate.toFixed(2)} €
           </Text>
         ) : (
-          <Text fontSize={14} color={colors.gray400}>
+          <Text fontSize={14} color={colors.gray500}>
             -
           </Text>
         )}

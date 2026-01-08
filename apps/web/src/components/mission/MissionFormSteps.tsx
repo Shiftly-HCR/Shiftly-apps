@@ -48,6 +48,9 @@ interface MissionFormStepsProps {
   // Step 5
   hourlyRate: string;
   setHourlyRate: (value: string) => void;
+  dailyRate: string;
+  setDailyRate: (value: string) => void;
+  totalSalary: string;
   imagePreview: string;
   onImageChange: (file: File | null) => void;
   onImageRemove?: () => void;
@@ -85,6 +88,9 @@ export function MissionFormSteps(props: MissionFormStepsProps) {
     setEndTime,
     hourlyRate,
     setHourlyRate,
+    dailyRate,
+    setDailyRate,
+    totalSalary,
     imagePreview,
     onImageChange,
     onImageRemove,
@@ -140,6 +146,9 @@ export function MissionFormSteps(props: MissionFormStepsProps) {
         <MissionFormStep5
           hourlyRate={hourlyRate}
           setHourlyRate={setHourlyRate}
+          dailyRate={dailyRate}
+          setDailyRate={setDailyRate}
+          totalSalary={totalSalary}
           imagePreview={imagePreview}
           title={title}
           city={city}

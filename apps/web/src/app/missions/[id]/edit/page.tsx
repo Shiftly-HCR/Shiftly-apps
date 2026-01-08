@@ -73,6 +73,8 @@ export default function EditMissionPage() {
 
   // Étape 5: Rémunération et image
   const [hourlyRate, setHourlyRate] = useState("");
+  const [dailyRate, setDailyRate] = useState("");
+  const [totalSalary, setTotalSalary] = useState("");
   const [missionImage, setMissionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [existingImageUrl, setExistingImageUrl] = useState<string>("");
@@ -139,6 +141,8 @@ export default function EditMissionPage() {
     setStartTime(mission.start_time || "");
     setEndTime(mission.end_time || "");
     setHourlyRate(mission.hourly_rate?.toString() || "");
+    setDailyRate(mission.daily_rate?.toString() || "");
+    setTotalSalary(mission.total_salary?.toString() || "");
     setExistingImageUrl(mission.image_url || "");
     setImagePreview(mission.image_url || "");
   }, [mission]);
@@ -172,6 +176,59 @@ export default function EditMissionPage() {
     handleAddressChange(address, city, postalCode);
   }, [address, city, postalCode, mission, handleAddressChange]);
 
+  // Calculer le nombre d'heures journalières à partir des horaires
+  const calculateDailyHours = (): number => {
+    if (!startTime || !endTime) return 0;
+    
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+    
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    
+    // Gérer le cas où la fin est le lendemain (ex: 22h à 2h)
+    let diffMinutes = endMinutes - startMinutes;
+    if (diffMinutes < 0) {
+      diffMinutes += 24 * 60; // Ajouter 24 heures
+    }
+    
+    return diffMinutes / 60; // Convertir en heures
+  };
+
+  // Calculer le nombre de jours entre start_date et end_date
+  const calculateNumberOfDays = (): number => {
+    if (!startDate || !endDate) return 0;
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays + 1; // +1 pour inclure le jour de début
+  };
+
+  // Calculer automatiquement le TJM si le tarif horaire est renseigné
+  useEffect(() => {
+    if (hourlyRate && !dailyRate) {
+      const hoursPerDay = calculateDailyHours();
+      if (hoursPerDay > 0) {
+        const calculatedDailyRate = parseFloat(hourlyRate) * hoursPerDay;
+        setDailyRate(calculatedDailyRate.toFixed(2));
+      }
+    }
+  }, [hourlyRate, startTime, endTime, dailyRate]);
+
+  // Calculer automatiquement le salaire total si le TJM est renseigné
+  useEffect(() => {
+    if (dailyRate) {
+      const numberOfDays = calculateNumberOfDays();
+      if (numberOfDays > 0) {
+        const calculatedTotalSalary = parseFloat(dailyRate) * numberOfDays;
+        setTotalSalary(calculatedTotalSalary.toFixed(2));
+      }
+    }
+  }, [dailyRate, startDate, endDate]);
+
   const handleNext = () => {
     setError("");
 
@@ -179,6 +236,14 @@ export default function EditMissionPage() {
     if (currentStep === 1) {
       if (!title.trim()) {
         setError("Le titre est requis");
+        return;
+      }
+    }
+
+    // Validation étape 5 : au moins tarif horaire OU TJM
+    if (currentStep === 5) {
+      if (!hourlyRate.trim() && !dailyRate.trim()) {
+        setError("Vous devez renseigner au moins le tarif horaire ou le TJM");
         return;
       }
     }
@@ -221,6 +286,24 @@ export default function EditMissionPage() {
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
+      // Calculer le TJM si nécessaire
+      let finalDailyRate = dailyRate ? parseFloat(dailyRate) : undefined;
+      if (!finalDailyRate && hourlyRate) {
+        const hoursPerDay = calculateDailyHours();
+        if (hoursPerDay > 0) {
+          finalDailyRate = parseFloat(hourlyRate) * hoursPerDay;
+        }
+      }
+
+      // Calculer le salaire total si nécessaire
+      let finalTotalSalary = totalSalary ? parseFloat(totalSalary) : undefined;
+      if (!finalTotalSalary && finalDailyRate) {
+        const numberOfDays = calculateNumberOfDays();
+        if (numberOfDays > 0) {
+          finalTotalSalary = finalDailyRate * numberOfDays;
+        }
+      }
+
       // Mettre à jour la mission
       const updateResult = await updateMission(missionId, {
         title,
@@ -237,6 +320,8 @@ export default function EditMissionPage() {
         start_time: startTime || undefined,
         end_time: endTime || undefined,
         hourly_rate: hourlyRate ? parseFloat(hourlyRate) : undefined,
+        daily_rate: finalDailyRate,
+        total_salary: finalTotalSalary,
       });
 
       if (!updateResult.success) {
@@ -379,6 +464,9 @@ export default function EditMissionPage() {
               setEndTime={setEndTime}
               hourlyRate={hourlyRate}
               setHourlyRate={setHourlyRate}
+              dailyRate={dailyRate}
+              setDailyRate={setDailyRate}
+              totalSalary={totalSalary}
               imagePreview={imagePreview}
               onImageChange={handleImageChange}
               onImageRemove={handleImageRemove}
