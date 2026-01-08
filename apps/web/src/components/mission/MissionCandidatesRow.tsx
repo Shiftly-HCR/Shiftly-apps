@@ -136,6 +136,19 @@ export function MissionCandidatesRow({
         </Text>
       </XStack>
 
+      {/* TJM */}
+      <XStack width={100} alignItems="center">
+        {application.profile?.daily_rate ? (
+          <Text fontSize={14} color={colors.gray700} fontWeight="600">
+            {application.profile.daily_rate.toFixed(2)} €
+          </Text>
+        ) : (
+          <Text fontSize={14} color={colors.gray400}>
+            -
+          </Text>
+        )}
+      </XStack>
+
       {/* Actions */}
       <XStack
         width={120}
