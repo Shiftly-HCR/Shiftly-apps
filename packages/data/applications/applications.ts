@@ -157,7 +157,7 @@ export async function getApplicationsByMission(
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
       .select(
-        "id, first_name, last_name, email, phone, photo_url, bio, headline, location, role"
+        "id, first_name, last_name, email, phone, photo_url, bio, headline, location, role, daily_rate"
       )
       .in("id", userIds);
 

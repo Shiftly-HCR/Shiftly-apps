@@ -1,15 +1,36 @@
 "use client";
 
 import { YStack, XStack, Text } from "tamagui";
-import { Button, Input, DatePicker, Checkbox, colors } from "@shiftly/ui";
+import {
+  Button,
+  Input,
+  DatePicker,
+  Checkbox,
+  Select,
+  colors,
+} from "@shiftly/ui";
 import { useFreelanceProfileForm } from "@/hooks";
 import { useFormatDate } from "@/hooks";
 
 interface FreelanceProfileFormProps {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  bio?: string;
   onSave?: () => void;
+  onSaveAll?: () => Promise<void>;
 }
 
-export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
+export function FreelanceProfileForm({
+  firstName: externalFirstName,
+  lastName: externalLastName,
+  email: externalEmail,
+  phone: externalPhone,
+  bio: externalBio,
+  onSave,
+  onSaveAll,
+}: FreelanceProfileFormProps) {
   const { formatDateShort } = useFormatDate();
 
   const {
@@ -24,6 +45,8 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
     skills,
     skillInput,
     setSkillInput,
+    dailyRate,
+    setDailyRate,
     hourlyRate,
     setHourlyRate,
     availability,
@@ -46,6 +69,7 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
 
     // Handlers profil
     handleSaveProfile,
+    handleSaveAll,
     handleAddSkill,
     handleRemoveSkill,
 
@@ -63,7 +87,14 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
 
     // Handler LinkedIn
     handleSyncLinkedIn,
-  } = useFreelanceProfileForm({ onSave });
+  } = useFreelanceProfileForm({
+    onSave,
+    externalFirstName,
+    externalLastName,
+    externalEmail,
+    externalPhone,
+    externalBio,
+  });
 
   if (isLoading) {
     return (
@@ -76,36 +107,18 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
   }
 
   return (
-    <YStack gap="$6" padding="$6" backgroundColor="white" borderRadius="$4">
-      {/* Messages */}
-      {error && (
-        <YStack
-          padding="$3"
-          backgroundColor="#FEE2E2"
-          borderRadius="$3"
-          borderWidth={1}
-          borderColor="#EF4444"
-        >
-          <Text fontSize={14} color="#DC2626" fontWeight="500">
-            {error}
-          </Text>
-        </YStack>
-      )}
-
-      {success && (
-        <YStack
-          padding="$3"
-          backgroundColor="#D1FAE5"
-          borderRadius="$3"
-          borderWidth={1}
-          borderColor="#10B981"
-        >
-          <Text fontSize={14} color="#059669" fontWeight="500">
-            {success}
-          </Text>
-        </YStack>
-      )}
-
+    <YStack
+      padding="$6"
+      backgroundColor="white"
+      borderRadius="$4"
+      borderWidth={1}
+      borderColor="#E5E5E5"
+      shadowColor="rgba(0, 0, 0, 0.1)"
+      shadowOffset={{ width: 0, height: 4 }}
+      shadowOpacity={1}
+      shadowRadius={12}
+      gap="$4"
+    >
       {/* Informations générales */}
       <YStack gap="$4">
         <XStack justifyContent="space-between" alignItems="center">
@@ -125,24 +138,10 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
         <YStack gap="$3">
           <YStack gap="$2">
             <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-              Biographie
-            </Text>
-            <Input
-              placeholder="Parlez-nous de vous..."
-              value={bio}
-              onChangeText={setBio}
-              multiline
-              numberOfLines={4}
-            />
-          </YStack>
-
-          <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color={colors.gray900}>
               Compétences
             </Text>
-            <XStack gap="$2">
+            <XStack gap="$2" style={{ width: "88%" }}>
               <Input
-                flex={1}
                 placeholder="Ajouter une compétence"
                 value={skillInput}
                 onChangeText={setSkillInput}
@@ -184,6 +183,33 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           <XStack gap="$3">
             <YStack flex={1} gap="$2">
               <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+                TJM (€)
+              </Text>
+              <Input
+                placeholder="300"
+                value={dailyRate}
+                onChangeText={setDailyRate}
+                keyboardType="numeric"
+              />
+              {dailyRate &&
+                !isNaN(parseFloat(dailyRate)) &&
+                parseFloat(dailyRate) > 0 && (
+                  <YStack gap="$1" marginTop="$1">
+                    <Text fontSize={12} color={colors.gray700}>
+                      Frais de plateforme: 15%
+                    </Text>
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={colors.shiftlyViolet}
+                    >
+                      TJM net: {(parseFloat(dailyRate) * 0.85).toFixed(2)} €
+                    </Text>
+                  </YStack>
+                )}
+            </YStack>
+            <YStack flex={1} gap="$2">
+              <Text fontSize={14} fontWeight="600" color={colors.gray900}>
                 Tarif horaire (€)
               </Text>
               <Input
@@ -194,29 +220,24 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
               />
             </YStack>
             <YStack flex={1} gap="$2">
-              <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-                Disponibilité
-              </Text>
-              <Input
-                placeholder="Temps plein, Temps partiel..."
+              <Select
+                label="Disponibilité"
+                placeholder="Sélectionner une disponibilité"
                 value={availability}
-                onChangeText={setAvailability}
+                onValueChange={setAvailability}
+                options={[
+                  { label: "Temps plein", value: "temps_plein" },
+                  { label: "Temps partiel", value: "temps_partiel" },
+                  { label: "Week-end et soirée", value: "weekend_soiree" },
+                  { label: "Soirée uniquement", value: "soiree" },
+                  { label: "Week-end uniquement", value: "weekend" },
+                  { label: "Disponibilité flexible", value: "flexible" },
+                  { label: "Ponctuel / Événements", value: "ponctuel" },
+                ]}
               />
             </YStack>
           </XStack>
         </YStack>
-
-        <Button
-          variant="primary"
-          size="lg"
-          onPress={handleSaveProfile}
-          disabled={isSaving}
-          opacity={isSaving ? 0.6 : 1}
-        >
-          {isSaving
-            ? "Enregistrement..."
-            : "Enregistrer les informations générales"}
-        </Button>
       </YStack>
 
       {/* Expériences */}
@@ -229,8 +250,10 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           <YStack
             key={exp.id}
             padding="$4"
-            backgroundColor={colors.gray050}
+            backgroundColor={colors.white}
             borderRadius="$3"
+            borderWidth={1}
+            borderColor={colors.gray200}
             gap="$3"
           >
             <XStack justifyContent="space-between" alignItems="flex-start">
@@ -278,8 +301,10 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
 
         <YStack
           padding="$4"
-          backgroundColor={colors.gray050}
+          backgroundColor={colors.white}
           borderRadius="$3"
+          borderWidth={1}
+          borderColor={colors.gray200}
           gap="$4"
         >
           <Text fontSize={16} fontWeight="600" color={colors.gray900}>
@@ -388,8 +413,10 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           <YStack
             key={edu.id}
             padding="$4"
-            backgroundColor={colors.gray050}
+            backgroundColor={colors.white}
             borderRadius="$3"
+            borderWidth={1}
+            borderColor={colors.gray200}
             gap="$3"
           >
             <XStack justifyContent="space-between" alignItems="flex-start">
@@ -430,8 +457,10 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
 
         <YStack
           padding="$4"
-          backgroundColor={colors.gray050}
+          backgroundColor={colors.white}
           borderRadius="$3"
+          borderWidth={1}
+          borderColor={colors.gray200}
           gap="$4"
         >
           <Text fontSize={16} fontWeight="600" color={colors.gray900}>
@@ -508,6 +537,52 @@ export function FreelanceProfileForm({ onSave }: FreelanceProfileFormProps) {
           </YStack>
         </YStack>
       </YStack>
+
+      {/* Bouton d'enregistrement global */}
+      <Button
+        variant="primary"
+        size="lg"
+        onPress={(e?: any) => {
+          e?.preventDefault?.();
+          e?.stopPropagation?.();
+          handleSaveAll();
+        }}
+        disabled={isSaving}
+        opacity={isSaving ? 0.6 : 1}
+      >
+        {isSaving
+          ? "Enregistrement..."
+          : "Enregistrer toutes les modifications"}
+      </Button>
+
+      {/* Messages de succès/erreur */}
+      {error && (
+        <YStack
+          padding="$3"
+          backgroundColor="#FEE2E2"
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor="#EF4444"
+        >
+          <Text fontSize={14} color="#DC2626" fontWeight="500">
+            {error}
+          </Text>
+        </YStack>
+      )}
+
+      {success && (
+        <YStack
+          padding="$3"
+          backgroundColor="#D1FAE5"
+          borderRadius="$3"
+          borderWidth={1}
+          borderColor="#10B981"
+        >
+          <Text fontSize={14} color="#059669" fontWeight="500">
+            {success}
+          </Text>
+        </YStack>
+      )}
     </YStack>
   );
 }

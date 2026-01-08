@@ -64,14 +64,60 @@ export function MissionDetailSidebar({
         <Text fontSize={14} color="#666" marginBottom="$2">
           Rémunération
         </Text>
-        <Text
-          fontSize={32}
-          fontWeight="bold"
-          color={colors.shiftlyViolet}
-          marginBottom="$4"
-        >
-          {mission.hourly_rate}€/h
-        </Text>
+        
+        {mission.daily_rate ? (
+          <YStack gap="$2" marginBottom="$4">
+            <Text
+              fontSize={32}
+              fontWeight="bold"
+              color={colors.shiftlyViolet}
+            >
+              {typeof mission.daily_rate === 'number' ? mission.daily_rate.toFixed(2) : mission.daily_rate}€/jour
+            </Text>
+            {mission.hourly_rate && (
+              <Text fontSize={14} color="#666">
+                ({mission.hourly_rate}€/h)
+              </Text>
+            )}
+            {mission.total_salary && (
+              <YStack
+                marginTop="$2"
+                padding="$3"
+                backgroundColor={colors.shiftlyVioletLight}
+                borderRadius={8}
+              >
+                <Text fontSize={14} color="#666" marginBottom="$1">
+                  Salaire total
+                </Text>
+                <Text
+                  fontSize={20}
+                  fontWeight="600"
+                  color={colors.shiftlyViolet}
+                >
+                  {typeof mission.total_salary === 'number' ? mission.total_salary.toFixed(2) : mission.total_salary}€
+                </Text>
+              </YStack>
+            )}
+          </YStack>
+        ) : mission.hourly_rate ? (
+          <Text
+            fontSize={32}
+            fontWeight="bold"
+            color={colors.shiftlyViolet}
+            marginBottom="$4"
+          >
+            {mission.hourly_rate}€/h
+          </Text>
+        ) : (
+          <Text
+            fontSize={32}
+            fontWeight="bold"
+            color={colors.gray700}
+            marginBottom="$4"
+          >
+            À négocier
+          </Text>
+        )}
 
         {/* Boutons d'action */}
         <YStack gap="$3">

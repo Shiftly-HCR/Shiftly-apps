@@ -57,6 +57,9 @@ export default function CreateMissionPage() {
     // États Étape 5: Rémunération et image
     hourlyRate,
     setHourlyRate,
+    dailyRate,
+    setDailyRate,
+    totalSalary,
     missionImage,
     imagePreview,
 
@@ -137,6 +140,9 @@ export default function CreateMissionPage() {
               setEndTime={setEndTime}
               hourlyRate={hourlyRate}
               setHourlyRate={setHourlyRate}
+              dailyRate={dailyRate}
+              setDailyRate={setDailyRate}
+              totalSalary={totalSalary}
               imagePreview={imagePreview}
               onImageChange={handleImageChange}
             />

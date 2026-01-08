@@ -81,9 +81,13 @@ export function MissionVisibleList({
                 title={mission.title}
                 date={formatDate(mission.start_date, mission.end_date)}
                 price={
-                  mission.hourly_rate ? `${mission.hourly_rate}€` : "À négocier"
+                  mission.daily_rate
+                    ? `${typeof mission.daily_rate === 'number' ? mission.daily_rate.toFixed(2) : mission.daily_rate}€`
+                    : mission.hourly_rate
+                      ? `${mission.hourly_rate}€`
+                      : "À négocier"
                 }
-                priceUnit="/ heure"
+                priceUnit={mission.daily_rate ? "/ jour" : "/ heure"}
                 image={mission.image_url}
                 showButton={false}
               />
