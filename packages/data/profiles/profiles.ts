@@ -33,6 +33,9 @@ export interface Profile {
   current_period_end?: string;
   cancel_at_period_end?: boolean;
   subscription_price_id?: string;
+  daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
+  hourly_rate?: number; // Tarif horaire en euros
+  availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
 }
 
 export interface CreateProfileParams {
@@ -50,6 +53,9 @@ export interface UpdateProfileParams {
   phone?: string;
   bio?: string;
   photo_url?: string;
+  daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
+  hourly_rate?: number; // Tarif horaire en euros
+  availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
 }
 
 /**
@@ -174,6 +180,12 @@ export async function updateProfile(
     if (params.phone !== undefined) updateData.phone = params.phone;
     if (params.bio !== undefined) updateData.bio = params.bio;
     if (params.photo_url !== undefined) updateData.photo_url = params.photo_url;
+    if (params.daily_rate !== undefined)
+      updateData.daily_rate = params.daily_rate;
+    if (params.hourly_rate !== undefined)
+      updateData.hourly_rate = params.hourly_rate;
+    if (params.availability !== undefined)
+      updateData.availability = params.availability;
 
     const { data, error } = await supabase
       .from("profiles")

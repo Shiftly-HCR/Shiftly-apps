@@ -41,6 +41,7 @@ export interface MissionApplicationWithProfile extends MissionApplication {
     headline?: string;
     location?: string;
     role?: string;
+    daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
   } | null;
 }
 

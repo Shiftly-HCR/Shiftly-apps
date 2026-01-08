@@ -35,27 +35,37 @@ export function MissionCandidatesTabs({
         }
       >
         <XStack alignItems="center" gap="$2">
-          <Text>Candidats</Text>
+          <Text
+            color={
+              activeTab === "candidates" ? colors.white : colors.shiftlyViolet
+            }
+          >
+            Candidats
+          </Text>
           {candidatesCount > 0 && (
             <XStack
-              paddingHorizontal="$2"
-              paddingVertical="$1"
+              minWidth={24}
+              height={24}
+              paddingHorizontal={candidatesCount > 9 ? "$1.5" : "$2"}
+              alignItems="center"
+              justifyContent="center"
               borderRadius={12}
               backgroundColor={
                 activeTab === "candidates" ? colors.white : colors.gray200
               }
             >
-              <Text
-                fontSize={12}
-                fontWeight="600"
-                color={
-                  activeTab === "candidates"
-                    ? colors.shiftlyViolet
-                    : colors.gray700
-                }
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  color:
+                    activeTab === "candidates"
+                      ? colors.shiftlyViolet
+                      : colors.gray700,
+                }}
               >
                 {candidatesCount}
-              </Text>
+              </span>
             </XStack>
           )}
         </XStack>

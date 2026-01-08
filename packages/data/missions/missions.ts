@@ -20,6 +20,8 @@ export interface Mission {
   start_time?: string;
   end_time?: string;
   hourly_rate?: number;
+  daily_rate?: number; // TJM (Taux Journalier Moyen) en euros - peut être calculé automatiquement
+  total_salary?: number; // Salaire total de la mission en euros - calculé automatiquement : TJM × nombre de jours
   currency?: string;
   image_url?: string;
   status?: "draft" | "published" | "closed" | "cancelled";
@@ -42,6 +44,8 @@ export interface CreateMissionParams {
   start_time?: string;
   end_time?: string;
   hourly_rate?: number;
+  daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
+  total_salary?: number; // Salaire total de la mission en euros
   status?: "draft" | "published";
   is_urgent?: boolean;
   total_positions?: number;
@@ -62,6 +66,8 @@ export interface UpdateMissionParams {
   start_time?: string;
   end_time?: string;
   hourly_rate?: number;
+  daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
+  total_salary?: number; // Salaire total de la mission en euros
   status?: "draft" | "published" | "closed" | "cancelled";
   is_urgent?: boolean;
   total_positions?: number;

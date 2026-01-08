@@ -151,6 +151,9 @@ export async function updateFreelanceProfile(
     if (params.summary !== undefined) updateData.summary = params.summary;
     if (params.photo_url !== undefined) updateData.photo_url = params.photo_url;
     if (params.skills !== undefined) updateData.skills = params.skills;
+    if (params.daily_rate !== undefined) updateData.daily_rate = params.daily_rate;
+    if (params.hourly_rate !== undefined) updateData.hourly_rate = params.hourly_rate;
+    if (params.availability !== undefined) updateData.availability = params.availability;
 
     const { data, error } = await supabase
       .from("profiles")

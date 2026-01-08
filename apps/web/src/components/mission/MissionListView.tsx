@@ -39,9 +39,13 @@ export function MissionListView({
             title={mission.title}
             date={formatDate(mission.start_date, mission.end_date)}
             price={
-              mission.hourly_rate ? `${mission.hourly_rate}€` : "À négocier"
+              mission.daily_rate
+                ? `${mission.daily_rate}€`
+                : mission.hourly_rate
+                  ? `${mission.hourly_rate}€`
+                  : "À négocier"
             }
-            priceUnit="/ heure"
+            priceUnit={mission.daily_rate ? "/ jour" : "/ heure"}
             image={mission.image_url}
           />
         </YStack>
@@ -49,4 +53,3 @@ export function MissionListView({
     </XStack>
   );
 }
-

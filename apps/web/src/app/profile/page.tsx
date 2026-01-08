@@ -180,20 +180,9 @@ export default function ProfilePage() {
             shadowRadius={12}
             gap="$4"
           >
-            <XStack justifyContent="space-between" alignItems="center">
-              <Text fontSize={18} fontWeight="600" color="#2B2B2B">
-                Informations personnelles
-              </Text>
-              {!isEditing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onPress={() => setIsEditing(true)}
-                >
-                  Modifier
-                </Button>
-              )}
-            </XStack>
+            <Text fontSize={18} fontWeight="600" color="#2B2B2B">
+              Informations personnelles
+            </Text>
 
             {/* Nom et Prénom */}
             <XStack gap="$3" style={{ width: "100%" }}>
@@ -203,7 +192,6 @@ export default function ProfilePage() {
                   placeholder="Votre prénom"
                   value={firstName}
                   onChangeText={setFirstName}
-                  disabled={!isEditing}
                 />
               </YStack>
               <YStack flex={1}>
@@ -212,7 +200,6 @@ export default function ProfilePage() {
                   placeholder="Votre nom"
                   value={lastName}
                   onChangeText={setLastName}
-                  disabled={!isEditing}
                 />
               </YStack>
             </XStack>
@@ -225,7 +212,6 @@ export default function ProfilePage() {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoComplete="email"
-              disabled={!isEditing}
             />
 
             {/* Téléphone */}
@@ -235,7 +221,6 @@ export default function ProfilePage() {
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
-              disabled={!isEditing}
             />
 
             {/* Bio */}
@@ -243,56 +228,26 @@ export default function ProfilePage() {
               <Text fontSize={14} fontWeight="600" color="#2B2B2B">
                 Biographie
               </Text>
-              <YStack
-                padding="$3"
-                backgroundColor={isEditing ? "white" : "#F9FAFB"}
-                borderRadius="$3"
-                borderWidth={1}
-                borderColor={isEditing ? "#D1D5DB" : "#E5E5E5"}
-                minHeight={120}
-              >
-                <Input
-                  placeholder="Parlez-nous de vous..."
-                  value={bio}
-                  onChangeText={setBio}
-                  disabled={!isEditing}
-                  multiline
-                  numberOfLines={4}
-                />
-              </YStack>
+              <Input
+                placeholder={
+                  bio && bio.trim() ? undefined : "Parlez-nous de vous..."
+                }
+                value={bio || ""}
+                onChangeText={setBio}
+                multiline
+                numberOfLines={4}
+              />
             </YStack>
-
-            {/* Boutons d'action */}
-            {isEditing && (
-              <XStack gap="$3" marginTop="$2">
-                <YStack flex={1}>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onPress={handleCancel}
-                    disabled={isSaving}
-                  >
-                    Annuler
-                  </Button>
-                </YStack>
-                <YStack flex={1}>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onPress={handleSave}
-                    disabled={isSaving}
-                    opacity={isSaving ? 0.6 : 1}
-                  >
-                    {isSaving ? "Enregistrement..." : "Enregistrer"}
-                  </Button>
-                </YStack>
-              </XStack>
-            )}
           </YStack>
 
           {/* Section Freelance - Affichage conditionnel */}
           {profile?.role === "freelance" ? (
             <FreelanceProfileForm
+              firstName={firstName}
+              lastName={lastName}
+              email={email}
+              phone={phone}
+              bio={bio}
               onSave={async () => {
                 await refresh();
               }}

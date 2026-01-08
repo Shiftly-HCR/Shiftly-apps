@@ -41,9 +41,15 @@ export function MissionBubbleMarker({ mission, onClick }: Props) {
             <Text fontWeight="600" numberOfLines={1}>
               {mission.title}
             </Text>
-            {mission.hourly_rate && (
+            {mission.daily_rate ? (
+              <Text fontSize="$2">
+                {typeof mission.daily_rate === 'number' 
+                  ? mission.daily_rate.toFixed(2) 
+                  : mission.daily_rate}€ / jour
+              </Text>
+            ) : mission.hourly_rate ? (
               <Text fontSize="$2">{mission.hourly_rate}€ / heure</Text>
-            )}
+            ) : null}
           </YStack>
         </XStack>
       </YStack>

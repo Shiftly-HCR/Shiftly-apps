@@ -81,6 +81,11 @@ export function MissionCandidatesList({
             NOTE
           </Text>
         </XStack>
+        <XStack width={100} alignItems="center">
+          <Text fontSize={14} fontWeight="600" color={colors.gray700}>
+            TJM
+          </Text>
+        </XStack>
         <XStack width={120} alignItems="center">
           <Text fontSize={14} fontWeight="600" color={colors.gray700}>
             ACTIONS
