@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { constructWebhookEvent } from "@shiftly/payments";
-import { processStripeEvent } from "@/hooks/stripe";
+// Import direct pour éviter les hooks client
+import { processStripeEvent } from "@/hooks/stripe/webhookHandlers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

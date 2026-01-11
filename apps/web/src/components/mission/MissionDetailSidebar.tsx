@@ -1,12 +1,14 @@
 "use client";
 
 import { YStack, XStack, Text } from "tamagui";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { Button, colors } from "@shiftly/ui";
-import { MapPin, Building2, Heart, CheckCircle2, Star } from "lucide-react";
+import { MapPin, Building2, Heart, CheckCircle2, Star, CreditCard, Loader2 } from "lucide-react";
 import type { Mission } from "@shiftly/data";
 import { openConversation } from "@/utils/chatService";
 import { useMissionEstablishment } from "@/hooks";
+import { useMissionPayment } from "@/hooks/stripe";
 import { MissionAddressDisplay } from "./MissionAddressDisplay";
 
 interface MissionDetailSidebarProps {
@@ -40,6 +42,7 @@ export function MissionDetailSidebar({
   onManageCandidates,
 }: MissionDetailSidebarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     establishment,
     isLoading: isLoadingEstablishment,
@@ -48,6 +51,33 @@ export function MissionDetailSidebar({
     displayCity,
     hasEstablishment,
   } = useMissionEstablishment(mission);
+  
+  // Hook pour le paiement de mission (uniquement pour le recruteur propriétaire)
+  const {
+    paymentStatus,
+    isLoading: isLoadingPayment,
+    isCheckingPayment,
+    error: paymentError,
+    isPaid,
+    refreshPaymentStatus,
+    initiatePayment,
+  } = useMissionPayment(mission.id);
+
+  // Rafraîchir le statut de paiement après retour de Stripe
+  useEffect(() => {
+    const paymentParam = searchParams.get("payment");
+    if (paymentParam === "success") {
+      refreshPaymentStatus();
+    }
+  }, [searchParams, refreshPaymentStatus]);
+
+  // Handler pour initier le paiement
+  const handlePayMission = async () => {
+    const url = await initiatePayment();
+    if (url) {
+      window.location.href = url;
+    }
+  };
 
   return (
     <YStack width={320} gap="$4" flexShrink={0}>
@@ -121,78 +151,148 @@ export function MissionDetailSidebar({
 
         {/* Boutons d'action */}
         <YStack gap="$3">
-          {isRecruiter && isMissionOwner && onManageCandidates ? (
-            <Button
-              variant="primary"
-              size="md"
-              width="100%"
-              onPress={onManageCandidates}
-            >
-              Gérer les candidatures
-            </Button>
-          ) : showSuccessMessage ? (
-            <XStack
-              paddingVertical="$3"
-              paddingHorizontal="$4"
-              backgroundColor="#D4F4DD"
-              borderRadius={8}
-              alignItems="center"
-              justifyContent="center"
-              gap="$2"
-            >
-              <CheckCircle2
-                size={16}
-                color="#00A86B"
-                style={{ flexShrink: 0 }}
-              />
-              <Text fontSize={14} color="#00A86B" fontWeight="600">
-                Candidature envoyée avec succès !
-              </Text>
-            </XStack>
-          ) : hasApplied ? (
-            <XStack
-              paddingVertical="$3"
-              paddingHorizontal="$4"
-              backgroundColor="#FFF3CD"
-              borderRadius={8}
-              alignItems="center"
-              justifyContent="space-between"
-              gap="$2"
-            >
-              <CheckCircle2
-                size={16}
-                color="#856404"
-                style={{ flexShrink: 0 }}
-              />
-              <Text fontSize={14} color="#856404" fontWeight="600">
-                Vous avez déjà postulé à cette mission
-              </Text>
-            </XStack>
-          ) : profile?.role === "freelance" ? (
-            <Button
-              variant="primary"
-              size="md"
-              width="100%"
-              onPress={onApply}
-              disabled={
-                isApplying ||
-                isCheckingApplication ||
-                mission?.status !== "published"
-              }
-            >
-              {isApplying ? "Envoi en cours..." : "Postuler à cette mission"}
-            </Button>
-          ) : (
-            <YStack
-              padding="$3"
-              backgroundColor="#F8F9FA"
-              borderRadius={8}
-              alignItems="center"
-            >
-              <Text fontSize={14} color="#666" fontWeight="600">
-                Connectez-vous en tant que freelance pour postuler
-              </Text>
-            </YStack>
+          {/* Boutons recruteur propriétaire */}
+          {isRecruiter && isMissionOwner && (
+            <>
+              {/* Bouton Gérer les candidatures */}
+              {onManageCandidates && (
+                <Button
+                  variant="primary"
+                  size="md"
+                  width="100%"
+                  onPress={onManageCandidates}
+                >
+                  Gérer les candidatures
+                </Button>
+              )}
+
+              {/* Bouton Payer la mission */}
+              {isPaid ? (
+                <XStack
+                  paddingVertical="$3"
+                  paddingHorizontal="$4"
+                  backgroundColor="#D4F4DD"
+                  borderRadius={8}
+                  alignItems="center"
+                  justifyContent="center"
+                  gap="$2"
+                >
+                  <CheckCircle2
+                    size={16}
+                    color="#00A86B"
+                    style={{ flexShrink: 0 }}
+                  />
+                  <Text fontSize={14} color="#00A86B" fontWeight="600">
+                    Mission payée
+                  </Text>
+                </XStack>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="md"
+                  width="100%"
+                  onPress={handlePayMission}
+                  disabled={isLoadingPayment || isCheckingPayment}
+                >
+                  <XStack
+                    alignItems="center"
+                    justifyContent="center"
+                    gap="$2"
+                  >
+                    {isLoadingPayment ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <CreditCard size={16} />
+                    )}
+                    <Text>
+                      {isLoadingPayment
+                        ? "Chargement..."
+                        : isCheckingPayment
+                          ? "Vérification..."
+                          : "Payer la mission"}
+                    </Text>
+                  </XStack>
+                </Button>
+              )}
+
+              {paymentError && (
+                <YStack padding="$3" backgroundColor="#F8D7DA" borderRadius={8}>
+                  <Text fontSize={14} color="#721C24">
+                    {paymentError}
+                  </Text>
+                </YStack>
+              )}
+            </>
+          )}
+
+          {/* Boutons pour les freelances */}
+          {!isRecruiter && (
+            <>
+              {showSuccessMessage ? (
+                <XStack
+                  paddingVertical="$3"
+                  paddingHorizontal="$4"
+                  backgroundColor="#D4F4DD"
+                  borderRadius={8}
+                  alignItems="center"
+                  justifyContent="center"
+                  gap="$2"
+                >
+                  <CheckCircle2
+                    size={16}
+                    color="#00A86B"
+                    style={{ flexShrink: 0 }}
+                  />
+                  <Text fontSize={14} color="#00A86B" fontWeight="600">
+                    Candidature envoyée avec succès !
+                  </Text>
+                </XStack>
+              ) : hasApplied ? (
+                <XStack
+                  paddingVertical="$3"
+                  paddingHorizontal="$4"
+                  backgroundColor="#FFF3CD"
+                  borderRadius={8}
+                  alignItems="center"
+                  justifyContent="space-between"
+                  gap="$2"
+                >
+                  <CheckCircle2
+                    size={16}
+                    color="#856404"
+                    style={{ flexShrink: 0 }}
+                  />
+                  <Text fontSize={14} color="#856404" fontWeight="600">
+                    Vous avez déjà postulé à cette mission
+                  </Text>
+                </XStack>
+              ) : profile?.role === "freelance" ? (
+                <Button
+                  variant="primary"
+                  size="md"
+                  width="100%"
+                  onPress={onApply}
+                  disabled={
+                    isApplying ||
+                    isCheckingApplication ||
+                    mission?.status !== "published"
+                  }
+                >
+                  {isApplying ? "Envoi en cours..." : "Postuler à cette mission"}
+                </Button>
+              ) : (
+                <YStack
+                  padding="$3"
+                  backgroundColor="#F8F9FA"
+                  borderRadius={8}
+                  alignItems="center"
+                >
+                  <Text fontSize={14} color="#666" fontWeight="600">
+                    Connectez-vous en tant que freelance pour postuler
+                  </Text>
+                </YStack>
+              )}
+            </>
           )}
 
           {applyError && (

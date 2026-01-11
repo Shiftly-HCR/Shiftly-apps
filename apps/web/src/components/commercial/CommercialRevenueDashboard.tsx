@@ -1,37 +1,65 @@
 "use client";
 
-import { YStack, XStack } from "tamagui";
+import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
-import { Euro, TrendingUp, Calendar, Percent } from "lucide-react";
+import { Euro, TrendingUp, Calendar, Percent, Loader2 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { RevenuePieChart } from "./RevenuePieChart";
 import { ProgressionScale } from "./ProgressionScale";
+import { useCommercialStats, formatCentsToEuros } from "@/hooks/commercial";
 
 /**
  * Composant Dashboard de rémunération du Commercial
  * Affiche les métriques de revenus et un graphique en camembert
+ * Utilise les données réelles de mission_finance et mission_transfers
  */
 export function CommercialRevenueDashboard() {
-  // Données en dur pour l'instant
-  const metrics = {
-    subscriptionProfit: 1250, // Bénéfice sur les abonnements (€)
-    freelancePercentage: 4, // Pourcentage sur les tarifs journaliers (%)
-    mrr: 4500, // Monthly Recurring Revenue (€)
-  };
+  const { stats, isLoading, error } = useCommercialStats();
 
-  // Calcul de l'ARR : MRR * 12
-  const arr = metrics.mrr * 12;
+  // Afficher un loader pendant le chargement
+  if (isLoading) {
+    return (
+      <YStack padding="$6" alignItems="center" justifyContent="center">
+        <Loader2 size={32} color={colors.shiftlyViolet} className="animate-spin" />
+        <Text marginTop="$2" color={colors.gray500}>
+          Chargement des statistiques...
+        </Text>
+      </YStack>
+    );
+  }
 
-  // Données pour l'échelle de progression (primes basées sur le CA)
-  // CA actuel (en dur pour l'instant)
-  const currentRevenue = 12500; // Chiffre d'affaires actuel du commercial (€)
+  // Afficher une erreur si nécessaire
+  if (error) {
+    return (
+      <YStack padding="$6" alignItems="center">
+        <Text color={colors.shiftlyMarron}>{error}</Text>
+      </YStack>
+    );
+  }
 
-  // Seuils de CA pour débloquer les primes
+  // Convertir les centimes en euros pour l'affichage
+  const totalCommissionEuros = stats ? stats.totalCommissionEarned / 100 : 0;
+  const monthlyCommissionEuros = stats ? stats.monthlyCommission / 100 : 0;
+  const paidCommissionEuros = stats ? stats.totalCommissionPaid / 100 : 0;
+  const pendingCommissionEuros = stats ? stats.pendingCommission / 100 : 0;
+
+  // Pourcentage de commission (fixe à 6%)
+  const commissionPercentage = 6;
+
+  // Calculer une estimation du MRR basée sur les commissions mensuelles
+  // (pour simplifier, on utilise les commissions du mois comme proxy)
+  const estimatedMrr = monthlyCommissionEuros;
+  const estimatedArr = estimatedMrr * 12;
+
+  // Données pour l'échelle de progression (primes basées sur le CA total)
+  const currentRevenue = totalCommissionEuros;
+
+  // Seuils de CA pour débloquer les primes (en euros)
   const bonusTiers = [
-    { threshold: 5000, bonus: 200, label: "Niveau 1" },
-    { threshold: 10000, bonus: 500, label: "Niveau 2" },
-    { threshold: 20000, bonus: 800, label: "Niveau 3" },
-    { threshold: 30000, bonus: 1000, label: "Niveau 4" },
+    { threshold: 500, bonus: 50, label: "Niveau 1" },
+    { threshold: 1000, bonus: 100, label: "Niveau 2" },
+    { threshold: 2500, bonus: 200, label: "Niveau 3" },
+    { threshold: 5000, bonus: 400, label: "Niveau 4" },
   ];
 
   // Calculer le total des primes débloquées
@@ -39,30 +67,24 @@ export function CommercialRevenueDashboard() {
     .filter((tier) => currentRevenue >= tier.threshold)
     .reduce((sum, tier) => sum + tier.bonus, 0);
 
-  // Données pour le graphique pie chart (bénéfice total mensuel)
-  // Couleurs améliorées pour plus de lisibilité et de contraste
+  // Données pour le graphique pie chart (répartition des revenus)
   const monthlyRevenueData = [
     {
-      name: "Abonnements",
-      value: metrics.subscriptionProfit,
-      color: colors.shiftlyViolet, // #782478 - Violet principal
+      name: "Commissions payées",
+      value: paidCommissionEuros,
+      color: colors.shiftlyViolet,
     },
     {
-      name: "Commissions freelances",
-      value: 850,
-      color: "#10B981", // Vert émeraude - Bon contraste
+      name: "Commissions en attente",
+      value: pendingCommissionEuros,
+      color: "#F59E0B",
     },
     {
-      name: "Autres revenus",
-      value: 400,
-      color: "#EF4444", // Rouge vif - Très contrasté
-    },
-    {
-      name: "Primes",
+      name: "Primes débloquées",
       value: totalBonuses,
-      color: "#F59E0B", // Orange/Ambre - Couleur distincte
+      color: "#10B981",
     },
-  ];
+  ].filter((item) => item.value > 0); // Filtrer les valeurs nulles
 
   return (
     <YStack gap="$6">
@@ -72,38 +94,78 @@ export function CommercialRevenueDashboard() {
           icon={Euro}
           iconColor={colors.shiftlyViolet}
           iconBackgroundColor={`${colors.shiftlyViolet}20`}
-          label="Bénéfice abonnements"
-          value={`${metrics.subscriptionProfit.toLocaleString("fr-FR")}€`}
+          label="Commissions ce mois"
+          value={`${monthlyCommissionEuros.toLocaleString("fr-FR")}€`}
           subtitle="Ce mois-ci"
         />
         <MetricCard
           icon={Percent}
           iconColor="#10B981"
           iconBackgroundColor="#10B98120"
-          label="Commission freelances"
-          value={`${metrics.freelancePercentage}%`}
-          subtitle="Sur les tarifs journaliers"
+          label="Taux de commission"
+          value={`${commissionPercentage}%`}
+          subtitle="Sur les paiements de missions"
         />
         <MetricCard
           icon={TrendingUp}
           iconColor="#3B82F6"
           iconBackgroundColor="#3B82F620"
-          label="MRR"
-          value={`${metrics.mrr.toLocaleString("fr-FR")}€`}
-          subtitle="Monthly Recurring Revenue"
+          label="Total gagné"
+          value={`${totalCommissionEuros.toLocaleString("fr-FR")}€`}
+          subtitle="Depuis le début"
         />
         <MetricCard
           icon={Calendar}
           iconColor="#F59E0B"
           iconBackgroundColor="#F59E0B20"
-          label="ARR"
-          value={`${arr.toLocaleString("fr-FR")}€`}
-          subtitle="Annual Recurring Revenue"
+          label="En attente"
+          value={`${pendingCommissionEuros.toLocaleString("fr-FR")}€`}
+          subtitle="À recevoir"
         />
       </XStack>
 
-      {/* Graphique pie chart */}
-      <RevenuePieChart data={monthlyRevenueData} />
+      {/* Informations supplémentaires */}
+      {stats && (
+        <XStack gap="$4" flexWrap="wrap">
+          <YStack
+            backgroundColor="white"
+            borderRadius="$3"
+            padding="$4"
+            flex={1}
+            minWidth={200}
+            borderWidth={1}
+            borderColor={colors.gray200}
+          >
+            <Text fontSize={14} color={colors.gray500} marginBottom="$1">
+              Établissements rattachés
+            </Text>
+            <Text fontSize={24} fontWeight="700" color={colors.gray900}>
+              {stats.totalEstablishments}
+            </Text>
+          </YStack>
+          <YStack
+            backgroundColor="white"
+            borderRadius="$3"
+            padding="$4"
+            flex={1}
+            minWidth={200}
+            borderWidth={1}
+            borderColor={colors.gray200}
+          >
+            <Text fontSize={14} color={colors.gray500} marginBottom="$1">
+              Missions avec commission
+            </Text>
+            <Text fontSize={24} fontWeight="700" color={colors.gray900}>
+              {stats.totalMissionsWithCommission}
+            </Text>
+          </YStack>
+        </XStack>
+      )}
+
+      {/* Graphique pie chart - seulement s'il y a des données */}
+      {monthlyRevenueData.length > 0 && (
+        <RevenuePieChart data={monthlyRevenueData} />
+      )}
 
       {/* Échelle de progression avec primes */}
       <ProgressionScale

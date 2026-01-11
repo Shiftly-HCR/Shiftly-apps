@@ -137,7 +137,8 @@ export async function getMissionApplications(missionId: string) {
     if (mission.recruiter_id !== user.id) {
       return {
         success: false,
-        error: "Vous n'êtes pas autorisé à voir les candidatures de cette mission",
+        error:
+          "Vous n'êtes pas autorisé à voir les candidatures de cette mission",
         applications: [],
       };
     }
@@ -284,4 +285,3 @@ function getValidStatusTransitions(
       return [];
   }
 }
-

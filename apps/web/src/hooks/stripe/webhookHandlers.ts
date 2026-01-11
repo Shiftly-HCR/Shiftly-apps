@@ -1,11 +1,13 @@
 /**
  * Handlers pour les webhooks Stripe
  * Gère la synchronisation de l'état d'abonnement avec Supabase
+ * et les paiements de missions (Stripe Connect)
  */
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { SubscriptionStatus } from "@shiftly/data";
+import { calculateFundDistribution } from "@shiftly/payments";
 
 // Client Supabase avec service role pour les webhooks (bypass RLS)
 function getSupabaseServiceRole() {
@@ -851,6 +853,275 @@ export async function handleInvoicePaymentFailed(
   });
 }
 
+// ============================================================================
+// HANDLERS POUR LES PAIEMENTS DE MISSIONS (STRIPE CONNECT)
+// ============================================================================
+
+/**
+ * Handler pour checkout.session.completed - Paiements de missions
+ * Appelé quand un recruteur complète le paiement d'une mission
+ */
+export async function handleMissionCheckoutCompleted(
+  session: Stripe.Checkout.Session
+): Promise<void> {
+  console.log(`🛒 [Mission] Traitement checkout.session.completed: ${session.id}`);
+
+  // Vérifier que c'est un paiement de mission
+  const metadata = session.metadata;
+  if (!metadata || metadata.type !== "mission_payment") {
+    console.log(`ℹ️ Session ${session.id} n'est pas un paiement de mission, ignoré`);
+    return;
+  }
+
+  const missionId = metadata.mission_id;
+  const recruiterId = metadata.recruiter_id;
+  const establishmentId = metadata.establishment_id;
+
+  if (!missionId) {
+    console.error("❌ [Mission] mission_id manquant dans les metadata");
+    return;
+  }
+
+  console.log(`📋 [Mission] Mission: ${missionId}, Recruteur: ${recruiterId}`);
+
+  const supabase = getSupabaseServiceRole();
+
+  // Récupérer le PaymentIntent ID
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
+  // Mettre à jour mission_payments
+  const { data: payment, error: updateError } = await supabase
+    .from("mission_payments")
+    .update({
+      status: "paid",
+      paid_at: new Date().toISOString(),
+      stripe_payment_intent_id: paymentIntentId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("stripe_checkout_session_id", session.id)
+    .select()
+    .single();
+
+  if (updateError) {
+    console.error("❌ [Mission] Erreur mise à jour payment:", updateError);
+    // Essayer de créer l'entrée si elle n'existe pas
+    const amount = session.amount_total || 0;
+    const { data: newPayment, error: insertError } = await supabase
+      .from("mission_payments")
+      .insert({
+        mission_id: missionId,
+        recruiter_id: recruiterId,
+        amount,
+        currency: session.currency || "eur",
+        status: "paid",
+        paid_at: new Date().toISOString(),
+        stripe_checkout_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("❌ [Mission] Erreur création payment:", insertError);
+      return;
+    }
+
+    await createMissionFinance(supabase, newPayment, missionId, establishmentId);
+    return;
+  }
+
+  if (payment) {
+    await createMissionFinance(supabase, payment, missionId, establishmentId);
+  }
+
+  console.log(`✅ [Mission] Paiement ${session.id} traité avec succès`);
+}
+
+/**
+ * Crée le snapshot financier (mission_finance) pour un paiement
+ */
+async function createMissionFinance(
+  supabase: ReturnType<typeof getSupabaseServiceRole>,
+  payment: { id: string; amount: number },
+  missionId: string,
+  establishmentId?: string
+): Promise<void> {
+  console.log(`🔄 [Mission] Création mission_finance pour payment ${payment.id}`);
+
+  let commercialId: string | null = null;
+  let hasCommercial = false;
+
+  // Récupérer le commercial de l'établissement si applicable
+  if (establishmentId) {
+    const { data: establishment } = await supabase
+      .from("establishments")
+      .select("commercial_id")
+      .eq("id", establishmentId)
+      .single();
+
+    if (establishment?.commercial_id) {
+      commercialId = establishment.commercial_id;
+      hasCommercial = true;
+    }
+  }
+
+  // Récupérer le freelance assigné (application acceptée)
+  const { data: acceptedApplication } = await supabase
+    .from("mission_applications")
+    .select("user_id")
+    .eq("mission_id", missionId)
+    .eq("status", "accepted")
+    .single();
+
+  const freelancerId = acceptedApplication?.user_id || null;
+
+  // Calculer la répartition des fonds
+  const distribution = calculateFundDistribution(payment.amount, hasCommercial);
+
+  // Créer l'entrée mission_finance
+  const { error: financeError } = await supabase.from("mission_finance").insert({
+    mission_id: missionId,
+    mission_payment_id: payment.id,
+    gross_amount: payment.amount,
+    platform_fee_amount: distribution.platformFeeAmount,
+    commercial_fee_amount: distribution.commercialFeeAmount,
+    freelancer_amount: distribution.freelancerAmount,
+    platform_net_amount: distribution.platformNetAmount,
+    commercial_id: commercialId,
+    freelancer_id: freelancerId,
+    status: "calculated",
+  });
+
+  if (financeError) {
+    console.error("❌ [Mission] Erreur création mission_finance:", financeError);
+    return;
+  }
+
+  console.log(`✅ [Mission] mission_finance créé - Freelance: ${distribution.freelancerAmount}c, Commercial: ${distribution.commercialFeeAmount}c, Plateforme: ${distribution.platformNetAmount}c`);
+}
+
+/**
+ * Handler pour account.updated - Stripe Connect
+ * Met à jour l'état du compte Connect dans le profil utilisateur
+ */
+export async function handleAccountUpdated(
+  account: Stripe.Account
+): Promise<void> {
+  console.log(`🔄 [Connect] Traitement account.updated: ${account.id}`);
+
+  const supabase = getSupabaseServiceRole();
+
+  // Trouver le profil associé à ce compte Connect
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("stripe_account_id", account.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.warn(`⚠️ [Connect] Aucun profil trouvé pour le compte ${account.id}`);
+    return;
+  }
+
+  // Déterminer le statut d'onboarding
+  let onboardingStatus: "not_started" | "pending" | "complete" = "pending";
+  if (account.details_submitted) {
+    onboardingStatus = "complete";
+  }
+
+  // Extraire les requirements en attente
+  const requirementsDue = account.requirements?.currently_due || [];
+
+  // Mettre à jour le profil
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      connect_onboarding_status: onboardingStatus,
+      connect_payouts_enabled: account.payouts_enabled || false,
+      connect_charges_enabled: account.charges_enabled || false,
+      connect_requirements_due:
+        requirementsDue.length > 0 ? { requirements: requirementsDue } : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", profile.id);
+
+  if (updateError) {
+    console.error("❌ [Connect] Erreur mise à jour profil:", updateError);
+    return;
+  }
+
+  console.log(`✅ [Connect] Profil ${profile.id} mis à jour - Payouts: ${account.payouts_enabled}, Status: ${onboardingStatus}`);
+}
+
+/**
+ * Handler pour payment_intent.payment_failed - Échec de paiement mission
+ */
+export async function handlePaymentIntentFailed(
+  paymentIntent: Stripe.PaymentIntent
+): Promise<void> {
+  console.log(`❌ [Mission] Traitement payment_intent.payment_failed: ${paymentIntent.id}`);
+
+  const metadata = paymentIntent.metadata;
+  if (!metadata || metadata.type !== "mission_payment") {
+    return;
+  }
+
+  const supabase = getSupabaseServiceRole();
+
+  // Mettre à jour mission_payments si trouvé
+  await supabase
+    .from("mission_payments")
+    .update({
+      status: "failed",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("stripe_payment_intent_id", paymentIntent.id);
+
+  console.log(`✅ [Mission] Paiement ${paymentIntent.id} marqué comme échoué`);
+}
+
+/**
+ * Handler pour charge.refunded - Remboursement
+ */
+export async function handleChargeRefunded(
+  charge: Stripe.Charge
+): Promise<void> {
+  console.log(`💰 [Mission] Traitement charge.refunded: ${charge.id}`);
+
+  const paymentIntentId =
+    typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+  if (!paymentIntentId) {
+    return;
+  }
+
+  const supabase = getSupabaseServiceRole();
+
+  // Mettre à jour mission_payments si c'est un paiement de mission
+  const { data: payment } = await supabase
+    .from("mission_payments")
+    .select("id")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .single();
+
+  if (payment) {
+    await supabase
+      .from("mission_payments")
+      .update({
+        status: "refunded",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", payment.id);
+
+    console.log(`✅ [Mission] Paiement ${payment.id} marqué comme remboursé`);
+  }
+}
+
 /**
  * Traite un event Stripe
  */
@@ -863,11 +1134,18 @@ export async function processStripeEvent(event: Stripe.Event): Promise<void> {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed":
-        await handleCheckoutSessionCompleted(
-          event.data.object as Stripe.Checkout.Session
-        );
+      // === ABONNEMENTS ===
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        // Distinguer entre abonnement et paiement de mission
+        if (session.mode === "payment" && session.metadata?.type === "mission_payment") {
+          await handleMissionCheckoutCompleted(session);
+        } else {
+          // Abonnement (mode subscription)
+          await handleCheckoutSessionCompleted(session);
+        }
         break;
+      }
 
       case "customer.subscription.created":
         await handleSubscriptionCreated(
@@ -893,6 +1171,22 @@ export async function processStripeEvent(event: Stripe.Event): Promise<void> {
 
       case "invoice.payment_failed":
         await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
+        break;
+
+      // === STRIPE CONNECT ===
+      case "account.updated":
+        await handleAccountUpdated(event.data.object as Stripe.Account);
+        break;
+
+      // === PAIEMENTS MISSIONS ===
+      case "payment_intent.payment_failed":
+        await handlePaymentIntentFailed(
+          event.data.object as Stripe.PaymentIntent
+        );
+        break;
+
+      case "charge.refunded":
+        await handleChargeRefunded(event.data.object as Stripe.Charge);
         break;
 
       default:

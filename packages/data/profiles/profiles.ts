@@ -11,6 +11,12 @@ export type SubscriptionStatus =
   | "incomplete_expired"
   | "paused";
 
+export type ConnectOnboardingStatus =
+  | "not_started"
+  | "pending"
+  | "complete"
+  | "restricted";
+
 export interface Profile {
   id: string;
   created_at?: string;
@@ -26,13 +32,20 @@ export interface Profile {
   email?: string;
   is_premium?: boolean;
   subscription_plan_id?: string;
-  // Champs Stripe
+  // Champs Stripe Billing
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
   subscription_status?: SubscriptionStatus;
   current_period_end?: string;
   cancel_at_period_end?: boolean;
   subscription_price_id?: string;
+  // Champs Stripe Connect
+  stripe_account_id?: string;
+  connect_onboarding_status?: ConnectOnboardingStatus;
+  connect_payouts_enabled?: boolean;
+  connect_charges_enabled?: boolean;
+  connect_requirements_due?: Record<string, unknown>;
+  // Autres champs
   daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
   hourly_rate?: number; // Tarif horaire en euros
   availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
