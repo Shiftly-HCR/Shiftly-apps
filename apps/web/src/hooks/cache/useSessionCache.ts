@@ -9,6 +9,7 @@ import type { SessionCache } from "@shiftly/core";
 export function useSessionCache(): {
   cache: SessionCache | null;
   isLoading: boolean;
+  isInitialized: boolean;
   error: string | null;
   refresh: () => Promise<void>;
   clear: () => Promise<void>;
@@ -16,6 +17,7 @@ export function useSessionCache(): {
   const {
     cache,
     isLoading,
+    isInitialized,
     error,
     refresh,
     clear,
@@ -24,6 +26,7 @@ export function useSessionCache(): {
   return {
     cache,
     isLoading,
+    isInitialized,
     error,
     refresh,
     clear,
