@@ -316,6 +316,15 @@ export async function createMissionCheckoutSession(
     metadata.establishment_id = params.establishmentId;
   }
 
+  // Stripe n'accepte que customer OU customer_email, pas les deux
+  // Prioriser customer si disponible
+  const customerConfig: { customer?: string; customer_email?: string } = {};
+  if (params.customerId) {
+    customerConfig.customer = params.customerId;
+  } else if (params.customerEmail) {
+    customerConfig.customer_email = params.customerEmail;
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
@@ -334,8 +343,7 @@ export async function createMissionCheckoutSession(
     ],
     success_url: params.successUrl,
     cancel_url: params.cancelUrl,
-    customer_email: params.customerEmail,
-    customer: params.customerId,
+    ...customerConfig,
     metadata,
     payment_intent_data: {
       metadata, // Propager les metadata au PaymentIntent

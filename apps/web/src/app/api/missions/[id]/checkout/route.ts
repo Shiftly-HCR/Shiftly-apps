@@ -57,6 +57,7 @@ function createServerSupabaseClient(req: NextRequest) {
 
 /**
  * Calcule le montant à payer en centimes pour une mission
+ * Priorité : total_salary - c'est le montant total de la mission
  */
 function calculateMissionAmount(mission: {
   total_salary?: number | null;
@@ -65,31 +66,20 @@ function calculateMissionAmount(mission: {
   start_date?: string | null;
   end_date?: string | null;
 }): number {
-  // Priorité 1: total_salary (déjà en euros, convertir en centimes)
+  // Priorité 1: total_salary (salaire total de la mission)
   if (mission.total_salary && mission.total_salary > 0) {
     return Math.round(mission.total_salary * 100);
   }
 
-  // Priorité 2: daily_rate × nombre de jours
-  if (mission.daily_rate && mission.daily_rate > 0 && mission.start_date && mission.end_date) {
-    const startDate = new Date(mission.start_date);
-    const endDate = new Date(mission.end_date);
-    const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-    return Math.round(mission.daily_rate * days * 100);
-  }
-
-  // Priorité 3: hourly_rate × 8h × nombre de jours (estimation)
-  if (mission.hourly_rate && mission.hourly_rate > 0 && mission.start_date && mission.end_date) {
-    const startDate = new Date(mission.start_date);
-    const endDate = new Date(mission.end_date);
-    const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-    const hoursPerDay = 8;
-    return Math.round(mission.hourly_rate * hoursPerDay * days * 100);
-  }
-
-  // Fallback: daily_rate seul (1 jour)
+  // Priorité 2: daily_rate (TJM) si pas de total_salary
   if (mission.daily_rate && mission.daily_rate > 0) {
     return Math.round(mission.daily_rate * 100);
+  }
+
+  // Priorité 3: hourly_rate × 8h (estimation d'une journée)
+  if (mission.hourly_rate && mission.hourly_rate > 0) {
+    const hoursPerDay = 8;
+    return Math.round(mission.hourly_rate * hoursPerDay * 100);
   }
 
   return 0;
@@ -212,13 +202,52 @@ export async function POST(req: NextRequest, context: RouteContext) {
       .single();
 
     // Configurer les URLs
-    const origin = req.headers.get("origin") ?? req.nextUrl.origin;
-    const successUrl =
-      process.env.STRIPE_CHECKOUT_SUCCESS_URL ||
-      `${origin}/missions/${missionId}?payment=success`;
-    const cancelUrl =
-      process.env.STRIPE_CHECKOUT_CANCEL_URL ||
-      `${origin}/missions/${missionId}?payment=cancelled`;
+    const originHeader = req.headers.get("origin");
+    const refererHeader = req.headers.get("referer");
+    const hostHeader = req.headers.get("host");
+    
+    // Déterminer l'origin de plusieurs façons
+    let origin = originHeader;
+    if (!origin && refererHeader) {
+      try {
+        const refererUrl = new URL(refererHeader);
+        origin = refererUrl.origin;
+      } catch {
+        // Ignorer si l'URL n'est pas valide
+      }
+    }
+    if (!origin && hostHeader) {
+      // Construire l'origin à partir du host
+      const protocol = req.headers.get("x-forwarded-proto") || "http";
+      origin = `${protocol}://${hostHeader}`;
+    }
+    if (!origin) {
+      // Fallback ultime
+      origin = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    }
+
+    console.log(`🔗 Origin détecté: ${origin}`);
+
+    // Construire les URLs dynamiquement avec l'ID de la mission
+    // Les variables d'environnement peuvent contenir {id} comme placeholder
+    let successUrl = process.env.STRIPE_CHECKOUT_SUCCESS_URL;
+    let cancelUrl = process.env.STRIPE_CHECKOUT_CANCEL_URL;
+
+    if (successUrl) {
+      // Remplacer le placeholder {id} par l'ID réel
+      successUrl = successUrl.replace("{id}", missionId);
+    } else {
+      successUrl = `${origin}/missions/${missionId}?payment=success`;
+    }
+
+    if (cancelUrl) {
+      cancelUrl = cancelUrl.replace("{id}", missionId);
+    } else {
+      cancelUrl = `${origin}/missions/${missionId}?payment=cancelled`;
+    }
+
+    console.log(`🔗 Success URL: ${successUrl}`);
+    console.log(`🔗 Cancel URL: ${cancelUrl}`);
 
     // Créer la session Stripe Checkout
     const { url, sessionId } = await createMissionCheckoutSession({
