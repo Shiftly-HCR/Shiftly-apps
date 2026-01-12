@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthRedirect } from "@/hooks";
+import { colors } from "@shiftly/ui";
 import { YStack, Text } from "tamagui";
 
 export default function Home() {
@@ -11,7 +12,7 @@ export default function Home() {
   return (
     <YStack
       flex={1}
-      backgroundColor="#F9FAFB"
+      backgroundColor={colors.backgroundLight}
       alignItems="center"
       justifyContent="center"
       minHeight="100vh"
