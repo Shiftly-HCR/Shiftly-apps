@@ -19,8 +19,8 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "";
 export const FUND_DISTRIBUTION = {
   FREELANCER_PERCENTAGE: 85,
   PLATFORM_TOTAL_PERCENTAGE: 15,
-  COMMERCIAL_PERCENTAGE: 6,
-  PLATFORM_NET_WITH_COMMERCIAL: 9, // 15% - 6%
+  COMMERCIAL_PERCENTAGE: 4,
+  PLATFORM_NET_WITH_COMMERCIAL: 11, // 15% - 4%
 } as const;
 
 function getPriceId(planId: SubscriptionPlanId): string | undefined {

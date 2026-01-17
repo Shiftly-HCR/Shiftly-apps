@@ -41,8 +41,8 @@ export interface FinanceBreakdown {
   grossAmount: number;
   freelancerAmount: number; // 85%
   platformFeeAmount: number; // 15% total
-  commercialFeeAmount: number; // 6% si commercial, sinon 0
-  platformNetAmount: number; // 15% sans commercial, 9% avec commercial
+  commercialFeeAmount: number; // 4% si commercial, sinon 0
+  platformNetAmount: number; // 15% sans commercial, 11% avec commercial
 }
 
 // ============================================
@@ -51,7 +51,7 @@ export interface FinanceBreakdown {
 
 export const PLATFORM_FEE_PERCENT = 15; // 15% total pour la plateforme
 export const FREELANCER_PERCENT = 85; // 85% pour le freelance
-export const COMMERCIAL_COMMISSION_PERCENT = 6; // 6% pour le commercial
+export const COMMERCIAL_COMMISSION_PERCENT = 4; // 4% pour le commercial
 
 // ============================================
 // Fonctions Connect Account
@@ -177,7 +177,7 @@ export async function createTransfer(
  * 
  * - Freelance: 85%
  * - Plateforme: 15% total
- *   - Si commercial: 6% commercial + 9% plateforme
+ *   - Si commercial: 4% commercial + 11% plateforme
  *   - Si pas de commercial: 15% plateforme
  */
 export function calculateFinanceBreakdown(
@@ -195,9 +195,9 @@ export function calculateFinanceBreakdown(
   let platformNetAmount = platformFeeAmount;
 
   if (hasCommercial) {
-    // 6% pour le commercial
+    // 4% pour le commercial
     commercialFeeAmount = Math.floor(grossAmount * COMMERCIAL_COMMISSION_PERCENT / 100);
-    // Le reste (9%) pour la plateforme
+    // Le reste (11%) pour la plateforme
     platformNetAmount = platformFeeAmount - commercialFeeAmount;
   }
 
