@@ -7,7 +7,7 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { SubscriptionStatus } from "@shiftly/data";
-import { calculateFundDistribution } from "@shiftly/payments";
+import { calculateFundDistribution, getStripeClient } from "@shiftly/payments";
 
 // Client Supabase avec service role pour les webhooks (bypass RLS)
 function getSupabaseServiceRole() {
@@ -864,12 +864,16 @@ export async function handleInvoicePaymentFailed(
 export async function handleMissionCheckoutCompleted(
   session: Stripe.Checkout.Session
 ): Promise<void> {
-  console.log(`🛒 [Mission] Traitement checkout.session.completed: ${session.id}`);
+  console.log(
+    `🛒 [Mission] Traitement checkout.session.completed: ${session.id}`
+  );
 
   // Vérifier que c'est un paiement de mission
   const metadata = session.metadata;
   if (!metadata || metadata.type !== "mission_payment") {
-    console.log(`ℹ️ Session ${session.id} n'est pas un paiement de mission, ignoré`);
+    console.log(
+      `ℹ️ Session ${session.id} n'est pas un paiement de mission, ignoré`
+    );
     return;
   }
 
@@ -929,15 +933,113 @@ export async function handleMissionCheckoutCompleted(
       return;
     }
 
-    await createMissionFinance(supabase, newPayment, missionId, establishmentId);
+    await createMissionFinance(
+      supabase,
+      newPayment,
+      missionId,
+      establishmentId,
+      paymentIntentId
+    );
     return;
   }
 
   if (payment) {
-    await createMissionFinance(supabase, payment, missionId, establishmentId);
+    await createMissionFinance(
+      supabase,
+      payment,
+      missionId,
+      establishmentId,
+      paymentIntentId
+    );
   }
 
   console.log(`✅ [Mission] Paiement ${session.id} traité avec succès`);
+}
+
+/**
+ * Attendre un délai (en ms)
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Récupère les frais Stripe réels depuis le PaymentIntent
+ * Avec retry car la balance_transaction peut prendre quelques secondes à être créée
+ */
+async function getStripeFees(paymentIntentId?: string): Promise<number> {
+  if (!paymentIntentId) {
+    console.warn(
+      "⚠️ [Mission] Pas de PaymentIntent ID, frais Stripe estimés à 0"
+    );
+    return 0;
+  }
+
+  const stripe = getStripeClient();
+  const maxRetries = 3;
+  const retryDelayMs = 2000; // 2 secondes entre chaque tentative
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(
+        `🔄 [Mission] Tentative ${attempt}/${maxRetries} de récupération des frais Stripe...`
+      );
+
+      // Récupérer le PaymentIntent avec les charges
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        paymentIntentId,
+        {
+          expand: ["latest_charge.balance_transaction"],
+        }
+      );
+
+      // Récupérer la charge et la balance_transaction
+      const charge = paymentIntent.latest_charge as Stripe.Charge | null;
+      if (!charge) {
+        console.warn(
+          `⚠️ [Mission] Tentative ${attempt}: Pas de charge trouvée`
+        );
+        if (attempt < maxRetries) {
+          await delay(retryDelayMs);
+          continue;
+        }
+        return 0;
+      }
+
+      const balanceTransaction =
+        charge.balance_transaction as Stripe.BalanceTransaction | null;
+      if (!balanceTransaction) {
+        console.warn(
+          `⚠️ [Mission] Tentative ${attempt}: Pas de balance_transaction trouvée`
+        );
+        if (attempt < maxRetries) {
+          await delay(retryDelayMs);
+          continue;
+        }
+        return 0;
+      }
+
+      // Les frais sont en centimes
+      const stripeFee = balanceTransaction.fee;
+      console.log(
+        `💰 [Mission] Frais Stripe réels: ${stripeFee} centimes (tentative ${attempt})`
+      );
+
+      return stripeFee;
+    } catch (error) {
+      console.error(
+        `❌ [Mission] Tentative ${attempt}: Erreur récupération frais Stripe:`,
+        error
+      );
+      if (attempt < maxRetries) {
+        await delay(retryDelayMs);
+        continue;
+      }
+      return 0;
+    }
+  }
+
+  return 0;
 }
 
 /**
@@ -947,9 +1049,15 @@ async function createMissionFinance(
   supabase: ReturnType<typeof getSupabaseServiceRole>,
   payment: { id: string; amount: number },
   missionId: string,
-  establishmentId?: string
+  establishmentId?: string,
+  paymentIntentId?: string
 ): Promise<void> {
-  console.log(`🔄 [Mission] Création mission_finance pour payment ${payment.id}`);
+  console.log(
+    `🔄 [Mission] Création mission_finance pour payment ${payment.id}`
+  );
+
+  // Récupérer les frais Stripe réels
+  const stripeFeeAmount = await getStripeFees(paymentIntentId);
 
   let commercialId: string | null = null;
   let hasCommercial = false;
@@ -978,29 +1086,50 @@ async function createMissionFinance(
 
   const freelancerId = acceptedApplication?.user_id || null;
 
-  // Calculer la répartition des fonds
+  // Calculer la répartition des fonds (avant déduction des frais Stripe)
   const distribution = calculateFundDistribution(payment.amount, hasCommercial);
 
-  // Créer l'entrée mission_finance
-  const { error: financeError } = await supabase.from("mission_finance").insert({
-    mission_id: missionId,
-    mission_payment_id: payment.id,
-    gross_amount: payment.amount,
-    platform_fee_amount: distribution.platformFeeAmount,
-    commercial_fee_amount: distribution.commercialFeeAmount,
-    freelancer_amount: distribution.freelancerAmount,
-    platform_net_amount: distribution.platformNetAmount,
-    commercial_id: commercialId,
-    freelancer_id: freelancerId,
-    status: "calculated",
+  // Déduire les frais Stripe de la part plateforme
+  const platformNetAmountAfterFees =
+    distribution.platformNetAmount - stripeFeeAmount;
+
+  console.log(`📊 [Mission] Répartition:`, {
+    grossAmount: payment.amount,
+    freelancerAmount: distribution.freelancerAmount,
+    commercialFeeAmount: distribution.commercialFeeAmount,
+    platformFeeAmount: distribution.platformFeeAmount,
+    stripeFeeAmount,
+    platformNetAmountAfterFees,
   });
 
+  // Créer l'entrée mission_finance
+  const { error: financeError } = await supabase
+    .from("mission_finance")
+    .insert({
+      mission_id: missionId,
+      mission_payment_id: payment.id,
+      gross_amount: payment.amount,
+      platform_fee_amount: distribution.platformFeeAmount,
+      commercial_fee_amount: distribution.commercialFeeAmount,
+      freelancer_amount: distribution.freelancerAmount,
+      platform_net_amount: platformNetAmountAfterFees,
+      stripe_fee_amount: stripeFeeAmount,
+      commercial_id: commercialId,
+      freelancer_id: freelancerId,
+      status: "calculated",
+    });
+
   if (financeError) {
-    console.error("❌ [Mission] Erreur création mission_finance:", financeError);
+    console.error(
+      "❌ [Mission] Erreur création mission_finance:",
+      financeError
+    );
     return;
   }
 
-  console.log(`✅ [Mission] mission_finance créé - Freelance: ${distribution.freelancerAmount}c, Commercial: ${distribution.commercialFeeAmount}c, Plateforme: ${distribution.platformNetAmount}c`);
+  console.log(
+    `✅ [Mission] mission_finance créé - Freelance: ${distribution.freelancerAmount}c, Commercial: ${distribution.commercialFeeAmount}c, Plateforme net: ${platformNetAmountAfterFees}c, Frais Stripe: ${stripeFeeAmount}c`
+  );
 }
 
 /**
@@ -1022,7 +1151,9 @@ export async function handleAccountUpdated(
     .single();
 
   if (profileError || !profile) {
-    console.warn(`⚠️ [Connect] Aucun profil trouvé pour le compte ${account.id}`);
+    console.warn(
+      `⚠️ [Connect] Aucun profil trouvé pour le compte ${account.id}`
+    );
     return;
   }
 
@@ -1053,7 +1184,9 @@ export async function handleAccountUpdated(
     return;
   }
 
-  console.log(`✅ [Connect] Profil ${profile.id} mis à jour - Payouts: ${account.payouts_enabled}, Status: ${onboardingStatus}`);
+  console.log(
+    `✅ [Connect] Profil ${profile.id} mis à jour - Payouts: ${account.payouts_enabled}, Status: ${onboardingStatus}`
+  );
 }
 
 /**
@@ -1062,7 +1195,9 @@ export async function handleAccountUpdated(
 export async function handlePaymentIntentFailed(
   paymentIntent: Stripe.PaymentIntent
 ): Promise<void> {
-  console.log(`❌ [Mission] Traitement payment_intent.payment_failed: ${paymentIntent.id}`);
+  console.log(
+    `❌ [Mission] Traitement payment_intent.payment_failed: ${paymentIntent.id}`
+  );
 
   const metadata = paymentIntent.metadata;
   if (!metadata || metadata.type !== "mission_payment") {
@@ -1138,7 +1273,10 @@ export async function processStripeEvent(event: Stripe.Event): Promise<void> {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         // Distinguer entre abonnement et paiement de mission
-        if (session.mode === "payment" && session.metadata?.type === "mission_payment") {
+        if (
+          session.mode === "payment" &&
+          session.metadata?.type === "mission_payment"
+        ) {
           await handleMissionCheckoutCompleted(session);
         } else {
           // Abonnement (mode subscription)

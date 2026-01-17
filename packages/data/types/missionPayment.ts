@@ -2,11 +2,14 @@
  * Types pour les paiements de missions (Stripe Connect)
  */
 
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
-export type TransferStatus = 'pending' | 'created' | 'failed' | 'reversed';
-export type TransferType = 'freelancer_payout' | 'commercial_commission';
-export type FinanceStatus = 'calculated' | 'funds_released' | 'partially_released';
-export type ConnectOnboardingStatus = 'not_started' | 'pending' | 'complete';
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type TransferStatus = "pending" | "created" | "failed" | "reversed";
+export type TransferType = "freelancer_payout" | "commercial_commission";
+export type FinanceStatus =
+  | "calculated"
+  | "funds_released"
+  | "partially_released";
+export type ConnectOnboardingStatus = "not_started" | "pending" | "complete";
 
 /**
  * Paiement d'une mission via Stripe Checkout
@@ -34,9 +37,10 @@ export interface MissionFinance {
   mission_payment_id: string;
   gross_amount: number; // Montant brut en centimes
   platform_fee_amount: number; // Commission plateforme totale (15%)
-  commercial_fee_amount: number; // Commission commercial (6% si applicable)
+  commercial_fee_amount: number; // Commission commercial (4% si applicable)
   freelancer_amount: number; // Part freelance (85%)
-  platform_net_amount: number; // Part nette plateforme (15% ou 9%)
+  platform_net_amount: number; // Part nette plateforme (15% ou 11%) MOINS frais Stripe
+  stripe_fee_amount: number; // Frais Stripe réels en centimes
   commercial_id?: string;
   freelancer_id?: string;
   status: FinanceStatus;
@@ -96,17 +100,23 @@ export function calculateFundDistribution(
   commercialFeeAmount: number;
   platformNetAmount: number;
 } {
-  const freelancerAmount = Math.floor((grossAmount * FUND_DISTRIBUTION.FREELANCER_PERCENTAGE) / 100);
-  const platformFeeAmount = Math.floor((grossAmount * FUND_DISTRIBUTION.PLATFORM_TOTAL_PERCENTAGE) / 100);
-  
+  const freelancerAmount = Math.floor(
+    (grossAmount * FUND_DISTRIBUTION.FREELANCER_PERCENTAGE) / 100
+  );
+  const platformFeeAmount = Math.floor(
+    (grossAmount * FUND_DISTRIBUTION.PLATFORM_TOTAL_PERCENTAGE) / 100
+  );
+
   let commercialFeeAmount = 0;
   let platformNetAmount = platformFeeAmount;
-  
+
   if (hasCommercial) {
-    commercialFeeAmount = Math.floor((grossAmount * FUND_DISTRIBUTION.COMMERCIAL_PERCENTAGE) / 100);
+    commercialFeeAmount = Math.floor(
+      (grossAmount * FUND_DISTRIBUTION.COMMERCIAL_PERCENTAGE) / 100
+    );
     platformNetAmount = platformFeeAmount - commercialFeeAmount;
   }
-  
+
   return {
     freelancerAmount,
     platformFeeAmount,

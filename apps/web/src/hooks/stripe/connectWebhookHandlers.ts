@@ -5,7 +5,7 @@
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { calculateFundDistribution } from "@shiftly/payments";
+import { calculateFundDistribution, getStripeClient } from "@shiftly/payments";
 
 // Client Supabase avec service role pour les webhooks (bypass RLS)
 function getSupabaseServiceRole() {
@@ -30,7 +30,9 @@ function getSupabaseServiceRole() {
 export async function handleMissionCheckoutCompleted(
   session: Stripe.Checkout.Session
 ): Promise<void> {
-  console.log(`🛒 [Connect Webhook] checkout.session.completed pour mission: ${session.id}`);
+  console.log(
+    `🛒 [Connect Webhook] checkout.session.completed pour mission: ${session.id}`
+  );
 
   // Vérifier que c'est un paiement de mission
   const metadata = session.metadata;
@@ -48,7 +50,9 @@ export async function handleMissionCheckoutCompleted(
     return;
   }
 
-  console.log(`📋 [Connect Webhook] Mission: ${missionId}, Recruteur: ${recruiterId}`);
+  console.log(
+    `📋 [Connect Webhook] Mission: ${missionId}, Recruteur: ${recruiterId}`
+  );
 
   const supabase = getSupabaseServiceRole();
 
@@ -68,26 +72,34 @@ export async function handleMissionCheckoutCompleted(
     .single();
 
   if (paymentError) {
-    console.error("❌ [Connect Webhook] Erreur mise à jour payment:", paymentError);
-    
+    console.error(
+      "❌ [Connect Webhook] Erreur mise à jour payment:",
+      paymentError
+    );
+
     // Essayer de créer le payment s'il n'existe pas
     const amountTotal = session.amount_total || 0;
-    const { error: insertError } = await supabase.from("mission_payments").insert({
-      mission_id: missionId,
-      recruiter_id: recruiterId,
-      amount: amountTotal,
-      currency: session.currency || "eur",
-      status: "paid",
-      stripe_checkout_session_id: session.id,
-      stripe_payment_intent_id:
-        typeof session.payment_intent === "string"
-          ? session.payment_intent
-          : session.payment_intent?.id,
-      paid_at: new Date().toISOString(),
-    });
+    const { error: insertError } = await supabase
+      .from("mission_payments")
+      .insert({
+        mission_id: missionId,
+        recruiter_id: recruiterId,
+        amount: amountTotal,
+        currency: session.currency || "eur",
+        status: "paid",
+        stripe_checkout_session_id: session.id,
+        stripe_payment_intent_id:
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id,
+        paid_at: new Date().toISOString(),
+      });
 
     if (insertError) {
-      console.error("❌ [Connect Webhook] Erreur création payment:", insertError);
+      console.error(
+        "❌ [Connect Webhook] Erreur création payment:",
+        insertError
+      );
       throw new Error(`Erreur traitement paiement: ${insertError.message}`);
     }
 
@@ -102,14 +114,94 @@ export async function handleMissionCheckoutCompleted(
       throw new Error("Payment créé mais non récupérable");
     }
 
-    await createMissionFinance(supabase, missionId, newPayment.id, newPayment.amount, establishmentId);
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id;
+
+    await createMissionFinance(
+      supabase,
+      missionId,
+      newPayment.id,
+      newPayment.amount,
+      establishmentId,
+      paymentIntentId
+    );
     return;
   }
 
   // 2. Calculer et créer le mission_finance
-  await createMissionFinance(supabase, missionId, payment.id, payment.amount, establishmentId);
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
 
-  console.log(`✅ [Connect Webhook] Paiement mission ${missionId} traité avec succès`);
+  await createMissionFinance(
+    supabase,
+    missionId,
+    payment.id,
+    payment.amount,
+    establishmentId,
+    paymentIntentId
+  );
+
+  console.log(
+    `✅ [Connect Webhook] Paiement mission ${missionId} traité avec succès`
+  );
+}
+
+/**
+ * Récupère les frais Stripe réels depuis le PaymentIntent
+ */
+async function getStripeFees(paymentIntentId?: string): Promise<number> {
+  if (!paymentIntentId) {
+    console.warn(
+      "⚠️ [Connect Webhook] Pas de PaymentIntent ID, frais estimés à 0"
+    );
+    return 0;
+  }
+
+  try {
+    const stripe = getStripeClient();
+
+    // Récupérer le PaymentIntent avec les charges
+    const paymentIntent = await stripe.paymentIntents.retrieve(
+      paymentIntentId,
+      {
+        expand: ["latest_charge.balance_transaction"],
+      }
+    );
+
+    // Récupérer la charge et la balance_transaction
+    const charge = paymentIntent.latest_charge as Stripe.Charge | null;
+    if (!charge) {
+      console.warn(
+        "⚠️ [Connect Webhook] Pas de charge trouvée pour le PaymentIntent"
+      );
+      return 0;
+    }
+
+    const balanceTransaction =
+      charge.balance_transaction as Stripe.BalanceTransaction | null;
+    if (!balanceTransaction) {
+      console.warn("⚠️ [Connect Webhook] Pas de balance_transaction trouvée");
+      return 0;
+    }
+
+    // Les frais sont en centimes
+    const stripeFee = balanceTransaction.fee;
+    console.log(
+      `💰 [Connect Webhook] Frais Stripe réels: ${stripeFee} centimes`
+    );
+
+    return stripeFee;
+  } catch (error) {
+    console.error(
+      "❌ [Connect Webhook] Erreur récupération frais Stripe:",
+      error
+    );
+    return 0;
+  }
 }
 
 /**
@@ -120,7 +212,8 @@ async function createMissionFinance(
   missionId: string,
   paymentId: string,
   amount: number,
-  establishmentId?: string
+  establishmentId?: string,
+  paymentIntentId?: string
 ): Promise<void> {
   // Vérifier si la finance existe déjà
   const { data: existingFinance } = await supabase
@@ -130,9 +223,14 @@ async function createMissionFinance(
     .maybeSingle();
 
   if (existingFinance) {
-    console.log(`ℹ️ [Connect Webhook] Finance déjà créée pour payment ${paymentId}`);
+    console.log(
+      `ℹ️ [Connect Webhook] Finance déjà créée pour payment ${paymentId}`
+    );
     return;
   }
+
+  // Récupérer les frais Stripe réels
+  const stripeFeeAmount = await getStripeFees(paymentIntentId);
 
   // Récupérer le commercial_id si établissement rattaché
   let commercialId: string | null = null;
@@ -154,32 +252,53 @@ async function createMissionFinance(
 
       if (commercialProfile?.stripe_account_id) {
         commercialId = establishment.commercial_id;
-        console.log(`ℹ️ [Connect Webhook] Commercial rattaché: ${commercialId}`);
+        console.log(
+          `ℹ️ [Connect Webhook] Commercial rattaché: ${commercialId}`
+        );
       }
     }
   }
 
-  // Calculer la répartition
+  // Calculer la répartition (avant déduction des frais Stripe)
   const finance = calculateFundDistribution(amount, !!commercialId);
 
-  // Créer l'enregistrement
-  const { error: financeError } = await supabase.from("mission_finance").insert({
-    mission_id: missionId,
-    mission_payment_id: paymentId,
-    gross_amount: amount,
-    platform_fee_amount: finance.platformFeeAmount,
-    commercial_fee_amount: finance.commercialFeeAmount,
-    freelancer_amount: finance.freelancerAmount,
-    platform_net_amount: finance.platformNetAmount,
-    commercial_id: commercialId,
+  // Déduire les frais Stripe de la part plateforme
+  const platformNetAmountAfterFees =
+    finance.platformNetAmount - stripeFeeAmount;
+
+  console.log(`📊 [Connect Webhook] Répartition:`, {
+    grossAmount: amount,
+    freelancerAmount: finance.freelancerAmount,
+    commercialFeeAmount: finance.commercialFeeAmount,
+    platformFeeAmount: finance.platformFeeAmount,
+    stripeFeeAmount,
+    platformNetAmountAfterFees,
   });
 
+  // Créer l'enregistrement
+  const { error: financeError } = await supabase
+    .from("mission_finance")
+    .insert({
+      mission_id: missionId,
+      mission_payment_id: paymentId,
+      gross_amount: amount,
+      platform_fee_amount: finance.platformFeeAmount,
+      commercial_fee_amount: finance.commercialFeeAmount,
+      freelancer_amount: finance.freelancerAmount,
+      platform_net_amount: platformNetAmountAfterFees,
+      stripe_fee_amount: stripeFeeAmount,
+      commercial_id: commercialId,
+    });
+
   if (financeError) {
-    console.error("❌ [Connect Webhook] Erreur création finance:", financeError);
+    console.error(
+      "❌ [Connect Webhook] Erreur création finance:",
+      financeError
+    );
     throw new Error(`Erreur création finance: ${financeError.message}`);
   }
 
-  console.log(`✅ [Connect Webhook] Finance créée:`, { grossAmount: amount, ...finance });
+  console.log(`✅ [Connect Webhook] Finance créée avec frais Stripe déduits`);
 }
 
 /**
@@ -201,12 +320,15 @@ export async function handleAccountUpdated(
     .single();
 
   if (profileError || !profile) {
-    console.warn(`⚠️ [Connect Webhook] Profil non trouvé pour compte ${account.id}`);
+    console.warn(
+      `⚠️ [Connect Webhook] Profil non trouvé pour compte ${account.id}`
+    );
     return;
   }
 
   // Déterminer le nouveau statut d'onboarding
-  let onboardingStatus: "not_started" | "pending" | "complete" | "restricted" = "pending";
+  let onboardingStatus: "not_started" | "pending" | "complete" | "restricted" =
+    "pending";
 
   if (account.details_submitted && account.payouts_enabled) {
     onboardingStatus = "complete";
@@ -239,7 +361,10 @@ export async function handleAccountUpdated(
     .eq("id", profile.id);
 
   if (updateError) {
-    console.error("❌ [Connect Webhook] Erreur mise à jour profil:", updateError);
+    console.error(
+      "❌ [Connect Webhook] Erreur mise à jour profil:",
+      updateError
+    );
     throw new Error(`Erreur mise à jour profil: ${updateError.message}`);
   }
 
@@ -257,7 +382,9 @@ export async function handleAccountUpdated(
 export async function handlePaymentIntentFailed(
   paymentIntent: Stripe.PaymentIntent
 ): Promise<void> {
-  console.log(`❌ [Connect Webhook] payment_intent.payment_failed: ${paymentIntent.id}`);
+  console.log(
+    `❌ [Connect Webhook] payment_intent.payment_failed: ${paymentIntent.id}`
+  );
 
   const supabase = getSupabaseServiceRole();
 
@@ -268,7 +395,10 @@ export async function handlePaymentIntentFailed(
     .eq("stripe_payment_intent_id", paymentIntent.id);
 
   if (error) {
-    console.error("❌ [Connect Webhook] Erreur mise à jour payment failed:", error);
+    console.error(
+      "❌ [Connect Webhook] Erreur mise à jour payment failed:",
+      error
+    );
   }
 }
 
@@ -287,7 +417,9 @@ export async function handleChargeRefunded(
       : charge.payment_intent?.id;
 
   if (!paymentIntentId) {
-    console.warn("⚠️ [Connect Webhook] payment_intent manquant dans charge refunded");
+    console.warn(
+      "⚠️ [Connect Webhook] payment_intent manquant dans charge refunded"
+    );
     return;
   }
 
@@ -300,6 +432,9 @@ export async function handleChargeRefunded(
     .eq("stripe_payment_intent_id", paymentIntentId);
 
   if (error) {
-    console.error("❌ [Connect Webhook] Erreur mise à jour payment refunded:", error);
+    console.error(
+      "❌ [Connect Webhook] Erreur mise à jour payment refunded:",
+      error
+    );
   }
 }
