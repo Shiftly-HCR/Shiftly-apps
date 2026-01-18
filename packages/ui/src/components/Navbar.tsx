@@ -17,6 +17,7 @@ interface NavbarProps {
   onFreelanceClick?: () => void;
   onMessagingClick?: () => void;
   onCommercialClick?: () => void;
+  onPaymentsClick?: () => void;
   onLogoutClick?: () => void;
 }
 
@@ -35,6 +36,7 @@ export function Navbar({
   onFreelanceClick,
   onMessagingClick,
   onCommercialClick,
+  onPaymentsClick,
   onLogoutClick,
 }: NavbarProps) {
   const [isMobile, setIsMobile] = useState(false);
@@ -182,18 +184,6 @@ export function Navbar({
             {/* Liens de navigation - Cachés sur mobile */}
             {(!mounted || !isMobile) && (
               <>
-                <Text
-                  fontSize={14}
-                  fontWeight="600"
-                  color={colors.gray900}
-                  cursor="pointer"
-                  hoverStyle={{
-                    color: colors.shiftlyViolet,
-                  }}
-                  onPress={onProfileClick}
-                >
-                  Profil
-                </Text>
                 {/* Afficher le lien Commercial uniquement pour les commerciaux */}
                 {userRole === "commercial" && onCommercialClick && (
                   <Text
@@ -209,6 +199,22 @@ export function Navbar({
                     Dashboard commercial
                   </Text>
                 )}
+                {/* Lien Mes paiements pour freelances et commerciaux */}
+                {(userRole === "freelance" || userRole === "commercial") &&
+                  onPaymentsClick && (
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={colors.gray900}
+                      cursor="pointer"
+                      hoverStyle={{
+                        color: colors.shiftlyViolet,
+                      }}
+                      onPress={onPaymentsClick}
+                    >
+                      Mes paiements
+                    </Text>
+                  )}
                 {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
                 {userRole !== "commercial" && (
                   <>
@@ -426,7 +432,6 @@ export function Navbar({
 
                 {/* Liens de navigation */}
                 <YStack gap="$1" marginTop="$2">
-                  <MenuLink label="Profil" onPress={onProfileClick} />
                   {/* Afficher le lien Commercial uniquement pour les commerciaux */}
                   {userRole === "commercial" && onCommercialClick && (
                     <MenuLink
@@ -434,6 +439,14 @@ export function Navbar({
                       onPress={onCommercialClick}
                     />
                   )}
+                  {/* Lien Mes paiements pour freelances et commerciaux */}
+                  {(userRole === "freelance" || userRole === "commercial") &&
+                    onPaymentsClick && (
+                      <MenuLink
+                        label="Mes paiements"
+                        onPress={onPaymentsClick}
+                      />
+                    )}
                   {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
                   {userRole !== "commercial" && (
                     <>
