@@ -1,6 +1,6 @@
 "use client";
 
-import { useCachedMyCommercialEstablishments } from "@/hooks/cache/useCachedEstablishments";
+import { useMyCommercialEstablishments as useMyCommercialEstablishmentsQuery } from "@/hooks/queries";
 import type { Establishment } from "@shiftly/data";
 
 interface UseMyCommercialEstablishmentsReturn {
@@ -13,7 +13,7 @@ interface UseMyCommercialEstablishmentsReturn {
 /**
  * Hook pour récupérer les établissements rattachés au commercial courant
  * 
- * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
+ * Utilise React Query pour éviter les requêtes redondantes.
  * L'API reste identique pour la compatibilité avec les composants existants.
  */
 export function useMyCommercialEstablishments(): UseMyCommercialEstablishmentsReturn {
@@ -22,7 +22,7 @@ export function useMyCommercialEstablishments(): UseMyCommercialEstablishmentsRe
     isLoading,
     error,
     refetch,
-  } = useCachedMyCommercialEstablishments();
+  } = useMyCommercialEstablishmentsQuery();
 
   return {
     establishments,

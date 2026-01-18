@@ -1,12 +1,12 @@
 "use client";
 
-import { useCachedEstablishment } from "@/hooks/cache/useCachedEstablishment";
+import { useEstablishment } from "@/hooks/queries";
 import type { Mission } from "@shiftly/data";
 
 /**
  * Hook pour récupérer et gérer les informations d'établissement d'une mission
  * 
- * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
+ * Utilise React Query pour éviter les requêtes redondantes.
  * L'API reste identique pour la compatibilité avec les composants existants.
  */
 export function useMissionEstablishment(mission: Mission | null) {
@@ -14,10 +14,7 @@ export function useMissionEstablishment(mission: Mission | null) {
     data: establishment = null,
     isLoading,
     error,
-  } = useCachedEstablishment(
-    mission?.establishment_id,
-    mission?.status === "published"
-  );
+  } = useEstablishment(mission?.establishment_id || null);
 
   // Déterminer les informations à afficher
   const hasEstablishment = !!establishment;

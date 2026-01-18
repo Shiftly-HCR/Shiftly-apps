@@ -1,35 +1,88 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Establishment } from "@shiftly/data";
-
-// TODO: Importer les bonnes fonctions depuis @shiftly/data
-// Les noms des fonctions doivent être vérifiés dans le package data
+import {
+  listMyEstablishments,
+  listAllEstablishments,
+  listMyCommercialEstablishments,
+  getEstablishmentById,
+  createEstablishment,
+  updateEstablishment,
+  deleteEstablishment,
+  type Establishment,
+} from "@shiftly/data";
 
 /**
  * Hook pour récupérer tous les établissements de l'utilisateur
- * TODO: Implémenter avec les bonnes fonctions
  */
 export function useEstablishments() {
   return useQuery({
-    queryKey: ["establishments"],
+    queryKey: ["establishments", "my"],
     queryFn: async () => {
-      // TODO: Remplacer par la bonne fonction
-      return [];
+      const result = await listMyEstablishments();
+      if (result.success && result.establishments) {
+        return result.establishments;
+      }
+      throw new Error(
+        result.error || "Erreur lors du chargement des établissements"
+      );
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
 /**
+ * Hook pour récupérer tous les établissements (pour les commerciaux)
+ */
+export function useAllEstablishments() {
+  return useQuery({
+    queryKey: ["establishments", "all"],
+    queryFn: async () => {
+      const result = await listAllEstablishments();
+      if (result.success && result.establishments) {
+        return result.establishments;
+      }
+      throw new Error(
+        result.error || "Erreur lors du chargement des établissements"
+      );
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
+}
+
+/**
+ * Hook pour récupérer les établissements du commercial courant
+ */
+export function useMyCommercialEstablishments() {
+  return useQuery({
+    queryKey: ["establishments", "my-commercial"],
+    queryFn: async () => {
+      const result = await listMyCommercialEstablishments();
+      if (result.success && result.establishments) {
+        return result.establishments;
+      }
+      throw new Error(
+        result.error || "Erreur lors du chargement des établissements"
+      );
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
+}
+
+/**
  * Hook pour récupérer un établissement par ID
- * TODO: Implémenter avec les bonnes fonctions
  */
 export function useEstablishment(establishmentId: string | null) {
   return useQuery({
     queryKey: ["establishments", establishmentId],
     queryFn: async () => {
-      // TODO: Remplacer par la bonne fonction
+      if (!establishmentId) return null;
+      const result = await getEstablishmentById(establishmentId);
+      if (result.success && result.establishment) {
+        return result.establishment;
+      }
       return null;
     },
     enabled: !!establishmentId,
@@ -39,60 +92,71 @@ export function useEstablishment(establishmentId: string | null) {
 
 /**
  * Hook pour créer un établissement
- * TODO: Implémenter avec les bonnes fonctions
  */
 export function useCreateEstablishment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: any) => {
-      // TODO: Remplacer par la bonne fonction
-      return { success: false, error: "Not implemented" };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["establishments"] });
+    mutationFn: createEstablishment,
+    onSuccess: (result) => {
+      if (result.success && result.establishment) {
+        // Ajouter au cache
+        queryClient.setQueryData(
+          ["establishments", result.establishment.id],
+          result.establishment
+        );
+        // Invalider toutes les listes
+        queryClient.invalidateQueries({ queryKey: ["establishments"] });
+      }
     },
   });
 }
 
 /**
  * Hook pour mettre à jour un établissement
- * TODO: Implémenter avec les bonnes fonctions
  */
 export function useUpdateEstablishment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       establishmentId,
       params,
     }: {
       establishmentId: string;
       params: Partial<Establishment>;
-    }) => {
-      // TODO: Remplacer par la bonne fonction
-      return { success: false, error: "Not implemented" };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["establishments"] });
+    }) => updateEstablishment(establishmentId, params),
+    onSuccess: (result, variables) => {
+      if (result.success && result.establishment) {
+        // Mettre à jour le cache
+        queryClient.setQueryData(
+          ["establishments", variables.establishmentId],
+          result.establishment
+        );
+        // Invalider toutes les listes
+        queryClient.invalidateQueries({ queryKey: ["establishments"] });
+      }
     },
   });
 }
 
 /**
  * Hook pour supprimer un établissement
- * TODO: Implémenter avec les bonnes fonctions
  */
 export function useDeleteEstablishment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (establishmentId: string) => {
-      // TODO: Remplacer par la bonne fonction
-      return { success: false, error: "Not implemented" };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["establishments"] });
+    mutationFn: deleteEstablishment,
+    onSuccess: (result, establishmentId) => {
+      if (result.success) {
+        // Retirer du cache
+        queryClient.removeQueries({
+          queryKey: ["establishments", establishmentId],
+        });
+        // Invalider toutes les listes
+        queryClient.invalidateQueries({ queryKey: ["establishments"] });
+      }
     },
   });
 }
