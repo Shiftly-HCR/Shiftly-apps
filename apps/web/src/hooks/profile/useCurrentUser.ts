@@ -1,24 +1,25 @@
 "use client";
 
-import { useSessionContext } from "@/providers/SessionProvider";
-import type { User, Session } from "@supabase/supabase-js";
+import { useCurrentUser as useCurrentUserQuery } from "@/hooks/queries";
+import type { User } from "@shiftly/data";
 
 /**
- * Hook pour accéder à l'utilisateur et la session Supabase
+ * Hook pour accéder à l'utilisateur Supabase
+ * @deprecated Utilisez directement useCurrentUser depuis @/hooks/queries
  */
 export function useCurrentUser(): {
   user: User | null;
-  session: Session | null;
+  session: any | null;
   isLoading: boolean;
   error: string | null;
 } {
-  const { cache, isLoading, error } = useSessionContext();
+  const { data: user, isLoading, error } = useCurrentUserQuery();
 
   return {
-    user: cache?.user || null,
-    session: cache?.session || null,
+    user: user || null,
+    session: null, // La session n'est plus exposée directement
     isLoading,
-    error,
+    error: error?.message || null,
   };
 }
 

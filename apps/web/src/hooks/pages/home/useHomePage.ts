@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Mission } from "@shiftly/data";
-import { useCachedMissions } from "@/hooks/cache/useCachedMissions";
+import { usePublishedMissions } from "@/hooks/queries";
 import type { MissionFiltersState } from "@shiftly/ui";
 
 export const positionOptions = [
@@ -40,7 +40,7 @@ export const dateRangeOptions = [
  */
 export function useHomePage() {
   const router = useRouter();
-  const { data: missions = [], isLoading, error } = useCachedMissions();
+  const { data: missions = [], isLoading, error } = usePublishedMissions();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<MissionFiltersState>({});
 

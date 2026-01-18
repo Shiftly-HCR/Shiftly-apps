@@ -1,0 +1,131 @@
+"use client";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getPublishedMissions,
+  getRecruiterMissions,
+  getMissionById,
+  createMission,
+  updateMission,
+  deleteMission,
+  uploadMissionImage,
+  type Mission,
+  type CreateMissionParams,
+  type UpdateMissionParams,
+} from "@shiftly/data";
+
+/**
+ * Hook pour récupérer toutes les missions publiées
+ */
+export function usePublishedMissions() {
+  return useQuery({
+    queryKey: ["missions", "published"],
+    queryFn: getPublishedMissions,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+/**
+ * Hook pour récupérer les missions du recruteur actuel
+ */
+export function useRecruiterMissions() {
+  return useQuery({
+    queryKey: ["missions", "recruiter"],
+    queryFn: getRecruiterMissions,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook pour récupérer une mission par ID
+ */
+export function useMission(missionId: string | null) {
+  return useQuery({
+    queryKey: ["missions", missionId],
+    queryFn: () => (missionId ? getMissionById(missionId) : null),
+    enabled: !!missionId,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook pour créer une mission
+ */
+export function useCreateMission() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createMission,
+    onSuccess: (result) => {
+      if (result.success && result.mission) {
+        // Ajouter la mission au cache
+        queryClient.setQueryData(["missions", result.mission.id], result.mission);
+        
+        // Invalider les listes de missions pour les recharger
+        queryClient.invalidateQueries({ queryKey: ["missions", "published"] });
+        queryClient.invalidateQueries({ queryKey: ["missions", "recruiter"] });
+      }
+    },
+  });
+}
+
+/**
+ * Hook pour mettre à jour une mission
+ */
+export function useUpdateMission() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ missionId, params }: { missionId: string; params: UpdateMissionParams }) =>
+      updateMission(missionId, params),
+    onSuccess: (result, variables) => {
+      if (result.success && result.mission) {
+        // Mettre à jour le cache de la mission
+        queryClient.setQueryData(["missions", variables.missionId], result.mission);
+        
+        // Invalider les listes de missions
+        queryClient.invalidateQueries({ queryKey: ["missions", "published"] });
+        queryClient.invalidateQueries({ queryKey: ["missions", "recruiter"] });
+      }
+    },
+  });
+}
+
+/**
+ * Hook pour supprimer une mission
+ */
+export function useDeleteMission() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteMission,
+    onSuccess: (result, missionId) => {
+      if (result.success) {
+        // Retirer la mission du cache
+        queryClient.removeQueries({ queryKey: ["missions", missionId] });
+        
+        // Invalider les listes de missions
+        queryClient.invalidateQueries({ queryKey: ["missions", "published"] });
+        queryClient.invalidateQueries({ queryKey: ["missions", "recruiter"] });
+      }
+    },
+  });
+}
+
+/**
+ * Hook pour uploader une image de mission
+ */
+export function useUploadMissionImage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ missionId, file }: { missionId: string; file: File }) =>
+      uploadMissionImage(missionId, file),
+    onSuccess: (result, variables) => {
+      if (result.success) {
+        // Invalider la mission pour recharger avec la nouvelle image
+        queryClient.invalidateQueries({ queryKey: ["missions", variables.missionId] });
+      }
+    },
+  });
+}
