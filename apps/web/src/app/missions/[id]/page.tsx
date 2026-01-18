@@ -97,12 +97,22 @@ export default function MissionDetailPage() {
           >
             {/* COLONNE GAUCHE */}
             <YStack flex={1} gap="$4" minWidth={300}>
+              {/* Bandeau de paiement pour le recruteur */}
+              {isRecruiter && isMissionOwner && (
+                <MissionPaymentBanner
+                  missionId={missionId}
+                  isRecruiter={true}
+                />
+              )}
+
               {/* Bandeau de paiement pour le freelance */}
-              <MissionPaymentBanner
-                missionId={missionId}
-                isFreelance={!isRecruiter && profile?.role === "freelance"}
-                isFreelanceAccepted={isFreelanceAccepted}
-              />
+              {!isRecruiter && profile?.role === "freelance" && (
+                <MissionPaymentBanner
+                  missionId={missionId}
+                  isFreelance={true}
+                  isFreelanceAccepted={isFreelanceAccepted}
+                />
+              )}
 
               <MissionDetailImage mission={mission} />
               <MissionDetailDescription mission={mission} />

@@ -896,11 +896,11 @@ export async function handleMissionCheckoutCompleted(
       ? session.payment_intent
       : session.payment_intent?.id;
 
-  // Mettre à jour mission_payments
+  // Mettre à jour mission_payments avec le nouveau statut "received"
   const { data: payment, error: updateError } = await supabase
     .from("mission_payments")
     .update({
-      status: "paid",
+      status: "received", // Paiement reçu, en attente de distribution
       paid_at: new Date().toISOString(),
       stripe_payment_intent_id: paymentIntentId,
       updated_at: new Date().toISOString(),
@@ -920,7 +920,7 @@ export async function handleMissionCheckoutCompleted(
         recruiter_id: recruiterId,
         amount,
         currency: session.currency || "eur",
-        status: "paid",
+        status: "received", // Paiement reçu, en attente de distribution
         paid_at: new Date().toISOString(),
         stripe_checkout_session_id: session.id,
         stripe_payment_intent_id: paymentIntentId,

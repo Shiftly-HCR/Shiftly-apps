@@ -2,8 +2,19 @@
  * Types pour les paiements de missions (Stripe Connect)
  */
 
-export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
-export type TransferStatus = "pending" | "created" | "failed" | "reversed";
+export type PaymentStatus =
+  | "pending" // En attente de paiement
+  | "received" // Paiement reçu par Stripe, fonds en attente
+  | "distributed" // Fonds distribués au freelance/commercial
+  | "errored" // Erreur lors de la distribution (après 3 retry)
+  | "failed" // Échec du paiement initial
+  | "refunded"; // Remboursé
+
+export type TransferStatus =
+  | "pending" // En attente de transfert
+  | "created" // Transfert créé sur Stripe
+  | "failed" // Échec du transfert
+  | "reversed"; // Transfert annulé/inversé
 export type TransferType = "freelancer_payout" | "commercial_commission";
 export type FinanceStatus =
   | "calculated"
@@ -24,6 +35,7 @@ export interface MissionPayment {
   stripe_checkout_session_id?: string;
   stripe_payment_intent_id?: string;
   paid_at?: string;
+  distributed_at?: string; // Date de distribution des fonds
   created_at: string;
   updated_at?: string;
 }

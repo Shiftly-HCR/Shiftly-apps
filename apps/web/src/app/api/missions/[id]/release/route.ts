@@ -1,9 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createTransfer, calculateFundDistribution } from "@shiftly/payments";
+import { createTransfer, getStripeClient } from "@shiftly/payments";
 import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000;
+
+// Email de l'admin (CTO) pour les notifications
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || "cto@shiftly.fr";
+
+/**
+ * Attendre un délai (en ms)
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Récupère le Charge ID depuis un PaymentIntent
+ * Stripe Transfer nécessite un Charge ID, pas un PaymentIntent ID
+ */
+async function getChargeIdFromPaymentIntent(
+  paymentIntentId: string | null | undefined
+): Promise<string | undefined> {
+  if (!paymentIntentId) {
+    console.log("⚠️ [Release] Pas de PaymentIntent ID fourni");
+    return undefined;
+  }
+
+  try {
+    const stripe = getStripeClient();
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    // Le charge peut être une string (ID) ou un objet Charge
+    const chargeId =
+      typeof paymentIntent.latest_charge === "string"
+        ? paymentIntent.latest_charge
+        : (paymentIntent.latest_charge as Stripe.Charge)?.id;
+
+    if (chargeId) {
+      console.log(`✅ [Release] Charge ID récupéré: ${chargeId}`);
+      return chargeId;
+    }
+
+    console.warn("⚠️ [Release] Pas de charge trouvée dans le PaymentIntent");
+    return undefined;
+  } catch (error) {
+    console.error("❌ [Release] Erreur récupération Charge ID:", error);
+    return undefined;
+  }
+}
 
 /**
  * Client Supabase avec service role pour les opérations backend
@@ -59,13 +108,104 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
+interface TransferResult {
+  type: "freelancer_payout" | "commercial_commission";
+  profileId: string;
+  accountId: string;
+  amount: number;
+  transferId?: string;
+  status: "created" | "failed" | "skipped";
+  error?: string;
+  retryCount?: number;
+}
+
+/**
+ * Tente un transfert avec retry
+ */
+async function attemptTransferWithRetry(params: {
+  amount: number;
+  currency: string;
+  destinationAccountId: string;
+  description: string;
+  metadata: Record<string, string>;
+  sourceTransaction?: string;
+}): Promise<{ success: boolean; transferId?: string; error?: string }> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(
+        `🔄 [Release] Tentative ${attempt}/${MAX_RETRIES} de transfert vers ${params.destinationAccountId}`
+      );
+
+      const { transferId } = await createTransfer({
+        amount: params.amount,
+        currency: params.currency,
+        destinationAccountId: params.destinationAccountId,
+        description: params.description,
+        metadata: params.metadata,
+        sourceTransaction: params.sourceTransaction,
+      });
+
+      console.log(
+        `✅ [Release] Transfert réussi (tentative ${attempt}): ${transferId}`
+      );
+      return { success: true, transferId };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Erreur inconnue");
+      console.error(
+        `❌ [Release] Tentative ${attempt}/${MAX_RETRIES} échouée:`,
+        lastError.message
+      );
+
+      if (attempt < MAX_RETRIES) {
+        await delay(RETRY_DELAY_MS);
+      }
+    }
+  }
+
+  return {
+    success: false,
+    error: lastError?.message || "Erreur après 3 tentatives",
+  };
+}
+
+/**
+ * Envoie une notification (placeholder - à implémenter avec un service email)
+ */
+async function sendNotification(params: {
+  type: "error" | "missing_stripe";
+  recipients: string[];
+  missionId: string;
+  missionTitle: string;
+  details: string;
+}): Promise<void> {
+  // TODO: Implémenter avec un service email (SendGrid, Resend, etc.)
+  console.log(`📧 [Notification] Type: ${params.type}`);
+  console.log(`📧 [Notification] Destinataires: ${params.recipients.join(", ")}`);
+  console.log(`📧 [Notification] Mission: ${params.missionTitle} (${params.missionId})`);
+  console.log(`📧 [Notification] Détails: ${params.details}`);
+
+  // Pour l'instant, on log juste - à remplacer par l'envoi réel
+  // Exemple avec Resend:
+  // await resend.emails.send({
+  //   from: 'noreply@shiftly.fr',
+  //   to: params.recipients,
+  //   subject: `[Shiftly] Erreur distribution fonds - Mission ${params.missionTitle}`,
+  //   html: `<p>${params.details}</p>`,
+  // });
+}
+
 /**
  * POST /api/missions/[id]/release
  * Libère les fonds vers le freelance et le commercial (si applicable)
- * - Vérifie que le paiement est complété
- * - Vérifie que les comptes Connect sont actifs
- * - Crée les transferts Stripe
- * - Enregistre les transfers dans mission_transfers
+ * 
+ * Fonctionnement:
+ * - Vérifie que le paiement est en statut 'received'
+ * - Pour chaque destinataire avec un compte Stripe valide, effectue le transfert
+ * - 3 tentatives par transfert avant échec
+ * - Si un destinataire n'a pas de compte Stripe, on le skip et on notifie
+ * - Met à jour mission_payments.status à 'distributed' ou 'errored'
  */
 export async function POST(req: NextRequest, context: RouteContext) {
   const { id: missionId } = await context.params;
@@ -102,7 +242,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
     // Récupérer le profil pour vérifier si admin ou recruteur
     const { data: userProfile } = await supabaseService
       .from("profiles")
-      .select("role")
+      .select("role, email")
       .eq("id", user.id)
       .single();
 
@@ -113,7 +253,8 @@ export async function POST(req: NextRequest, context: RouteContext) {
         id,
         title,
         recruiter_id,
-        establishment_id
+        establishment_id,
+        end_date
       `)
       .eq("id", missionId)
       .single();
@@ -133,23 +274,29 @@ export async function POST(req: NextRequest, context: RouteContext) {
     if (!isAdmin && !isRecruiter) {
       console.warn(`⚠️ Utilisateur ${user.id} non autorisé`);
       return NextResponse.json(
-        { error: "Vous n'êtes pas autorisé à libérer les fonds de cette mission" },
+        {
+          error:
+            "Vous n'êtes pas autorisé à libérer les fonds de cette mission",
+        },
         { status: 403 }
       );
     }
 
-    // Récupérer le paiement complété
+    // Récupérer le paiement en statut 'received' (ou 'paid' pour compatibilité)
     const { data: payment, error: paymentError } = await supabaseService
       .from("mission_payments")
       .select("*")
       .eq("mission_id", missionId)
-      .eq("status", "paid")
+      .in("status", ["received", "paid"]) // Compatibilité avec l'ancien statut
       .single();
 
     if (paymentError || !payment) {
-      console.error("❌ Aucun paiement complété trouvé");
+      console.error("❌ Aucun paiement en attente de distribution trouvé");
       return NextResponse.json(
-        { error: "Aucun paiement complété trouvé pour cette mission" },
+        {
+          error:
+            "Aucun paiement en attente de distribution trouvé pour cette mission",
+        },
         { status: 400 }
       );
     }
@@ -177,188 +324,130 @@ export async function POST(req: NextRequest, context: RouteContext) {
       );
     }
 
-    // Récupérer le freelance assigné à la mission
-    // On cherche l'application acceptée
-    const { data: acceptedApplication } = await supabaseService
-      .from("mission_applications")
-      .select("user_id")
-      .eq("mission_id", missionId)
-      .eq("status", "accepted")
-      .single();
-
-    if (!acceptedApplication) {
-      return NextResponse.json(
-        { error: "Aucun freelance accepté pour cette mission" },
-        { status: 400 }
-      );
-    }
-
-    const freelancerId = acceptedApplication.user_id;
-
-    // Récupérer le profil du freelance avec son compte Connect
-    const { data: freelanceProfile, error: freelanceError } = await supabaseService
+    // Récupérer le recruteur pour les notifications
+    const { data: recruiterProfile } = await supabaseService
       .from("profiles")
-      .select("id, stripe_account_id, connect_payouts_enabled")
-      .eq("id", freelancerId)
+      .select("email, first_name, last_name")
+      .eq("id", mission.recruiter_id)
       .single();
 
-    if (freelanceError || !freelanceProfile) {
-      console.error("❌ Profil freelance introuvable");
-      return NextResponse.json(
-        { error: "Profil freelance introuvable" },
-        { status: 400 }
-      );
-    }
-
-    if (!freelanceProfile.stripe_account_id) {
-      return NextResponse.json(
-        { error: "Le freelance n'a pas de compte Stripe Connect configuré" },
-        { status: 400 }
-      );
-    }
-
-    if (!freelanceProfile.connect_payouts_enabled) {
-      return NextResponse.json(
-        { error: "Le compte Connect du freelance n'est pas encore activé pour les virements" },
-        { status: 400 }
-      );
-    }
-
-    const transfers: Array<{
-      type: "freelancer_payout" | "commercial_commission";
-      profileId: string;
-      accountId: string;
-      amount: number;
-      transferId?: string;
-      status: "created" | "failed";
-      error?: string;
+    const transfers: TransferResult[] = [];
+    const notifications: Array<{
+      type: "error" | "missing_stripe";
+      recipient: string;
+      details: string;
     }> = [];
 
-    // Créer le transfert vers le freelance
-    console.log(`🔄 Création du transfert freelance: ${finance.freelancer_amount} centimes`);
-    try {
-      const { transferId } = await createTransfer({
-        amount: finance.freelancer_amount,
-        currency: "eur",
-        destinationAccountId: freelanceProfile.stripe_account_id,
-        description: `Paiement mission ${missionId}`,
-        metadata: {
-          mission_id: missionId,
-          mission_payment_id: payment.id,
-          type: "freelancer_payout",
-        },
-        sourceTransaction: payment.stripe_payment_intent_id || undefined,
-      });
+    // ================================================================
+    // RÉCUPÉRER LE CHARGE ID DEPUIS LE PAYMENT INTENT
+    // Stripe Transfer nécessite un Charge ID, pas un PaymentIntent ID
+    // ================================================================
+    const chargeId = await getChargeIdFromPaymentIntent(
+      payment.stripe_payment_intent_id
+    );
 
-      transfers.push({
-        type: "freelancer_payout",
-        profileId: freelanceProfile.id,
-        accountId: freelanceProfile.stripe_account_id,
-        amount: finance.freelancer_amount,
-        transferId,
-        status: "created",
-      });
-
-      // Enregistrer le transfert
-      await supabaseService.from("mission_transfers").insert({
-        mission_id: missionId,
-        mission_payment_id: payment.id,
-        mission_finance_id: finance.id,
-        destination_profile_id: freelanceProfile.id,
-        destination_stripe_account_id: freelanceProfile.stripe_account_id,
-        type: "freelancer_payout",
-        amount: finance.freelancer_amount,
-        currency: "eur",
-        status: "created",
-        stripe_transfer_id: transferId,
-        transferred_at: new Date().toISOString(),
-      });
-
-      console.log(`✅ Transfert freelance créé: ${transferId}`);
-    } catch (error) {
-      console.error("❌ Erreur transfert freelance:", error);
-      transfers.push({
-        type: "freelancer_payout",
-        profileId: freelanceProfile.id,
-        accountId: freelanceProfile.stripe_account_id,
-        amount: finance.freelancer_amount,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Erreur inconnue",
-      });
-
-      // Enregistrer l'échec
-      await supabaseService.from("mission_transfers").insert({
-        mission_id: missionId,
-        mission_payment_id: payment.id,
-        mission_finance_id: finance.id,
-        destination_profile_id: freelanceProfile.id,
-        destination_stripe_account_id: freelanceProfile.stripe_account_id,
-        type: "freelancer_payout",
-        amount: finance.freelancer_amount,
-        currency: "eur",
-        status: "failed",
-        error_message: error instanceof Error ? error.message : "Erreur inconnue",
-      });
-    }
-
-    // Si commercial, créer le transfert vers le commercial
-    if (finance.commercial_id && finance.commercial_fee_amount > 0) {
-      const { data: commercialProfile, error: commercialError } = await supabaseService
+    // ================================================================
+    // TRANSFERT FREELANCE
+    // ================================================================
+    if (finance.freelancer_id && finance.freelancer_amount > 0) {
+      const { data: freelanceProfile } = await supabaseService
         .from("profiles")
-        .select("id, stripe_account_id, connect_payouts_enabled")
-        .eq("id", finance.commercial_id)
+        .select("id, email, first_name, last_name, stripe_account_id, connect_payouts_enabled")
+        .eq("id", finance.freelancer_id)
         .single();
 
-      if (commercialProfile?.stripe_account_id && commercialProfile.connect_payouts_enabled) {
-        console.log(`🔄 Création du transfert commercial: ${finance.commercial_fee_amount} centimes`);
-        try {
-          const { transferId } = await createTransfer({
-            amount: finance.commercial_fee_amount,
-            currency: "eur",
-            destinationAccountId: commercialProfile.stripe_account_id,
-            description: `Commission mission ${missionId}`,
-            metadata: {
-              mission_id: missionId,
-              mission_payment_id: payment.id,
-              type: "commercial_commission",
-            },
-            sourceTransaction: payment.stripe_payment_intent_id || undefined,
-          });
+      if (!freelanceProfile?.stripe_account_id) {
+        // Pas de compte Stripe - skip et notifier
+        console.warn(
+          `⚠️ [Release] Freelance ${finance.freelancer_id} n'a pas de compte Stripe`
+        );
+        transfers.push({
+          type: "freelancer_payout",
+          profileId: finance.freelancer_id,
+          accountId: "",
+          amount: finance.freelancer_amount,
+          status: "skipped",
+          error: "Compte Stripe non configuré",
+        });
 
+        notifications.push({
+          type: "missing_stripe",
+          recipient: freelanceProfile?.email || finance.freelancer_id,
+          details: `Le freelance ${freelanceProfile?.first_name || ""} ${freelanceProfile?.last_name || ""} n'a pas de compte Stripe configuré. Montant en attente: ${(finance.freelancer_amount / 100).toFixed(2)}€`,
+        });
+      } else if (!freelanceProfile.connect_payouts_enabled) {
+        // Compte Stripe non activé pour les payouts
+        console.warn(
+          `⚠️ [Release] Freelance ${finance.freelancer_id} - payouts non activés`
+        );
+        transfers.push({
+          type: "freelancer_payout",
+          profileId: finance.freelancer_id,
+          accountId: freelanceProfile.stripe_account_id,
+          amount: finance.freelancer_amount,
+          status: "skipped",
+          error: "Payouts non activés sur le compte Stripe",
+        });
+
+        notifications.push({
+          type: "missing_stripe",
+          recipient: freelanceProfile.email,
+          details: `Le compte Stripe du freelance ${freelanceProfile.first_name || ""} ${freelanceProfile.last_name || ""} n'est pas activé pour les virements. Montant en attente: ${(finance.freelancer_amount / 100).toFixed(2)}€`,
+        });
+      } else {
+        // Compte Stripe valide - effectuer le transfert
+        console.log(
+          `🔄 [Release] Transfert freelance: ${finance.freelancer_amount} centimes`
+        );
+
+        const result = await attemptTransferWithRetry({
+          amount: finance.freelancer_amount,
+          currency: "eur",
+          destinationAccountId: freelanceProfile.stripe_account_id,
+          description: `Paiement mission: ${mission.title}`,
+          metadata: {
+            mission_id: missionId,
+            mission_payment_id: payment.id,
+            type: "freelancer_payout",
+          },
+          sourceTransaction: chargeId,
+        });
+
+        if (result.success) {
           transfers.push({
-            type: "commercial_commission",
-            profileId: commercialProfile.id,
-            accountId: commercialProfile.stripe_account_id,
-            amount: finance.commercial_fee_amount,
-            transferId,
+            type: "freelancer_payout",
+            profileId: freelanceProfile.id,
+            accountId: freelanceProfile.stripe_account_id,
+            amount: finance.freelancer_amount,
+            transferId: result.transferId,
             status: "created",
           });
 
-          // Enregistrer le transfert
+          // Enregistrer le transfert réussi
           await supabaseService.from("mission_transfers").insert({
             mission_id: missionId,
             mission_payment_id: payment.id,
             mission_finance_id: finance.id,
-            destination_profile_id: commercialProfile.id,
-            destination_stripe_account_id: commercialProfile.stripe_account_id,
-            type: "commercial_commission",
-            amount: finance.commercial_fee_amount,
+            destination_profile_id: freelanceProfile.id,
+            destination_stripe_account_id: freelanceProfile.stripe_account_id,
+            type: "freelancer_payout",
+            amount: finance.freelancer_amount,
             currency: "eur",
             status: "created",
-            stripe_transfer_id: transferId,
+            stripe_transfer_id: result.transferId,
             transferred_at: new Date().toISOString(),
           });
 
-          console.log(`✅ Transfert commercial créé: ${transferId}`);
-        } catch (error) {
-          console.error("❌ Erreur transfert commercial:", error);
+          console.log(`✅ [Release] Transfert freelance créé: ${result.transferId}`);
+        } else {
           transfers.push({
-            type: "commercial_commission",
-            profileId: commercialProfile.id,
-            accountId: commercialProfile.stripe_account_id,
-            amount: finance.commercial_fee_amount,
+            type: "freelancer_payout",
+            profileId: freelanceProfile.id,
+            accountId: freelanceProfile.stripe_account_id,
+            amount: finance.freelancer_amount,
             status: "failed",
-            error: error instanceof Error ? error.message : "Erreur inconnue",
+            error: result.error,
+            retryCount: MAX_RETRIES,
           });
 
           // Enregistrer l'échec
@@ -366,39 +455,214 @@ export async function POST(req: NextRequest, context: RouteContext) {
             mission_id: missionId,
             mission_payment_id: payment.id,
             mission_finance_id: finance.id,
+            destination_profile_id: freelanceProfile.id,
+            destination_stripe_account_id: freelanceProfile.stripe_account_id,
+            type: "freelancer_payout",
+            amount: finance.freelancer_amount,
+            currency: "eur",
+            status: "failed",
+            error_message: result.error,
+          });
+
+          notifications.push({
+            type: "error",
+            recipient: ADMIN_EMAIL,
+            details: `Échec du transfert freelance après ${MAX_RETRIES} tentatives. Erreur: ${result.error}`,
+          });
+        }
+      }
+    }
+
+    // ================================================================
+    // TRANSFERT COMMERCIAL
+    // ================================================================
+    if (finance.commercial_id && finance.commercial_fee_amount > 0) {
+      const { data: commercialProfile } = await supabaseService
+        .from("profiles")
+        .select("id, email, first_name, last_name, stripe_account_id, connect_payouts_enabled")
+        .eq("id", finance.commercial_id)
+        .single();
+
+      if (!commercialProfile?.stripe_account_id) {
+        console.warn(
+          `⚠️ [Release] Commercial ${finance.commercial_id} n'a pas de compte Stripe`
+        );
+        transfers.push({
+          type: "commercial_commission",
+          profileId: finance.commercial_id,
+          accountId: "",
+          amount: finance.commercial_fee_amount,
+          status: "skipped",
+          error: "Compte Stripe non configuré",
+        });
+
+        notifications.push({
+          type: "missing_stripe",
+          recipient: commercialProfile?.email || finance.commercial_id,
+          details: `Le commercial ${commercialProfile?.first_name || ""} ${commercialProfile?.last_name || ""} n'a pas de compte Stripe configuré. Commission en attente: ${(finance.commercial_fee_amount / 100).toFixed(2)}€`,
+        });
+      } else if (!commercialProfile.connect_payouts_enabled) {
+        console.warn(
+          `⚠️ [Release] Commercial ${finance.commercial_id} - payouts non activés`
+        );
+        transfers.push({
+          type: "commercial_commission",
+          profileId: finance.commercial_id,
+          accountId: commercialProfile.stripe_account_id,
+          amount: finance.commercial_fee_amount,
+          status: "skipped",
+          error: "Payouts non activés sur le compte Stripe",
+        });
+
+        notifications.push({
+          type: "missing_stripe",
+          recipient: commercialProfile.email,
+          details: `Le compte Stripe du commercial ${commercialProfile.first_name || ""} ${commercialProfile.last_name || ""} n'est pas activé pour les virements. Commission en attente: ${(finance.commercial_fee_amount / 100).toFixed(2)}€`,
+        });
+      } else {
+        console.log(
+          `🔄 [Release] Transfert commercial: ${finance.commercial_fee_amount} centimes`
+        );
+
+        const result = await attemptTransferWithRetry({
+          amount: finance.commercial_fee_amount,
+          currency: "eur",
+          destinationAccountId: commercialProfile.stripe_account_id,
+          description: `Commission mission: ${mission.title}`,
+          metadata: {
+            mission_id: missionId,
+            mission_payment_id: payment.id,
+            type: "commercial_commission",
+          },
+          sourceTransaction: chargeId,
+        });
+
+        if (result.success) {
+          transfers.push({
+            type: "commercial_commission",
+            profileId: commercialProfile.id,
+            accountId: commercialProfile.stripe_account_id,
+            amount: finance.commercial_fee_amount,
+            transferId: result.transferId,
+            status: "created",
+          });
+
+          await supabaseService.from("mission_transfers").insert({
+            mission_id: missionId,
+            mission_payment_id: payment.id,
+            mission_finance_id: finance.id,
+            destination_profile_id: commercialProfile.id,
+            destination_stripe_account_id: commercialProfile.stripe_account_id,
+            type: "commercial_commission",
+            amount: finance.commercial_fee_amount,
+            currency: "eur",
+            status: "created",
+            stripe_transfer_id: result.transferId,
+            transferred_at: new Date().toISOString(),
+          });
+
+          console.log(`✅ [Release] Transfert commercial créé: ${result.transferId}`);
+        } else {
+          transfers.push({
+            type: "commercial_commission",
+            profileId: commercialProfile.id,
+            accountId: commercialProfile.stripe_account_id,
+            amount: finance.commercial_fee_amount,
+            status: "failed",
+            error: result.error,
+            retryCount: MAX_RETRIES,
+          });
+
+          await supabaseService.from("mission_transfers").insert({
+            mission_id: missionId,
+            mission_payment_id: payment.id,
+            mission_finance_id: finance.id,
             destination_profile_id: commercialProfile.id,
             destination_stripe_account_id: commercialProfile.stripe_account_id,
             type: "commercial_commission",
             amount: finance.commercial_fee_amount,
             currency: "eur",
             status: "failed",
-            error_message: error instanceof Error ? error.message : "Erreur inconnue",
+            error_message: result.error,
+          });
+
+          notifications.push({
+            type: "error",
+            recipient: ADMIN_EMAIL,
+            details: `Échec du transfert commercial après ${MAX_RETRIES} tentatives. Erreur: ${result.error}`,
           });
         }
-      } else {
-        console.warn(`⚠️ Commercial ${finance.commercial_id} n'a pas de compte Connect valide`);
       }
     }
 
-    // Mettre à jour le statut de mission_finance
-    const allSuccess = transfers.every((t) => t.status === "created");
-    const anySuccess = transfers.some((t) => t.status === "created");
+    // ================================================================
+    // MISE À JOUR DES STATUTS
+    // ================================================================
+    const successTransfers = transfers.filter((t) => t.status === "created");
+    const failedTransfers = transfers.filter((t) => t.status === "failed");
+    const skippedTransfers = transfers.filter((t) => t.status === "skipped");
 
-    let newStatus: "funds_released" | "partially_released" = "partially_released";
-    if (allSuccess) {
-      newStatus = "funds_released";
+    // Déterminer le nouveau statut de mission_payments
+    let paymentStatus: "distributed" | "errored" = "distributed";
+    let financeStatus: "funds_released" | "partially_released" = "funds_released";
+
+    if (failedTransfers.length > 0) {
+      // Au moins un transfert a échoué après 3 retry
+      paymentStatus = "errored";
+      financeStatus = "partially_released";
+    } else if (skippedTransfers.length > 0 && successTransfers.length > 0) {
+      // Certains ont été payés, d'autres skippés (pas de Stripe)
+      financeStatus = "partially_released";
+    } else if (skippedTransfers.length > 0 && successTransfers.length === 0) {
+      // Tous skippés (aucun n'a de Stripe)
+      paymentStatus = "errored";
+      financeStatus = "partially_released";
     }
 
+    // Mettre à jour mission_payments
+    await supabaseService
+      .from("mission_payments")
+      .update({
+        status: paymentStatus,
+        distributed_at: new Date().toISOString(),
+      })
+      .eq("id", payment.id);
+
+    // Mettre à jour mission_finance
     await supabaseService
       .from("mission_finance")
-      .update({ status: newStatus })
+      .update({ status: financeStatus })
       .eq("id", finance.id);
 
-    console.log(`✅ Fonds libérés (status: ${newStatus})`);
+    console.log(
+      `✅ [Release] Terminé - Payment: ${paymentStatus}, Finance: ${financeStatus}`
+    );
+    console.log(
+      `📊 [Release] Résumé: ${successTransfers.length} réussis, ${failedTransfers.length} échoués, ${skippedTransfers.length} skippés`
+    );
+
+    // ================================================================
+    // ENVOI DES NOTIFICATIONS
+    // ================================================================
+    if (notifications.length > 0) {
+      // Notifier le recruteur
+      if (recruiterProfile?.email) {
+        for (const notif of notifications) {
+          await sendNotification({
+            type: notif.type,
+            recipients: [recruiterProfile.email, ADMIN_EMAIL],
+            missionId,
+            missionTitle: mission.title,
+            details: notif.details,
+          });
+        }
+      }
+    }
 
     return NextResponse.json({
-      success: true,
-      status: newStatus,
+      success: failedTransfers.length === 0,
+      paymentStatus,
+      financeStatus,
       transfers: transfers.map((t) => ({
         type: t.type,
         amount: t.amount,
@@ -406,9 +670,14 @@ export async function POST(req: NextRequest, context: RouteContext) {
         transfer_id: t.transferId,
         error: t.error,
       })),
+      summary: {
+        successful: successTransfers.length,
+        failed: failedTransfers.length,
+        skipped: skippedTransfers.length,
+      },
     });
   } catch (error) {
-    console.error("❌ Erreur lors de la libération des fonds:", error);
+    console.error("❌ [Release] Erreur lors de la libération des fonds:", error);
     return NextResponse.json(
       {
         error:

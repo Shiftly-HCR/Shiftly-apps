@@ -7,7 +7,7 @@ import { ChatThread } from "./ChatThread";
 import { MessageInput } from "./MessageInput";
 import type { Message } from "@shiftly/data";
 import { useMissionPaymentInConversation } from "@/hooks/stripe/useMissionPaymentInConversation";
-import { FiCreditCard, FiCheck, FiClock } from "react-icons/fi";
+import { FiCreditCard, FiCheck, FiClock, FiSend, FiAlertCircle } from "react-icons/fi";
 
 interface ConversationViewProps {
   conversation: ConversationWithDetails;
@@ -48,6 +48,7 @@ export function ConversationView({
     isProcessing,
     error: paymentError,
     startCheckout,
+    releaseFunds,
   } = useMissionPaymentInConversation(conversation, currentUserId);
 
   // Formater le montant en euros
@@ -90,27 +91,42 @@ export function ConversationView({
         <YStack
           padding="$3"
           backgroundColor={
-            paymentInfo.status === "paid" || paymentInfo.status === "released"
+            paymentInfo.status === "distributed"
               ? colors.green50 || "#ECFDF5"
-              : paymentInfo.status === "pending"
-                ? colors.yellow50 || "#FFFBEB"
-                : colors.purple50 || "#F5F3FF"
+              : paymentInfo.status === "received"
+                ? colors.blue50 || "#EFF6FF"
+                : paymentInfo.status === "pending"
+                  ? colors.yellow50 || "#FFFBEB"
+                  : paymentInfo.status === "errored"
+                    ? colors.red50 || "#FEF2F2"
+                    : colors.purple50 || "#F5F3FF"
           }
           borderBottomWidth={1}
           borderBottomColor={colors.gray200}
         >
           <XStack alignItems="center" justifyContent="space-between" gap="$3">
             <XStack alignItems="center" gap="$2" flex={1}>
-              {paymentInfo.status === "paid" || paymentInfo.status === "released" ? (
+              {paymentInfo.status === "distributed" ? (
                 <>
                   <FiCheck size={18} color={colors.green600 || "#059669"} />
                   <YStack flex={1}>
                     <Text fontSize={13} fontWeight="600" color={colors.green700 || "#047857"}>
-                      Mission payée
+                      Fonds distribués ✓
                     </Text>
                     <Text fontSize={12} color={colors.green600 || "#059669"}>
-                      {formatAmount(paymentInfo.amount)}
-                      {paymentInfo.status === "released" && " - Fonds libérés"}
+                      {formatAmount(paymentInfo.amount)} - Les paiements ont été effectués
+                    </Text>
+                  </YStack>
+                </>
+              ) : paymentInfo.status === "received" ? (
+                <>
+                  <FiClock size={18} color={colors.blue600 || "#2563EB"} />
+                  <YStack flex={1}>
+                    <Text fontSize={13} fontWeight="600" color={colors.blue700 || "#1D4ED8"}>
+                      Paiement reçu - En attente de distribution
+                    </Text>
+                    <Text fontSize={12} color={colors.blue600 || "#2563EB"}>
+                      {formatAmount(paymentInfo.amount)} - Cliquez pour libérer les fonds
                     </Text>
                   </YStack>
                 </>
@@ -119,10 +135,22 @@ export function ConversationView({
                   <FiClock size={18} color={colors.yellow600 || "#D97706"} />
                   <YStack flex={1}>
                     <Text fontSize={13} fontWeight="600" color={colors.yellow700 || "#B45309"}>
-                      Paiement en attente
+                      Paiement en cours
                     </Text>
                     <Text fontSize={12} color={colors.yellow600 || "#D97706"}>
                       {formatAmount(paymentInfo.amount)}
+                    </Text>
+                  </YStack>
+                </>
+              ) : paymentInfo.status === "errored" ? (
+                <>
+                  <FiAlertCircle size={18} color={colors.red600 || "#DC2626"} />
+                  <YStack flex={1}>
+                    <Text fontSize={13} fontWeight="600" color={colors.red700 || "#B91C1C"}>
+                      Erreur de distribution
+                    </Text>
+                    <Text fontSize={12} color={colors.red600 || "#DC2626"}>
+                      Contactez le support pour résoudre ce problème
                     </Text>
                   </YStack>
                 </>
@@ -141,7 +169,7 @@ export function ConversationView({
               )}
             </XStack>
 
-            {/* Bouton de paiement */}
+            {/* Bouton de paiement (checkout) */}
             {paymentInfo.canPay && (
               <Button
                 variant="primary"
@@ -166,6 +194,32 @@ export function ConversationView({
                 )}
               </Button>
             )}
+
+            {/* Bouton de libération des fonds */}
+            {paymentInfo.canRelease && (
+              <Button
+                variant="primary"
+                size="sm"
+                onPress={releaseFunds}
+                disabled={isProcessing || isLoadingPayment}
+              >
+                {isProcessing ? (
+                  <XStack alignItems="center" gap="$2">
+                    <Spinner size="small" color={colors.white} />
+                    <Text color={colors.white} fontSize={13}>
+                      Distribution...
+                    </Text>
+                  </XStack>
+                ) : (
+                  <XStack alignItems="center" gap="$2">
+                    <FiSend size={16} color={colors.white} />
+                    <Text color={colors.white} fontSize={13} fontWeight="600">
+                      Libérer les fonds
+                    </Text>
+                  </XStack>
+                )}
+              </Button>
+            )}
           </XStack>
 
           {/* Message d'erreur */}
@@ -178,46 +232,59 @@ export function ConversationView({
       )}
 
       {/* Bandeau de paiement (visible pour le freelance) */}
-      {isFreelance && paymentInfo && (paymentInfo.status === "paid" || paymentInfo.status === "released") && (
-        <YStack
-          padding="$3"
-          backgroundColor={
-            paymentInfo.status === "released"
-              ? colors.green50 || "#ECFDF5"
-              : colors.blue50 || "#EFF6FF"
-          }
-          borderBottomWidth={1}
-          borderBottomColor={colors.gray200}
-        >
-          <XStack alignItems="center" gap="$2">
-            {paymentInfo.status === "released" ? (
-              <>
-                <FiCheck size={18} color={colors.green600 || "#059669"} />
-                <YStack flex={1}>
-                  <Text fontSize={13} fontWeight="600" color={colors.green700 || "#047857"}>
-                    Paiement reçu ! 🎉
-                  </Text>
-                  <Text fontSize={12} color={colors.green600 || "#059669"}>
-                    {formatAmount(paymentInfo.freelancerAmount)} ont été versés sur votre compte
-                  </Text>
-                </YStack>
-              </>
-            ) : (
-              <>
-                <FiClock size={18} color={colors.blue600 || "#2563EB"} />
-                <YStack flex={1}>
-                  <Text fontSize={13} fontWeight="600" color={colors.blue700 || "#1D4ED8"}>
-                    Paiement sécurisé
-                  </Text>
-                  <Text fontSize={12} color={colors.blue600 || "#2563EB"}>
-                    Le recruteur a payé la mission. Vous recevrez {formatAmount(paymentInfo.freelancerAmount)} à la fin de la mission.
-                  </Text>
-                </YStack>
-              </>
-            )}
-          </XStack>
-        </YStack>
-      )}
+      {isFreelance &&
+        paymentInfo &&
+        (paymentInfo.status === "received" || paymentInfo.status === "distributed") && (
+          <YStack
+            padding="$3"
+            backgroundColor={
+              paymentInfo.status === "distributed"
+                ? colors.green50 || "#ECFDF5"
+                : colors.blue50 || "#EFF6FF"
+            }
+            borderBottomWidth={1}
+            borderBottomColor={colors.gray200}
+          >
+            <XStack alignItems="center" gap="$2">
+              {paymentInfo.status === "distributed" ? (
+                <>
+                  <FiCheck size={18} color={colors.green600 || "#059669"} />
+                  <YStack flex={1}>
+                    <Text
+                      fontSize={13}
+                      fontWeight="600"
+                      color={colors.green700 || "#047857"}
+                    >
+                      Paiement reçu ! 🎉
+                    </Text>
+                    <Text fontSize={12} color={colors.green600 || "#059669"}>
+                      {formatAmount(paymentInfo.freelancerAmount)} ont été versés
+                      sur votre compte
+                    </Text>
+                  </YStack>
+                </>
+              ) : (
+                <>
+                  <FiClock size={18} color={colors.blue600 || "#2563EB"} />
+                  <YStack flex={1}>
+                    <Text
+                      fontSize={13}
+                      fontWeight="600"
+                      color={colors.blue700 || "#1D4ED8"}
+                    >
+                      Paiement sécurisé
+                    </Text>
+                    <Text fontSize={12} color={colors.blue600 || "#2563EB"}>
+                      Le recruteur a payé la mission. Vous recevrez{" "}
+                      {formatAmount(paymentInfo.freelancerAmount)} à la fin de la
+                      mission.
+                    </Text>
+                  </YStack>
+                </>
+              )}
+            </XStack>
+          </YStack>
+        )}
 
       {/* Messages */}
       <ChatThread

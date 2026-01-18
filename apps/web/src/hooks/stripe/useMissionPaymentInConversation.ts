@@ -4,14 +4,21 @@ import { useState, useCallback, useEffect } from "react";
 import type { ConversationWithDetails } from "@shiftly/data";
 import { supabase } from "@shiftly/data";
 
-export type MissionPaymentStatus = "unpaid" | "pending" | "paid" | "released";
+// Statuts de paiement mis à jour
+export type MissionPaymentStatus =
+  | "unpaid" // Pas encore payé
+  | "pending" // Checkout en cours
+  | "received" // Paiement reçu, en attente de distribution
+  | "distributed" // Fonds distribués
+  | "errored"; // Erreur lors de la distribution
 
 export interface MissionPaymentInfo {
   status: MissionPaymentStatus;
   amount: number | null; // En centimes
   missionId: string;
   missionTitle: string;
-  canPay: boolean;
+  canPay: boolean; // Peut lancer le checkout
+  canRelease: boolean; // Peut libérer les fonds
   paymentId?: string;
   freelancerAmount?: number | null; // Montant que le freelance recevra (85%)
 }
@@ -92,10 +99,15 @@ export function useMissionPaymentInConversation(
             status = "pending";
             break;
           case "paid":
-            status = "paid";
+          case "received": // Nouveau statut: paiement reçu
+            status = "received";
             break;
-          case "released":
-            status = "released";
+          case "distributed": // Nouveau statut: fonds distribués
+          case "released": // Compatibilité ancienne
+            status = "distributed";
+            break;
+          case "errored": // Nouveau statut: erreur
+            status = "errored";
             break;
           default:
             status = "unpaid";
@@ -107,7 +119,11 @@ export function useMissionPaymentInConversation(
       }
 
       // Le recruteur peut payer si la mission n'est pas encore payée
-      const canPay = isRecruiter && status === "unpaid" && amount !== null && amount > 0;
+      const canPay =
+        isRecruiter && status === "unpaid" && amount !== null && amount > 0;
+
+      // Le recruteur peut libérer les fonds si le paiement est reçu
+      const canRelease = isRecruiter && status === "received";
 
       // Calculer le montant que le freelance recevra (85%)
       const freelancerAmount = amount ? Math.floor((amount * 85) / 100) : null;
@@ -118,6 +134,7 @@ export function useMissionPaymentInConversation(
         missionId,
         missionTitle: mission.title || conversation.mission.title,
         canPay,
+        canRelease,
         paymentId,
         freelancerAmount,
       });
@@ -179,13 +196,73 @@ export function useMissionPaymentInConversation(
       } else {
         throw new Error("URL de checkout non reçue");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Erreur lors du paiement";
       console.error("Erreur lors du checkout:", err);
-      setError(err.message || "Erreur lors du paiement");
+      setError(errorMessage);
     } finally {
       setIsProcessing(false);
     }
   }, [paymentInfo?.canPay, conversation?.mission?.id]);
+
+  // Libérer les fonds (distribuer aux freelance/commercial)
+  const releaseFunds = useCallback(async () => {
+    if (!paymentInfo?.canRelease || !conversation?.mission?.id) {
+      return { success: false, error: "Action non autorisée" };
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // Récupérer le token de session pour l'authentification
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
+
+      const response = await fetch(
+        `/api/missions/${conversation.mission.id}/release`,
+        {
+          method: "POST",
+          headers,
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Erreur lors de la libération des fonds"
+        );
+      }
+
+      // Rafraîchir les informations de paiement
+      await fetchPaymentInfo();
+
+      return {
+        success: data.success,
+        paymentStatus: data.paymentStatus,
+        summary: data.summary,
+      };
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Erreur lors de la libération";
+      console.error("Erreur lors de la libération des fonds:", err);
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [paymentInfo?.canRelease, conversation?.mission?.id, fetchPaymentInfo]);
 
   return {
     isRecruiter,
@@ -195,6 +272,7 @@ export function useMissionPaymentInConversation(
     isProcessing,
     error,
     startCheckout,
+    releaseFunds,
     refreshPaymentInfo: fetchPaymentInfo,
   };
 }
