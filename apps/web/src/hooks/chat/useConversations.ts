@@ -30,8 +30,6 @@ export function useConversations() {
   
   // Mettre à jour les conversations locales quand les données React Query changent
   useEffect(() => {
-    console.log(`📥 Conversations data changed:`, conversationsData.length);
-    
     // Toujours mettre à jour, même si vide (pour gérer le cas "aucune conversation")
     setConversations(conversationsData);
     
@@ -52,12 +50,6 @@ export function useConversations() {
       }
     }
     setSenderNames(names);
-    
-    if (conversationsData.length > 0) {
-      console.log(`✅ ${conversationsData.length} conversations chargées depuis React Query`);
-    } else if (!isLoadingConversations) {
-      console.log(`ℹ️ Aucune conversation trouvée`);
-    }
   }, [conversationsData, isLoadingConversations]);
 
   // Fonction pour charger les détails d'une conversation (mission, profils, dernier message)

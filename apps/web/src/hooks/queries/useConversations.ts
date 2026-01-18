@@ -15,9 +15,13 @@ import { useCurrentUser } from "./useAuth";
 export function useUserConversations() {
   const { data: user, isLoading: isLoadingUser } = useCurrentUser();
 
+
   return useQuery({
     queryKey: ["conversations", "user", user?.id],
-    queryFn: listUserConversations,
+    queryFn: async () => {
+      const result = await listUserConversations();
+      return result;
+    },
     staleTime: 1 * 60 * 1000, // 1 minute
     retry: 1,
     enabled: !isLoadingUser && !!user, // Attendre que l'utilisateur soit chargé
