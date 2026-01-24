@@ -8,21 +8,49 @@ import {
   type Profile,
 } from "@shiftly/data";
 
-/**
- * Hook pour récupérer le profil de l'utilisateur actuel
- */
-export function useCurrentProfile() {
-  return useQuery({
-    queryKey: ["profile", "current"],
-    queryFn: getCurrentProfile,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-  });
+type MaybeAxiosError = Error & { response?: { status?: number } };
+
+type AuthError = Error & {
+  status?: number;
+  code?: string;
+  response?: { status?: number };
+};
+
+function is401Error(error: unknown): boolean {
+  const e = error as AuthError;
+  return (
+    e?.status === 401 ||
+    e?.code === "UNAUTHENTICATED" ||
+    (e as MaybeAxiosError)?.response?.status === 401
+  );
 }
 
-/**
- * Hook pour récupérer un profil par ID
- */
+export function useCurrentProfile() {
+  const query = useQuery({
+    queryKey: ["profile", "current"],
+    queryFn: getCurrentProfile,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
+  // 401 = pas connecté
+  const isUnauthenticated = query.isError && is401Error(query.error);
+  // 200 + null = connecté mais profil pas créé
+  const isProfileMissing = query.isSuccess && query.data == null;
+  const isAuthResolved = query.isSuccess || query.isError;
+
+  return {
+    ...query,
+    isAuthResolved,
+    isUnauthenticated,
+    isProfileMissing,
+  } as typeof query & {
+    isAuthResolved: boolean;
+    isUnauthenticated: boolean;
+    isProfileMissing: boolean;
+  };
+}
+
 export function useProfile(profileId: string | null) {
   return useQuery({
     queryKey: ["profile", profileId],
@@ -32,9 +60,6 @@ export function useProfile(profileId: string | null) {
   });
 }
 
-/**
- * Hook pour mettre à jour le profil
- */
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
@@ -42,11 +67,11 @@ export function useUpdateProfile() {
     mutationFn: updateProfile,
     onSuccess: (result) => {
       if (result.success && result.profile) {
-        // Mettre à jour le cache du profil actuel
         queryClient.setQueryData(["profile", "current"], result.profile);
-        // Mettre à jour aussi le cache par ID si présent
-        queryClient.setQueryData(["profile", result.profile.id], result.profile);
-        // Invalider les queries liées
+        queryClient.setQueryData(
+          ["profile", result.profile.id],
+          result.profile,
+        );
         queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     },
