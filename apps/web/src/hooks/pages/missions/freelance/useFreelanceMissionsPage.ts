@@ -2,8 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import type { Mission } from "@shiftly/data";
-import { useCurrentProfile } from "@/hooks";
-import { useCachedMissions } from "@/hooks/cache/useCachedMissions";
+import { useCurrentProfile, usePublishedMissions } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 /**
@@ -11,8 +10,8 @@ import { colors } from "@shiftly/ui";
  * Gère le chargement des missions, les missions récentes et recommandées
  */
 export function useFreelanceMissionsPage() {
-  const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
-  const { data: publishedMissions = [], isLoading: isLoadingMissions } = useCachedMissions();
+  const { data: profile, isLoading: isLoadingProfile } = useCurrentProfile();
+  const { data: publishedMissions = [], isLoading: isLoadingMissions } = usePublishedMissions();
   const isLoading = isLoadingProfile || isLoadingMissions;
 
   // Calculer les missions récentes et recommandées depuis le cache

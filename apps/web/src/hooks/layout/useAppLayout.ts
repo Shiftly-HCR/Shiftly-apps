@@ -3,9 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCurrentUser, useCurrentProfile } from "@/hooks";
-import { useSessionContext } from "@/providers/SessionProvider";
-import { signOut } from "@shiftly/data";
+import { useCurrentUser, useCurrentProfile, useSignOut } from "@/hooks/queries";
 
 /**
  * Hook pour gérer la logique du layout de l'application
@@ -15,57 +13,49 @@ export function useAppLayout() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [searchValue, setSearchValue] = useState("");
-  const { user, isLoading: isLoadingUser } = useCurrentUser();
-  const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
-  const { clear } = useSessionContext();
+
+  const { data: user, isLoading: isLoadingUser } = useCurrentUser();
+
+  const {
+    data: profile,
+    isLoading: isLoadingProfile,
+    isAuthResolved,
+    isUnauthenticated,
+    // isProfileMissing, // dispo si tu veux gérer /register ici
+  } = useCurrentProfile();
+
+  const signOutMutation = useSignOut();
+
   const isLoading = isLoadingUser || isLoadingProfile;
 
-  // Rediriger vers login si pas d'utilisateur
+  /**
+   * Rediriger vers /login UNIQUEMENT quand on est certain que l'utilisateur
+   * n'est pas authentifié (401). Ne pas rediriger pendant la phase "unknown"
+   * au hard refresh.
+   */
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
+    // Tant qu'on ne sait pas si l'utilisateur est loggé ou non, on ne fait rien
+    if (!isAuthResolved) return;
+
+    // On attend la fin des chargements
+    if (isLoading) return;
+
+    // Redirect login seulement si backend dit "401 / non authentifié"
+    if (isUnauthenticated) {
+      router.replace("/login");
+      return;
     }
-  }, [user, isLoading, router]);
+
+    // IMPORTANT: ne plus faire `if (!user) router.push('/login')`
+    // car `user` peut être null/undefined transitoirement au refresh.
+  }, [isAuthResolved, isUnauthenticated, isLoading, router]);
 
   const handleLogout = async () => {
     try {
-      // 1. Vider le cache React Query (inclut les données persistées dans localStorage)
-      queryClient.clear();
+      // Déconnecter de Supabase (le hook useSignOut gère déjà le nettoyage du cache)
+      await signOutMutation.mutateAsync();
 
-      // 2. Vider aussi le localStorage pour le persister React Query
-      // Le persister utilise une clé spécifique pour stocker les données
-      if (typeof window !== "undefined") {
-        // Vider toutes les clés liées à React Query
-        // Le persister utilise généralement des clés comme "REACT_QUERY_OFFLINE_CACHE" ou "tanstack-query"
-        const keysToRemove: string[] = [];
-        for (let i = 0; i < window.localStorage.length; i++) {
-          const key = window.localStorage.key(i);
-          if (
-            key &&
-            (key.includes("REACT_QUERY") ||
-              key.includes("react-query") ||
-              key.includes("tanstack-query") ||
-              key.includes("tanstack"))
-          ) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach((key) => window.localStorage.removeItem(key));
-      }
-
-      // 3. Vider le cache du SessionProvider AVANT la déconnexion
-      // pour éviter que le SessionProvider ne recharge automatiquement une session encore présente
-      await clear();
-
-      // 4. Déconnecter de Supabase
-      const result = await signOut();
-
-      if (!result.success) {
-        console.error("Erreur lors de la déconnexion:", result.error);
-      }
-
-      // 5. Utiliser window.location.href pour forcer un rechargement complet
-      // Cela garantit que toutes les données sont vidées et que le cache Next.js est invalidé
+      // Utiliser window.location.href pour forcer un rechargement complet
       if (typeof window !== "undefined") {
         window.location.href = "/login";
       }
@@ -73,23 +63,7 @@ export function useAppLayout() {
       console.error("Erreur lors de la déconnexion:", error);
       // Même en cas d'erreur, vider tous les caches et rediriger
       queryClient.clear();
-      await clear();
       if (typeof window !== "undefined") {
-        // Vider le localStorage
-        const keysToRemove: string[] = [];
-        for (let i = 0; i < window.localStorage.length; i++) {
-          const key = window.localStorage.key(i);
-          if (
-            key &&
-            (key.includes("REACT_QUERY") ||
-              key.includes("react-query") ||
-              key.includes("tanstack-query") ||
-              key.includes("tanstack"))
-          ) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach((key) => window.localStorage.removeItem(key));
         window.location.href = "/login";
       }
     }

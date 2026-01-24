@@ -1,13 +1,11 @@
 "use client";
 
-import { useCachedMissionApplications } from "@/hooks/cache/useCachedApplications";
+import { useMissionApplications as useMissionApplicationsQuery } from "@/hooks/queries";
 import type { MissionApplicationWithProfile } from "@shiftly/data";
 
 /**
  * Hook pour récupérer les candidatures d'une mission (pour les recruteurs)
- * 
- * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
- * L'API reste identique pour la compatibilité avec les composants existants.
+ * @deprecated Utilisez directement useMissionApplications depuis @/hooks/queries
  */
 export function useMissionApplications(missionId: string | null) {
   const {
@@ -15,7 +13,7 @@ export function useMissionApplications(missionId: string | null) {
     isLoading,
     error,
     refetch,
-  } = useCachedMissionApplications(missionId);
+  } = useMissionApplicationsQuery(missionId);
 
   return {
     applications,

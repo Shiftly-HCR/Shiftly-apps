@@ -1,16 +1,16 @@
+// React Query hooks (nouveau système unifié)
+export * from "./queries";
+
 // Chat hooks
 export * from "./chat";
 
-// Cache hooks
-export * from "./cache";
-
-// Profile hooks
+// Profile hooks (legacy - à migrer progressivement)
 export * from "./profile";
 
-// Missions hooks
+// Missions hooks (legacy - à migrer progressivement)
 export * from "./missions";
 
-// Freelance hooks
+// Freelance hooks (legacy - à migrer progressivement)
 export * from "./freelance";
 
 // Commercial hooks

@@ -16,10 +16,10 @@ import {
 import { AppLayout } from "@/components";
 import {
   useRecruiterMissions,
-  useCachedMission,
+  useMission,
   useEstablishments,
+  useEstablishment,
 } from "@/hooks";
-import { useCachedEstablishment } from "@/hooks/cache/useCachedEstablishment";
 import {
   MissionFormSteps,
   MissionFormStepIndicator,
@@ -34,7 +34,7 @@ export default function EditMissionPage() {
   const params = useParams();
   const missionId = params.id as string;
   const { data: cachedMission, isLoading: isLoadingMission } =
-    useCachedMission(missionId);
+    useMission(missionId);
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,11 +52,8 @@ export default function EditMissionPage() {
     string | null
   >(null);
 
-  // Utiliser le hook de cache pour charger l'établissement
-  const { data: selectedEstablishment } = useCachedEstablishment(
-    selectedEstablishmentId,
-    false
-  );
+  // Charger l'établissement sélectionné via React Query
+  const { data: selectedEstablishment } = useEstablishment(selectedEstablishmentId);
 
   // Étape 3: Localisation
   const [address, setAddress] = useState("");
