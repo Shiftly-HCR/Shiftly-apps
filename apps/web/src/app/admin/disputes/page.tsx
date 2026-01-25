@@ -108,7 +108,7 @@ export default function AdminDisputesPage() {
 
     try {
       console.log("Début de la récupération des litiges...");
-      
+
       // D'abord, récupérer tous les litiges sans jointures pour voir ce qui existe
       const { data: allDisputes, error: allDisputesError } = await supabase
         .from("mission_disputes")
@@ -145,7 +145,9 @@ export default function AdminDisputesPage() {
         // Gérer les cas où les relations peuvent être null ou arrays
         const mission = Array.isArray(d.missions) ? d.missions[0] : d.missions;
         const profile = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
-        const payment = Array.isArray(d.mission_payments) ? d.mission_payments[0] : d.mission_payments;
+        const payment = Array.isArray(d.mission_payments)
+          ? d.mission_payments[0]
+          : d.mission_payments;
 
         return {
           id: d.id,
@@ -164,7 +166,8 @@ export default function AdminDisputesPage() {
           created_at: d.created_at,
           mission_title: mission?.title || "Mission supprimée",
           reporter_name: profile
-            ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Utilisateur inconnu"
+            ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+              "Utilisateur inconnu"
             : "Utilisateur inconnu",
           payment_amount: payment?.amount || null,
         };
@@ -311,7 +314,7 @@ export default function AdminDisputesPage() {
               <Text fontSize={11} color={colors.gray700}>
                 Rôle requis: admin
               </Text>
-              <Text fontSize={11} color={colors.gray600} marginTop="$2">
+              <Text fontSize={11} color={colors.gray700} marginTop="$2">
                 Si vous avez modifié votre rôle en base de données, essayez de
                 rafraîchir la page (F5) ou de vous déconnecter/reconnecter.
               </Text>
@@ -439,17 +442,17 @@ function DisputeCard({
 }) {
   const bgColor =
     dispute.status === "resolved"
-      ? colors.green50 || "#ECFDF5"
+      ? "#ECFDF5"
       : dispute.status === "rejected"
-        ? colors.gray50 || "#F9FAFB"
-        : colors.yellow50 || "#FFFBEB";
+        ? colors.gray050
+        : "#FFFBEB";
 
   const borderColor =
     dispute.status === "resolved"
-      ? colors.green200 || "#A7F3D0"
+      ? "#A7F3D0"
       : dispute.status === "rejected"
-        ? colors.gray200 || "#E5E7EB"
-        : colors.yellow200 || "#FDE68A";
+        ? colors.gray200
+        : "#FDE68A";
 
   return (
     <YStack
@@ -464,16 +467,12 @@ function DisputeCard({
           <XStack alignItems="center" gap="$2">
             {dispute.is_stripe_dispute && (
               <YStack
-                backgroundColor={colors.red100 || "#FEE2E2"}
+                backgroundColor="#FEE2E2"
                 borderRadius={4}
                 paddingHorizontal="$2"
                 paddingVertical="$1"
               >
-                <Text
-                  fontSize={11}
-                  fontWeight="600"
-                  color={colors.red700 || "#B91C1C"}
-                >
+                <Text fontSize={11} fontWeight="600" color="#B91C1C">
                   STRIPE
                 </Text>
               </YStack>
@@ -488,19 +487,19 @@ function DisputeCard({
           </Text>
 
           {dispute.description && (
-            <Text fontSize={13} color={colors.gray600}>
+            <Text fontSize={13} color={colors.gray700}>
               <Text fontWeight="600">Description:</Text> {dispute.description}
             </Text>
           )}
 
           <XStack gap="$4" marginTop="$1">
-            <Text fontSize={12} color={colors.gray600}>
+            <Text fontSize={12} color={colors.gray700}>
               Signalé par: {dispute.reporter_name || "Inconnu"}
             </Text>
-            <Text fontSize={12} color={colors.gray600}>
+            <Text fontSize={12} color={colors.gray700}>
               Montant: {formatAmount(dispute.payment_amount)}
             </Text>
-            <Text fontSize={12} color={colors.gray600}>
+            <Text fontSize={12} color={colors.gray700}>
               {formatDate(dispute.created_at)}
             </Text>
           </XStack>
@@ -521,7 +520,7 @@ function DisputeCard({
           {dispute.stripe_dispute_id && (
             <XStack alignItems="center" gap="$2" marginTop="$2">
               <FiExternalLink size={14} color={colors.gray500} />
-              <Text fontSize={12} color={colors.gray600}>
+              <Text fontSize={12} color={colors.gray700}>
                 Dispute Stripe: {dispute.stripe_dispute_id}
               </Text>
             </XStack>
@@ -537,7 +536,7 @@ function DisputeCard({
               disabled={isProcessing}
             >
               <XStack alignItems="center" gap="$2">
-                <FiX size={14} color={colors.gray600} />
+                <FiX size={14} color={colors.gray700} />
                 <Text fontSize={12} fontWeight="600">
                   Rejeter
                 </Text>
