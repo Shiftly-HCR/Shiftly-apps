@@ -18,6 +18,8 @@ interface NavbarProps {
   onMessagingClick?: () => void;
   onCommercialClick?: () => void;
   onPaymentsClick?: () => void;
+  onAdminDisputesClick?: () => void;
+  onAdminDashboardClick?: () => void;
   onLogoutClick?: () => void;
 }
 
@@ -37,6 +39,8 @@ export function Navbar({
   onMessagingClick,
   onCommercialClick,
   onPaymentsClick,
+  onAdminDisputesClick,
+  onAdminDashboardClick,
   onLogoutClick,
 }: NavbarProps) {
   const [isMobile, setIsMobile] = useState(false);
@@ -184,88 +188,140 @@ export function Navbar({
             {/* Liens de navigation - Cachés sur mobile */}
             {(!mounted || !isMobile) && (
               <>
-                {/* Afficher le lien Commercial uniquement pour les commerciaux */}
-                {userRole === "commercial" && onCommercialClick && (
-                  <Text
-                    fontSize={14}
-                    fontWeight="600"
-                    color={colors.gray900}
-                    cursor="pointer"
-                    hoverStyle={{
-                      color: colors.shiftlyViolet,
-                    }}
-                    onPress={onCommercialClick}
-                  >
-                    Dashboard commercial
-                  </Text>
-                )}
-                {/* Lien Mes paiements pour freelances et commerciaux */}
-                {(userRole === "freelance" || userRole === "commercial") &&
-                  onPaymentsClick && (
-                    <Text
-                      fontSize={14}
-                      fontWeight="600"
-                      color={colors.gray900}
-                      cursor="pointer"
-                      hoverStyle={{
-                        color: colors.shiftlyViolet,
-                      }}
-                      onPress={onPaymentsClick}
-                    >
-                      Mes paiements
-                    </Text>
-                  )}
-                {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
-                {userRole !== "commercial" && (
+                {/* Liens spécifiques aux admins */}
+                {userRole === "admin" && (
                   <>
-                    <Text
-                      fontSize={14}
-                      fontWeight="600"
-                      color={colors.gray900}
-                      cursor="pointer"
-                      hoverStyle={{
-                        color: colors.shiftlyViolet,
-                      }}
-                      onPress={onMissionsClick}
-                    >
-                      Mes missions
-                    </Text>
-                    <Text
-                      fontSize={14}
-                      fontWeight="600"
-                      color={colors.gray900}
-                      cursor="pointer"
-                      hoverStyle={{
-                        color: colors.shiftlyViolet,
-                      }}
-                      onPress={onSubscriptionClick}
-                    >
-                      Abonnement
-                    </Text>
-                    <Text
-                      fontSize={14}
-                      fontWeight="600"
-                      color={colors.gray900}
-                      cursor="pointer"
-                      hoverStyle={{
-                        color: colors.shiftlyViolet,
-                      }}
-                      onPress={onFreelanceClick}
-                    >
-                      Freelance
-                    </Text>
-                    <Text
-                      fontSize={14}
-                      fontWeight="600"
-                      color={colors.gray900}
-                      cursor="pointer"
-                      hoverStyle={{
-                        color: colors.shiftlyViolet,
-                      }}
-                      onPress={onMessagingClick}
-                    >
-                      Messagerie
-                    </Text>
+                    {onAdminDashboardClick && (
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color={colors.gray900}
+                        cursor="pointer"
+                        hoverStyle={{
+                          color: colors.shiftlyViolet,
+                        }}
+                        onPress={onAdminDashboardClick}
+                      >
+                        Dashboard
+                      </Text>
+                    )}
+                    {onAdminDisputesClick && (
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color={colors.gray900}
+                        cursor="pointer"
+                        hoverStyle={{
+                          color: colors.shiftlyViolet,
+                        }}
+                        onPress={onAdminDisputesClick}
+                      >
+                        Litiges
+                      </Text>
+                    )}
+                    {onMessagingClick && (
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color={colors.gray900}
+                        cursor="pointer"
+                        hoverStyle={{
+                          color: colors.shiftlyViolet,
+                        }}
+                        onPress={onMessagingClick}
+                      >
+                        Messagerie
+                      </Text>
+                    )}
+                  </>
+                )}
+                {/* Liens pour les non-admins */}
+                {userRole !== "admin" && (
+                  <>
+                    {/* Afficher le lien Commercial uniquement pour les commerciaux */}
+                    {userRole === "commercial" && onCommercialClick && (
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color={colors.gray900}
+                        cursor="pointer"
+                        hoverStyle={{
+                          color: colors.shiftlyViolet,
+                        }}
+                        onPress={onCommercialClick}
+                      >
+                        Dashboard commercial
+                      </Text>
+                    )}
+                    {/* Lien Mes paiements pour freelances et commerciaux */}
+                    {(userRole === "freelance" || userRole === "commercial") &&
+                      onPaymentsClick && (
+                        <Text
+                          fontSize={14}
+                          fontWeight="600"
+                          color={colors.gray900}
+                          cursor="pointer"
+                          hoverStyle={{
+                            color: colors.shiftlyViolet,
+                          }}
+                          onPress={onPaymentsClick}
+                        >
+                          Mes paiements
+                        </Text>
+                      )}
+                    {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
+                    {userRole !== "commercial" && (
+                      <>
+                        <Text
+                          fontSize={14}
+                          fontWeight="600"
+                          color={colors.gray900}
+                          cursor="pointer"
+                          hoverStyle={{
+                            color: colors.shiftlyViolet,
+                          }}
+                          onPress={onMissionsClick}
+                        >
+                          Mes missions
+                        </Text>
+                        <Text
+                          fontSize={14}
+                          fontWeight="600"
+                          color={colors.gray900}
+                          cursor="pointer"
+                          hoverStyle={{
+                            color: colors.shiftlyViolet,
+                          }}
+                          onPress={onSubscriptionClick}
+                        >
+                          Abonnement
+                        </Text>
+                        <Text
+                          fontSize={14}
+                          fontWeight="600"
+                          color={colors.gray900}
+                          cursor="pointer"
+                          hoverStyle={{
+                            color: colors.shiftlyViolet,
+                          }}
+                          onPress={onFreelanceClick}
+                        >
+                          Freelance
+                        </Text>
+                        <Text
+                          fontSize={14}
+                          fontWeight="600"
+                          color={colors.gray900}
+                          cursor="pointer"
+                          hoverStyle={{
+                            color: colors.shiftlyViolet,
+                          }}
+                          onPress={onMessagingClick}
+                        >
+                          Messagerie
+                        </Text>
+                      </>
+                    )}
                   </>
                 )}
               </>
@@ -432,34 +488,59 @@ export function Navbar({
 
                 {/* Liens de navigation */}
                 <YStack gap="$1" marginTop="$2">
-                  {/* Afficher le lien Commercial uniquement pour les commerciaux */}
-                  {userRole === "commercial" && onCommercialClick && (
-                    <MenuLink
-                      label="Dashboard commercial"
-                      onPress={onCommercialClick}
-                    />
-                  )}
-                  {/* Lien Mes paiements pour freelances et commerciaux */}
-                  {(userRole === "freelance" || userRole === "commercial") &&
-                    onPaymentsClick && (
-                      <MenuLink
-                        label="Mes paiements"
-                        onPress={onPaymentsClick}
-                      />
-                    )}
-                  {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
-                  {userRole !== "commercial" && (
+                  {/* Liens spécifiques aux admins */}
+                  {userRole === "admin" && (
                     <>
-                      <MenuLink
-                        label="Mes missions"
-                        onPress={onMissionsClick}
-                      />
-                      <MenuLink
-                        label="Abonnement"
-                        onPress={onSubscriptionClick}
-                      />
-                      <MenuLink label="Freelance" onPress={onFreelanceClick} />
-                      <MenuLink label="Messagerie" onPress={onMessagingClick} />
+                      {onAdminDashboardClick && (
+                        <MenuLink
+                          label="Dashboard"
+                          onPress={onAdminDashboardClick}
+                        />
+                      )}
+                      {onAdminDisputesClick && (
+                        <MenuLink
+                          label="Litiges"
+                          onPress={onAdminDisputesClick}
+                        />
+                      )}
+                      {onMessagingClick && (
+                        <MenuLink label="Messagerie" onPress={onMessagingClick} />
+                      )}
+                    </>
+                  )}
+                  {/* Liens pour les non-admins */}
+                  {userRole !== "admin" && (
+                    <>
+                      {/* Afficher le lien Commercial uniquement pour les commerciaux */}
+                      {userRole === "commercial" && onCommercialClick && (
+                        <MenuLink
+                          label="Dashboard commercial"
+                          onPress={onCommercialClick}
+                        />
+                      )}
+                      {/* Lien Mes paiements pour freelances et commerciaux */}
+                      {(userRole === "freelance" || userRole === "commercial") &&
+                        onPaymentsClick && (
+                          <MenuLink
+                            label="Mes paiements"
+                            onPress={onPaymentsClick}
+                          />
+                        )}
+                      {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
+                      {userRole !== "commercial" && (
+                        <>
+                          <MenuLink
+                            label="Mes missions"
+                            onPress={onMissionsClick}
+                          />
+                          <MenuLink
+                            label="Abonnement"
+                            onPress={onSubscriptionClick}
+                          />
+                          <MenuLink label="Freelance" onPress={onFreelanceClick} />
+                          <MenuLink label="Messagerie" onPress={onMessagingClick} />
+                        </>
+                      )}
                     </>
                   )}
                 </YStack>
