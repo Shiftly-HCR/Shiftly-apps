@@ -32,6 +32,9 @@ interface PaymentItem {
   transferStatus?: "created" | "pending" | "failed" | "skipped";
   transferId?: string;
   canRetry?: boolean;
+  hasDispute?: boolean; // Indique si un litige est en cours
+  disputeStatus?: "open" | "resolved" | "rejected"; // Statut du litige
+  disputeReason?: string; // Raison du litige
 }
 
 export default function PaymentsPage() {
@@ -140,6 +143,13 @@ export default function PaymentsPage() {
         .in("mission_payment_id", paymentIds)
         .eq("destination_profile_id", profile.id);
 
+      // Récupérer les litiges associés aux paiements
+      const { data: disputesData } = await supabase
+        .from("mission_disputes")
+        .select("mission_payment_id, status, reason")
+        .in("mission_payment_id", paymentIds)
+        .eq("status", "open"); // Seulement les litiges ouverts
+
       // Construire la liste des paiements
       // Note: Supabase retourne les relations comme objets ou tableaux selon la config
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -175,6 +185,11 @@ export default function PaymentsPage() {
         const canRetry =
           status === "skipped" && isConnectComplete && payoutsEnabled;
 
+        // Vérifier si ce paiement a un litige en cours
+        const dispute = disputesData?.find(
+          (d) => d.mission_payment_id === finance.mission_payment_id
+        );
+
         return {
           id: finance.id,
           missionId: finance.mission_id,
@@ -189,6 +204,9 @@ export default function PaymentsPage() {
           transferStatus: transfer?.status,
           transferId: transfer?.stripe_transfer_id,
           canRetry,
+          hasDispute: !!dispute,
+          disputeStatus: dispute?.status,
+          disputeReason: dispute?.reason,
         };
       });
 
@@ -280,12 +298,15 @@ export default function PaymentsPage() {
   };
 
   // Filtrer les paiements par statut
+  const paymentsWithDisputes = payments.filter((p) => p.hasDispute);
   const upcomingPayments = payments.filter(
-    (p) => p.status === "received" || p.status === "pending"
+    (p) => (p.status === "received" || p.status === "pending") && !p.hasDispute
   );
-  const completedPayments = payments.filter((p) => p.status === "distributed");
+  const completedPayments = payments.filter(
+    (p) => p.status === "distributed" && !p.hasDispute
+  );
   const skippedPayments = payments.filter(
-    (p) => p.status === "skipped" || p.status === "errored"
+    (p) => (p.status === "skipped" || p.status === "errored") && !p.hasDispute
   );
 
   if (isLoadingProfile) {
@@ -445,6 +466,31 @@ export default function PaymentsPage() {
             </YStack>
           )}
 
+          {/* Paiements avec litiges */}
+          {paymentsWithDisputes.length > 0 && (
+            <YStack gap="$3">
+              <XStack alignItems="center" gap="$2">
+                <FiAlertTriangle
+                  size={20}
+                  color={colors.red600 || "#DC2626"}
+                />
+                <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                  Paiements en litige ({paymentsWithDisputes.length})
+                </Text>
+              </XStack>
+
+              {paymentsWithDisputes.map((payment) => (
+                <PaymentCard
+                  key={payment.id}
+                  payment={payment}
+                  formatAmount={formatAmount}
+                  formatDate={formatDate}
+                  type="upcoming"
+                />
+              ))}
+            </YStack>
+          )}
+
           {/* Paiements en attente / à venir */}
           {upcomingPayments.length > 0 && (
             <YStack gap="$3">
@@ -585,13 +631,53 @@ function PaymentCard({
       borderRadius={12}
       padding="$4"
       borderWidth={1}
-      borderColor={borderColor}
+      borderColor={payment.hasDispute ? colors.red200 || "#FECACA" : borderColor}
     >
       <XStack justifyContent="space-between" alignItems="flex-start">
         <YStack flex={1} gap="$1">
-          <Text fontSize={15} fontWeight="600" color={colors.gray900}>
-            {payment.missionTitle}
-          </Text>
+          <XStack alignItems="center" gap="$2" flexWrap="wrap">
+            <Text fontSize={15} fontWeight="600" color={colors.gray900}>
+              {payment.missionTitle}
+            </Text>
+            {payment.hasDispute && (
+              <YStack
+                backgroundColor={colors.red100 || "#FEE2E2"}
+                borderRadius={4}
+                paddingHorizontal="$2"
+                paddingVertical="$1"
+              >
+                <XStack alignItems="center" gap="$1">
+                  <FiAlertTriangle
+                    size={12}
+                    color={colors.red700 || "#B91C1C"}
+                  />
+                  <Text
+                    fontSize={11}
+                    fontWeight="600"
+                    color={colors.red700 || "#B91C1C"}
+                  >
+                    Litige en cours
+                  </Text>
+                </XStack>
+              </YStack>
+            )}
+          </XStack>
+
+          {payment.hasDispute && payment.disputeReason && (
+            <YStack
+              backgroundColor={colors.red50 || "#FEF2F2"}
+              borderRadius={6}
+              padding="$2"
+              marginTop="$2"
+            >
+              <Text fontSize={12} fontWeight="600" color={colors.red700 || "#B91C1C"} marginBottom="$1">
+                Raison du litige:
+              </Text>
+              <Text fontSize={12} color={colors.red600 || "#DC2626"}>
+                {payment.disputeReason}
+              </Text>
+            </YStack>
+          )}
 
           <XStack alignItems="center" gap="$2" marginTop="$1">
             <FiCalendar size={14} color={colors.gray500} />
