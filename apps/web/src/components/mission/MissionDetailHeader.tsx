@@ -21,9 +21,8 @@ export function MissionDetailHeader({ mission }: MissionDetailHeaderProps) {
         {mission.title}
       </Text>
       <Text fontSize={32} fontWeight="bold" color={colors.shiftlyViolet}>
-        {mission.hourly_rate}€/h
+        {mission.total_salary}€
       </Text>
     </XStack>
   );
 }
-

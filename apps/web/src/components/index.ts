@@ -19,3 +19,8 @@ export * from "./chat";
 // Realtime components
 export * from "./realtime";
 
+// Payment components
+export * from "./payments";
+
+// Dispute components
+export * from "./dispute";

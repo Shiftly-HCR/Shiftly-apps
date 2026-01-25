@@ -22,6 +22,8 @@
       "@/*": ["./src/*"],
       "@shiftly/core": ["../../packages/core"],
       "@shiftly/data": ["../../packages/data"],
+      "@shiftly/payments": ["../../packages/payments"],
+      "@shiftly/payments/*": ["../../packages/payments/*"],
       "@shiftly/ui": ["../../packages/ui/src"]
     }
   },

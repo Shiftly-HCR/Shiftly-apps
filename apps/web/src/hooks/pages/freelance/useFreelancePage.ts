@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { FreelanceProfile } from "@shiftly/data";
-import { useCachedFreelances } from "@/hooks/cache/useCachedFreelances";
+import { usePublishedFreelances } from "@/hooks/queries";
 import type { FreelanceFiltersState } from "@shiftly/ui";
 
 export const positionOptions = [
@@ -33,7 +33,7 @@ export const locationOptions = [
  */
 export function useFreelancePage() {
   const router = useRouter();
-  const { data: freelances = [], isLoading, error } = useCachedFreelances();
+  const { data: freelances = [], isLoading, error } = usePublishedFreelances();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<FreelanceFiltersState>({});
 

@@ -16,6 +16,7 @@ import {
   MissionDetailSidebar,
   MissionApplicationsSection,
   MissionChatSection,
+  MissionPaymentBanner,
 } from "@/components";
 import { useMissionDetailPage } from "@/hooks";
 
@@ -96,6 +97,23 @@ export default function MissionDetailPage() {
           >
             {/* COLONNE GAUCHE */}
             <YStack flex={1} gap="$4" minWidth={300}>
+              {/* Bandeau de paiement pour le recruteur */}
+              {isRecruiter && isMissionOwner && (
+                <MissionPaymentBanner
+                  missionId={missionId}
+                  isRecruiter={true}
+                />
+              )}
+
+              {/* Bandeau de paiement pour le freelance */}
+              {!isRecruiter && profile?.role === "freelance" && (
+                <MissionPaymentBanner
+                  missionId={missionId}
+                  isFreelance={true}
+                  isFreelanceAccepted={isFreelanceAccepted}
+                />
+              )}
+
               <MissionDetailImage mission={mission} />
               <MissionDetailDescription mission={mission} />
               <MissionDetailSchedule

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { listUserConversations, getConversationById } from "@shiftly/data";
+import { useUserConversations } from "@/hooks/queries";
 import { supabase } from "@shiftly/data";
 import type { ConversationWithDetails, Conversation } from "@shiftly/data";
 import { useCurrentProfile } from "@/hooks/profile/useCurrentProfile";
@@ -15,18 +15,42 @@ export function useConversations() {
   const searchParams = useSearchParams();
   const conversationIdParam = searchParams.get("conversationId");
   const { profile } = useCurrentProfile();
+  
+  // Utiliser React Query pour charger les conversations
+  const { data: conversationsData = [], isLoading: isLoadingConversations, refetch: refreshConversations } = useUserConversations();
 
-  const [conversations, setConversations] = useState<ConversationWithDetails[]>(
-    []
-  );
+  const [conversations, setConversations] = useState<ConversationWithDetails[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(conversationIdParam);
-  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [senderNames, setSenderNames] = useState<Map<string, string>>(
     new Map()
   );
   const subscriptionRef = useRef<any>(null);
+  
+  // Mettre à jour les conversations locales quand les données React Query changent
+  useEffect(() => {
+    // Toujours mettre à jour, même si vide (pour gérer le cas "aucune conversation")
+    setConversations(conversationsData);
+    
+    // Charger les noms de tous les participants
+    const names = new Map<string, string>();
+    for (const conv of conversationsData) {
+      if (conv.recruiter) {
+        const recruiterName =
+          `${conv.recruiter.first_name || ""} ${conv.recruiter.last_name || ""}`.trim() ||
+          "Recruteur";
+        names.set(conv.recruiter_id, recruiterName);
+      }
+      if (conv.freelance) {
+        const freelanceName =
+          `${conv.freelance.first_name || ""} ${conv.freelance.last_name || ""}`.trim() ||
+          "Freelance";
+        names.set(conv.freelance_id, freelanceName);
+      }
+    }
+    setSenderNames(names);
+  }, [conversationsData, isLoadingConversations]);
 
   // Fonction pour charger les détails d'une conversation (mission, profils, dernier message)
   const loadConversationDetails = useCallback(
@@ -83,40 +107,7 @@ export function useConversations() {
     []
   );
 
-  const loadConversations = async () => {
-    setIsLoadingConversations(true);
-    try {
-      const loadedConversations = await listUserConversations();
-      setConversations(loadedConversations);
-
-      // Charger les noms de tous les participants
-      const names = new Map<string, string>();
-      for (const conv of loadedConversations) {
-        if (conv.recruiter) {
-          const recruiterName =
-            `${conv.recruiter.first_name || ""} ${conv.recruiter.last_name || ""}`.trim() ||
-            "Recruteur";
-          names.set(conv.recruiter_id, recruiterName);
-        }
-        if (conv.freelance) {
-          const freelanceName =
-            `${conv.freelance.first_name || ""} ${conv.freelance.last_name || ""}`.trim() ||
-            "Freelance";
-          names.set(conv.freelance_id, freelanceName);
-        }
-      }
-      setSenderNames(names);
-    } catch (err) {
-      console.error("Erreur lors du chargement des conversations:", err);
-    } finally {
-      setIsLoadingConversations(false);
-    }
-  };
-
-  // Charger les conversations
-  useEffect(() => {
-    loadConversations();
-  }, []);
+  // Plus besoin de loadConversations, React Query gère tout
 
   // Configurer l'abonnement Realtime pour les conversations
   useEffect(() => {
@@ -406,6 +397,8 @@ export function useConversations() {
     isLoadingConversations,
     senderNames,
     getOtherParticipantName,
-    refreshConversations: loadConversations,
+    refreshConversations: async () => {
+      await refreshConversations();
+    },
   };
 }

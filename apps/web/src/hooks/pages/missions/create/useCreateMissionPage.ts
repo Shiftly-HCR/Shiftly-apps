@@ -2,11 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useRecruiterMissions, useEstablishments } from "@/hooks";
-import { useCachedEstablishment } from "@/hooks/cache/useCachedEstablishment";
+import { useCreateMission, useUploadMissionImage, useEstablishments, useEstablishment } from "@/hooks/queries";
 import {
-  createMission,
-  uploadMissionImage,
   geocodeAddress,
   reverseGeocode,
   debounce,
@@ -20,10 +17,10 @@ type Step = 1 | 2 | 3 | 4 | 5;
  */
 export function useCreateMissionPage(initialEstablishmentId?: string) {
   const router = useRouter();
-  const { refresh } = useRecruiterMissions();
-  const { establishments } = useEstablishments();
+  const createMissionMutation = useCreateMission();
+  const uploadImageMutation = useUploadMissionImage();
+  const { data: establishments = [] } = useEstablishments();
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Étape 1: Infos générales
@@ -58,6 +55,8 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
 
   // Étape 5: Rémunération et image
   const [hourlyRate, setHourlyRate] = useState("");
+  const [dailyRate, setDailyRate] = useState("");
+  const [totalSalary, setTotalSalary] = useState("");
   const [missionImage, setMissionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
@@ -65,11 +64,8 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
-  // Utiliser le hook de cache pour charger l'établissement
-  const { data: selectedEstablishment } = useCachedEstablishment(
-    selectedEstablishmentId,
-    false
-  );
+  // Utiliser le hook React Query pour charger l'établissement
+  const { data: selectedEstablishment } = useEstablishment(selectedEstablishmentId);
 
   // Charger l'adresse de l'établissement si sélectionné
   useEffect(() => {
@@ -138,6 +134,59 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     handleAddressChange(address, city, postalCode);
   }, [address, city, postalCode, handleAddressChange]);
 
+  // Calculer le nombre d'heures journalières à partir des horaires
+  const calculateDailyHours = (): number => {
+    if (!startTime || !endTime) return 0;
+    
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+    
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    
+    // Gérer le cas où la fin est le lendemain (ex: 22h à 2h)
+    let diffMinutes = endMinutes - startMinutes;
+    if (diffMinutes < 0) {
+      diffMinutes += 24 * 60; // Ajouter 24 heures
+    }
+    
+    return diffMinutes / 60; // Convertir en heures
+  };
+
+  // Calculer le nombre de jours entre start_date et end_date
+  const calculateNumberOfDays = (): number => {
+    if (!startDate || !endDate) return 0;
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays + 1; // +1 pour inclure le jour de début
+  };
+
+  // Calculer automatiquement le TJM si le tarif horaire est renseigné
+  useEffect(() => {
+    if (hourlyRate && !dailyRate) {
+      const hoursPerDay = calculateDailyHours();
+      if (hoursPerDay > 0) {
+        const calculatedDailyRate = parseFloat(hourlyRate) * hoursPerDay;
+        setDailyRate(calculatedDailyRate.toFixed(2));
+      }
+    }
+  }, [hourlyRate, startTime, endTime, dailyRate]);
+
+  // Calculer automatiquement le salaire total si le TJM est renseigné
+  useEffect(() => {
+    if (dailyRate) {
+      const numberOfDays = calculateNumberOfDays();
+      if (numberOfDays > 0) {
+        const calculatedTotalSalary = parseFloat(dailyRate) * numberOfDays;
+        setTotalSalary(calculatedTotalSalary.toFixed(2));
+      }
+    }
+  }, [dailyRate, startDate, endDate]);
+
   const handleNext = () => {
     setError("");
 
@@ -145,6 +194,14 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     if (currentStep === 1) {
       if (!title.trim()) {
         setError("Le titre est requis");
+        return;
+      }
+    }
+
+    // Validation étape 5 : au moins tarif horaire OU TJM
+    if (currentStep === 5) {
+      if (!hourlyRate.trim() && !dailyRate.trim()) {
+        setError("Vous devez renseigner au moins le tarif horaire ou le TJM");
         return;
       }
     }
@@ -176,7 +233,6 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
 
   const handleSubmit = async (saveAsDraft: boolean = false) => {
     setError("");
-    setIsLoading(true);
 
     try {
       // Créer la mission
@@ -185,7 +241,25 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
-      const missionResult = await createMission({
+      // Calculer le TJM si nécessaire
+      let finalDailyRate = dailyRate ? parseFloat(dailyRate) : undefined;
+      if (!finalDailyRate && hourlyRate) {
+        const hoursPerDay = calculateDailyHours();
+        if (hoursPerDay > 0) {
+          finalDailyRate = parseFloat(hourlyRate) * hoursPerDay;
+        }
+      }
+
+      // Calculer le salaire total si nécessaire
+      let finalTotalSalary = totalSalary ? parseFloat(totalSalary) : undefined;
+      if (!finalTotalSalary && finalDailyRate) {
+        const numberOfDays = calculateNumberOfDays();
+        if (numberOfDays > 0) {
+          finalTotalSalary = finalDailyRate * numberOfDays;
+        }
+      }
+
+      const missionResult = await createMissionMutation.mutateAsync({
         title,
         description,
         skills: skillsArray.length > 0 ? skillsArray : undefined,
@@ -200,29 +274,30 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
         start_time: startTime || undefined,
         end_time: endTime || undefined,
         hourly_rate: hourlyRate ? parseFloat(hourlyRate) : undefined,
+        daily_rate: finalDailyRate,
+        total_salary: finalTotalSalary,
         status: saveAsDraft ? "draft" : "published",
       });
 
       if (!missionResult.success) {
         setError(missionResult.error || "Erreur lors de la création");
-        setIsLoading(false);
         return;
       }
 
       // Upload l'image si elle existe
       if (missionImage && missionResult.mission) {
-        await uploadMissionImage(missionResult.mission.id, missionImage);
+        await uploadImageMutation.mutateAsync({
+          missionId: missionResult.mission.id,
+          file: missionImage,
+        });
       }
 
-      // Rafraîchir le cache des missions
-      await refresh();
-
+      // React Query invalide automatiquement le cache, pas besoin de refresh manuel
       // Redirection vers la liste des missions
       router.push("/missions");
     } catch (err) {
       console.error(err);
       setError("Une erreur est survenue");
-      setIsLoading(false);
     }
   };
 
@@ -230,7 +305,7 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     // États des étapes
     currentStep,
     setCurrentStep,
-    isLoading,
+    isLoading: createMissionMutation.isPending || uploadImageMutation.isPending,
     error,
     setError,
 
@@ -270,9 +345,12 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     endTime,
     setEndTime,
 
-    // États Étape 4: Rémunération et image
+    // États Étape 5: Rémunération et image
     hourlyRate,
     setHourlyRate,
+    dailyRate,
+    setDailyRate,
+    totalSalary,
     missionImage,
     imagePreview,
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useSessionContext } from "@/providers/SessionProvider";
+import { useCurrentProfile as useCurrentProfileQuery } from "@/hooks/queries";
 import type { Profile } from "@shiftly/data";
 
 /**
  * Hook pour accéder au profil de l'utilisateur actuel
+ * @deprecated Utilisez directement useCurrentProfile depuis @/hooks/queries
  */
 export function useCurrentProfile(): {
   profile: Profile | null;
@@ -12,13 +13,15 @@ export function useCurrentProfile(): {
   error: string | null;
   refresh: () => Promise<void>;
 } {
-  const { cache, isLoading, error, refreshProfile } = useSessionContext();
+  const { data: profile, isLoading, error, refetch } = useCurrentProfileQuery();
 
   return {
-    profile: cache?.profile || null,
+    profile: profile || null,
     isLoading,
-    error,
-    refresh: refreshProfile,
+    error: error?.message || null,
+    refresh: async () => {
+      await refetch();
+    },
   };
 }
 

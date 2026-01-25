@@ -158,14 +158,15 @@ export default function FreelancePage() {
                                 freelance.bio ||
                                 "Freelance"}
                             </Text>
-                            {/* Note supprimée - propriété non disponible dans FreelanceProfile */}
-                            <Text
-                              fontSize={14}
-                              color={colors.gray700}
-                              fontWeight="500"
-                            >
-                              25€ / heure
-                            </Text>
+                            {freelance.daily_rate && (
+                              <Text
+                                fontSize={14}
+                                color={colors.gray700}
+                                fontWeight="500"
+                              >
+                                {freelance.daily_rate} € / jour
+                              </Text>
+                            )}
                           </YStack>
                         </XStack>
 

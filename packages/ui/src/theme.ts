@@ -5,6 +5,7 @@ export const colors = {
   shiftlyVioletLight: "#F5F0F7",
   shiftlyMauve: "#4c114f",
   shiftlyMarron: "#503342",
+  shiftlyDanger: "#990000",
   shiftlyGris: "#bdaaa1",
   shiftlyGold: "#CC9933",
   white: "#FFFFFF", // Blanc pur pour un rendu neutre

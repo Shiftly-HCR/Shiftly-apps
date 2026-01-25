@@ -5,6 +5,12 @@ import { Button, Input, ImagePicker, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { AppLayout, FreelanceProfileForm, PageLoading } from "@/components";
 import { useProfilePage } from "@/hooks";
+import {
+  FiCreditCard,
+  FiChevronRight,
+  FiCheck,
+  FiAlertTriangle,
+} from "react-icons/fi";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -180,20 +186,9 @@ export default function ProfilePage() {
             shadowRadius={12}
             gap="$4"
           >
-            <XStack justifyContent="space-between" alignItems="center">
-              <Text fontSize={18} fontWeight="600" color="#2B2B2B">
-                Informations personnelles
-              </Text>
-              {!isEditing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onPress={() => setIsEditing(true)}
-                >
-                  Modifier
-                </Button>
-              )}
-            </XStack>
+            <Text fontSize={18} fontWeight="600" color="#2B2B2B">
+              Informations personnelles
+            </Text>
 
             {/* Nom et Prénom */}
             <XStack gap="$3" style={{ width: "100%" }}>
@@ -203,7 +198,6 @@ export default function ProfilePage() {
                   placeholder="Votre prénom"
                   value={firstName}
                   onChangeText={setFirstName}
-                  disabled={!isEditing}
                 />
               </YStack>
               <YStack flex={1}>
@@ -212,7 +206,6 @@ export default function ProfilePage() {
                   placeholder="Votre nom"
                   value={lastName}
                   onChangeText={setLastName}
-                  disabled={!isEditing}
                 />
               </YStack>
             </XStack>
@@ -225,7 +218,6 @@ export default function ProfilePage() {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoComplete="email"
-              disabled={!isEditing}
             />
 
             {/* Téléphone */}
@@ -235,7 +227,6 @@ export default function ProfilePage() {
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
-              disabled={!isEditing}
             />
 
             {/* Bio */}
@@ -243,78 +234,30 @@ export default function ProfilePage() {
               <Text fontSize={14} fontWeight="600" color="#2B2B2B">
                 Biographie
               </Text>
-              <YStack
-                padding="$3"
-                backgroundColor={isEditing ? "white" : "#F9FAFB"}
-                borderRadius="$3"
-                borderWidth={1}
-                borderColor={isEditing ? "#D1D5DB" : "#E5E5E5"}
-                minHeight={120}
-              >
-                <Input
-                  placeholder="Parlez-nous de vous..."
-                  value={bio}
-                  onChangeText={setBio}
-                  disabled={!isEditing}
-                  multiline
-                  numberOfLines={4}
-                />
-              </YStack>
+              <Input
+                placeholder={
+                  bio && bio.trim() ? undefined : "Parlez-nous de vous..."
+                }
+                value={bio || ""}
+                onChangeText={setBio}
+                multiline
+                numberOfLines={4}
+              />
             </YStack>
-
-            {/* Boutons d'action */}
-            {isEditing && (
-              <XStack gap="$3" marginTop="$2">
-                <YStack flex={1}>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onPress={handleCancel}
-                    disabled={isSaving}
-                  >
-                    Annuler
-                  </Button>
-                </YStack>
-                <YStack flex={1}>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onPress={handleSave}
-                    disabled={isSaving}
-                    opacity={isSaving ? 0.6 : 1}
-                  >
-                    {isSaving ? "Enregistrement..." : "Enregistrer"}
-                  </Button>
-                </YStack>
-              </XStack>
-            )}
           </YStack>
 
           {/* Section Freelance - Affichage conditionnel */}
-          {profile?.role === "freelance" ? (
+          {profile?.role === "freelance" && (
             <FreelanceProfileForm
+              firstName={firstName}
+              lastName={lastName}
+              email={email}
+              phone={phone}
+              bio={bio}
               onSave={async () => {
                 await refresh();
               }}
             />
-          ) : (
-            <YStack
-              padding="$6"
-              backgroundColor="white"
-              borderRadius="$4"
-              borderWidth={1}
-              borderColor="#E5E5E5"
-              shadowColor="rgba(0, 0, 0, 0.1)"
-              shadowOffset={{ width: 0, height: 4 }}
-              shadowOpacity={1}
-              shadowRadius={12}
-              gap="$3"
-              alignItems="center"
-            >
-              <Text fontSize={16} color="#6B7280" textAlign="center">
-                Cette section est réservée aux freelances.
-              </Text>
-            </YStack>
           )}
 
           {/* Informations supplémentaires */}
@@ -365,6 +308,105 @@ export default function ProfilePage() {
               </Text>
             </XStack>
           </YStack>
+
+          {/* Section Paramètres de paiement - Visible uniquement pour freelances et commerciaux */}
+          {(profile?.role === "freelance" ||
+            profile?.role === "commercial") && (
+            <YStack
+              padding="$6"
+              backgroundColor="white"
+              borderRadius="$4"
+              borderWidth={1}
+              borderColor="#E5E5E5"
+              shadowColor="rgba(0, 0, 0, 0.1)"
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={1}
+              shadowRadius={12}
+              gap="$4"
+            >
+              <XStack justifyContent="space-between" alignItems="center">
+                <Text fontSize={18} fontWeight="600" color="#2B2B2B">
+                  Paramètres de paiement
+                </Text>
+                {profile?.connect_onboarding_status === "complete" &&
+                profile?.connect_payouts_enabled ? (
+                  <XStack
+                    backgroundColor={colors.shiftlyViolet + "20"}
+                    paddingHorizontal="$2"
+                    paddingVertical="$1"
+                    borderRadius="$2"
+                    alignItems="center"
+                    gap="$1"
+                  >
+                    <FiCheck size={14} color={colors.shiftlyViolet} />
+                    <Text
+                      fontSize={12}
+                      fontWeight="600"
+                      color={colors.shiftlyViolet}
+                    >
+                      Activé
+                    </Text>
+                  </XStack>
+                ) : profile?.connect_onboarding_status === "pending" ? (
+                  <XStack
+                    backgroundColor="#FEF3C7"
+                    paddingHorizontal="$2"
+                    paddingVertical="$1"
+                    borderRadius="$2"
+                    alignItems="center"
+                    gap="$1"
+                  >
+                    <FiAlertTriangle size={14} color="#D97706" />
+                    <Text fontSize={12} fontWeight="600" color="#D97706">
+                      En attente
+                    </Text>
+                  </XStack>
+                ) : null}
+              </XStack>
+
+              <Text fontSize={14} color="#6B7280">
+                {profile?.role === "freelance"
+                  ? "Configurez votre compte pour recevoir vos paiements de missions."
+                  : "Configurez votre compte pour recevoir vos commissions."}
+              </Text>
+
+              <XStack
+                backgroundColor={colors.gray100}
+                padding="$4"
+                borderRadius="$3"
+                alignItems="center"
+                justifyContent="space-between"
+                pressStyle={{ opacity: 0.8 }}
+                cursor="pointer"
+                onPress={() => router.push("/settings/payments")}
+              >
+                <XStack alignItems="center" gap="$3">
+                  <XStack
+                    width={40}
+                    height={40}
+                    borderRadius={20}
+                    backgroundColor={colors.shiftlyViolet + "20"}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <FiCreditCard size={20} color={colors.shiftlyViolet} />
+                  </XStack>
+                  <YStack>
+                    <Text fontSize={15} fontWeight="600" color="#2B2B2B">
+                      Gérer mes paiements
+                    </Text>
+                    <Text fontSize={13} color="#6B7280">
+                      {profile?.connect_onboarding_status === "complete" &&
+                      profile?.connect_payouts_enabled
+                        ? "Voir et modifier mes informations de paiement"
+                        : "Activer mes paiements via Stripe"}
+                    </Text>
+                  </YStack>
+                </XStack>
+                <FiChevronRight size={20} color="#6B7280" />
+              </XStack>
+            </YStack>
+          )}
 
           {/* Bouton retour */}
           <Button

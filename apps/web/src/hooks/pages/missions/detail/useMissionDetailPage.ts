@@ -2,13 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useCachedMission } from "@/hooks";
-import { useCurrentProfile } from "@/hooks";
-import { useApplyToMission } from "@/hooks";
-import { useCheckApplication } from "@/hooks";
-import { useMissionApplications } from "@/hooks";
-import { useUpdateApplicationStatus } from "@/hooks";
-import { useUserApplications } from "@/hooks";
+import { useMission, useCurrentProfile, useApplyToMission as useApplyMutation, useCheckApplication, useMissionApplications as useMissionApplicationsQuery, useUpdateApplicationStatus, useUserApplications } from "@/hooks/queries";
 import { useMissionChat } from "@/hooks";
 
 /**
@@ -19,14 +13,9 @@ export function useMissionDetailPage() {
   const params = useParams();
   const missionId = params.id as string;
 
-  const { data: mission, isLoading } = useCachedMission(missionId);
-  const { profile } = useCurrentProfile();
-  const {
-    apply,
-    isLoading: isApplying,
-    error: applyError,
-    success: applySuccess,
-  } = useApplyToMission();
+  const { data: mission, isLoading } = useMission(missionId);
+  const { data: profile } = useCurrentProfile();
+  const applyMutation = useApplyMutation();
   const { data: hasApplied = false, isLoading: isCheckingApplication } =
     useCheckApplication(missionId);
 
@@ -36,15 +25,14 @@ export function useMissionDetailPage() {
 
   // Pour les recruteurs : récupérer les candidatures
   const {
-    applications,
+    data: applications = [],
     isLoading: isLoadingApplications,
     refetch: refetchApplications,
-  } = useMissionApplications(isRecruiter && isMissionOwner ? missionId : null);
-  const { updateStatus, isLoading: isUpdatingStatus } =
-    useUpdateApplicationStatus();
+  } = useMissionApplicationsQuery(isRecruiter && isMissionOwner ? missionId : null);
+  const updateStatusMutation = useUpdateApplicationStatus();
 
   // Pour les freelances : récupérer leurs candidatures pour vérifier le statut
-  const { applications: userApplications } = useUserApplications();
+  const { data: userApplications = [] } = useUserApplications();
   const freelanceApplication = useMemo(
     () => userApplications.find((app) => app.mission_id === missionId),
     [userApplications, missionId]
@@ -90,25 +78,19 @@ export function useMissionDetailPage() {
 
   // Gérer l'affichage du message de succès
   useEffect(() => {
-    if (applySuccess) {
+    if (applyMutation.isSuccess) {
       setShowSuccessMessage(true);
       const timer = setTimeout(() => {
         setShowSuccessMessage(false);
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [applySuccess]);
+  }, [applyMutation.isSuccess]);
 
   const handleApply = async () => {
     if (!missionId) return;
-
-    const result = await apply({ mission_id: missionId });
-    if (result.success) {
-      // Recharger la page après un court délai pour mettre à jour l'état
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    }
+    await applyMutation.mutateAsync({ mission_id: missionId });
+    // Plus besoin de recharger la page, React Query invalide automatiquement le cache
   };
 
   // Formater les dates pour affichage
@@ -142,7 +124,7 @@ export function useMissionDetailPage() {
     isMissionOwner,
     applications,
     isLoadingApplications,
-    isUpdatingStatus,
+    isUpdatingStatus: updateStatusMutation.isPending,
     freelanceApplication,
     isFreelanceAccepted,
     showSuccessMessage,
@@ -151,13 +133,14 @@ export function useMissionDetailPage() {
     chatFreelanceId,
     canFreelanceChat,
     chat,
-    apply,
-    isApplying,
-    applyError,
-    applySuccess,
+    apply: applyMutation.mutate,
+    isApplying: applyMutation.isPending,
+    applyError: applyMutation.error?.message || null,
+    applySuccess: applyMutation.isSuccess,
     hasApplied,
     isCheckingApplication,
-    updateStatus,
+    updateStatus: (applicationId: string, status: "pending" | "accepted" | "rejected") =>
+      updateStatusMutation.mutate({ applicationId, status }),
     refetchApplications,
     handleApply,
     formatDateShort,

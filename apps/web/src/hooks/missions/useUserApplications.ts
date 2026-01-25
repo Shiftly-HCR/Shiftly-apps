@@ -1,13 +1,11 @@
 "use client";
 
-import { useCachedUserApplications } from "@/hooks/cache/useCachedApplications";
+import { useUserApplications as useUserApplicationsQuery } from "@/hooks/queries";
 import type { MissionApplicationWithMission } from "@shiftly/data";
 
 /**
  * Hook pour récupérer les candidatures d'un freelance
- * 
- * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
- * L'API reste identique pour la compatibilité avec les composants existants.
+ * @deprecated Utilisez directement useUserApplications depuis @/hooks/queries
  */
 export function useUserApplications(userId?: string) {
   const {
@@ -15,7 +13,7 @@ export function useUserApplications(userId?: string) {
     isLoading,
     error,
     refetch,
-  } = useCachedUserApplications(userId);
+  } = useUserApplicationsQuery();
 
   return {
     applications,

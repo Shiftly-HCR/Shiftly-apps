@@ -3,8 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TamaguiProvider } from "@/providers/TamaguiProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
-import { SessionProvider } from "@/providers/SessionProvider";
-import { SessionCacheDebug } from "@/components";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,10 +31,7 @@ export default function RootLayout({
       >
         <TamaguiProvider>
           <QueryProvider>
-            <SessionProvider>
-              {children}
-              {/* <SessionCacheDebug /> */}
-            </SessionProvider>
+            {children}
           </QueryProvider>
         </TamaguiProvider>
       </body>

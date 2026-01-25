@@ -1,6 +1,6 @@
 "use client";
 
-import { useCachedAllEstablishments } from "@/hooks/cache/useCachedEstablishments";
+import { useAllEstablishments as useAllEstablishmentsQuery } from "@/hooks/queries";
 import type { Establishment } from "@shiftly/data";
 
 interface UseAllEstablishmentsReturn {
@@ -13,7 +13,7 @@ interface UseAllEstablishmentsReturn {
 /**
  * Hook pour récupérer tous les établissements (pour les commerciaux)
  *
- * Utilise maintenant le cache React Query pour éviter les requêtes redondantes.
+ * Utilise React Query pour éviter les requêtes redondantes.
  * L'API reste identique pour la compatibilité avec les composants existants.
  */
 export function useAllEstablishments(): UseAllEstablishmentsReturn {
@@ -22,7 +22,7 @@ export function useAllEstablishments(): UseAllEstablishmentsReturn {
     isLoading,
     error,
     refetch,
-  } = useCachedAllEstablishments();
+  } = useAllEstablishmentsQuery();
 
   return {
     establishments,
