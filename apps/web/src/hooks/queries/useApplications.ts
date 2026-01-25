@@ -18,7 +18,7 @@ import type { ApplicationStatus } from "@shiftly/data";
 export function useUserApplications() {
   return useQuery({
     queryKey: ["applications", "user"],
-    queryFn: getApplicationsByUser,
+    queryFn: () => getApplicationsByUser(),
     staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
