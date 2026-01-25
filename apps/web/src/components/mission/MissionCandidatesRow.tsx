@@ -1,9 +1,10 @@
 "use client";
 
-import { XStack, YStack, Text, Image } from "tamagui";
+import { XStack, YStack, Text, Image, Popover } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { FiMessageCircle } from "react-icons/fi";
+import { useState } from "react";
 import { SimpleCheckbox } from "@/components/ui/SimpleCheckbox";
 import {
   type MissionApplicationWithProfile,
@@ -38,6 +39,7 @@ export function MissionCandidatesRow({
   recruiterId,
 }: MissionCandidatesRowProps) {
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { profileName, handleNameClick, availableStatuses } =
     useMissionCandidatesRow({
       application,
@@ -188,20 +190,70 @@ export function MissionCandidatesRow({
 
         {/* Menu d'actions */}
         {availableStatuses.length > 0 ? (
-          <YStack position="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={() => {
-                // Menu déroulant simplifié - on peut améliorer avec un dropdown
-                const firstAction = availableStatuses[0];
-                onStatusChange(firstAction);
-              }}
-              disabled={isUpdating}
+          <Popover
+            open={isMenuOpen}
+            onOpenChange={setIsMenuOpen}
+            placement="bottom-end"
+            size="$5"
+            allowFlip
+          >
+            <Popover.Trigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isUpdating}
+              >
+                ⋯
+              </Button>
+            </Popover.Trigger>
+
+            <Popover.Content
+              padding={0}
+              borderWidth={1}
+              borderColor={colors.gray200}
+              backgroundColor={colors.white}
+              borderRadius={8}
+              shadowColor={colors.gray900}
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.1}
+              shadowRadius={8}
+              zIndex={1000}
+              enterStyle={{ opacity: 0, scale: 0.95 }}
+              exitStyle={{ opacity: 0, scale: 0.95 }}
+              animation="quick"
             >
-              ⋯
-            </Button>
-          </YStack>
+              <YStack minWidth={180}>
+                {availableStatuses.map((status, index) => (
+                  <XStack
+                    key={status}
+                    paddingHorizontal="$3"
+                    paddingVertical="$2.5"
+                    cursor="pointer"
+                    hoverStyle={{
+                      backgroundColor: colors.gray050,
+                    }}
+                    onPress={() => {
+                      onStatusChange(status);
+                      setIsMenuOpen(false);
+                    }}
+                    borderBottomWidth={
+                      index < availableStatuses.length - 1 ? 1 : 0
+                    }
+                    borderBottomColor={colors.gray100}
+                    borderStyle="solid"
+                  >
+                    <Text
+                      fontSize={14}
+                      color={colors.gray700}
+                      fontWeight="500"
+                    >
+                      {getStatusLabel(status)}
+                    </Text>
+                  </XStack>
+                ))}
+              </YStack>
+            </Popover.Content>
+          </Popover>
         ) : (
           <Text fontSize={14} color={colors.gray500}>
             -

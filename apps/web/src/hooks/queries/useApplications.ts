@@ -5,11 +5,12 @@ import {
   getApplicationsByUser,
   getApplicationsByMission,
   createApplication,
-  updateApplicationStatus,
   checkApplicationExists,
   type MissionApplication,
   type CreateApplicationParams,
 } from "@shiftly/data";
+import { updateApplicationStatus } from "@shiftly/core";
+import type { ApplicationStatus } from "@shiftly/data";
 
 /**
  * Hook pour récupérer les candidatures de l'utilisateur actuel
@@ -80,6 +81,7 @@ export function useApplyToMission() {
 
 /**
  * Hook pour mettre à jour le statut d'une candidature
+ * Utilise le service @shiftly/core qui inclut la logique métier (messages automatiques, etc.)
  */
 export function useUpdateApplicationStatus() {
   const queryClient = useQueryClient();
@@ -90,14 +92,12 @@ export function useUpdateApplicationStatus() {
       status,
     }: {
       applicationId: string;
-      status: "pending" | "accepted" | "rejected";
+      status: ApplicationStatus;
     }) => updateApplicationStatus(applicationId, status),
     onSuccess: (result, variables) => {
-      if (result.success && result.application) {
-        // Invalider les candidatures de la mission
-        queryClient.invalidateQueries({
-          queryKey: ["applications", "mission", result.application.mission_id],
-        });
+      if (result.success) {
+        // Invalider les candidatures de toutes les missions pour être sûr
+        queryClient.invalidateQueries({ queryKey: ["applications", "mission"] });
         // Invalider les candidatures de l'utilisateur
         queryClient.invalidateQueries({ queryKey: ["applications", "user"] });
       }
