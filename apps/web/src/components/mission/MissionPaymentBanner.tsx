@@ -1,14 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { YStack, XStack, Text, Spinner } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { useMissionPaymentStatus } from "@/hooks/stripe/useMissionPaymentStatus";
+import { DisputeModal } from "@/components/dispute";
 import {
   FiCheck,
   FiClock,
   FiDollarSign,
-  FiSend,
   FiAlertCircle,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 interface MissionPaymentBannerProps {
@@ -28,8 +30,19 @@ export function MissionPaymentBanner({
   isRecruiter = false,
   isFreelanceAccepted = false,
 }: MissionPaymentBannerProps) {
-  const { paymentStatus, isLoading, isProcessing, error, releaseFunds } =
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const { paymentStatus, isLoading, isProcessing, error, reportDispute } =
     useMissionPaymentStatus(missionId, isRecruiter);
+
+  const handleReportDispute = async (
+    reason: string,
+    description?: string
+  ): Promise<void> => {
+    const result = await reportDispute(reason, description);
+    if (result.success) {
+      setShowDisputeModal(false);
+    }
+  };
 
   // Formater le montant en euros
   const formatAmount = (amountInCents: number | null) => {
@@ -48,81 +61,123 @@ export function MissionPaymentBanner({
   // VUE RECRUTEUR
   // ================================================================
   if (isRecruiter && paymentStatus) {
-    // Paiement reçu - Peut libérer les fonds
-    if (paymentStatus.status === "received") {
+    // Litige en cours
+    if (paymentStatus.hasDispute) {
       return (
         <YStack
-          backgroundColor={colors.blue50 || "#EFF6FF"}
+          backgroundColor={colors.yellow50 || "#FFFBEB"}
           borderRadius={12}
           padding="$4"
           marginBottom="$4"
           borderWidth={1}
-          borderColor={colors.blue200 || "#BFDBFE"}
+          borderColor={colors.yellow200 || "#FDE68A"}
         >
           <XStack alignItems="center" gap="$3">
             <YStack
-              backgroundColor={colors.blue100 || "#DBEAFE"}
+              backgroundColor={colors.yellow100 || "#FEF3C7"}
               borderRadius={100}
               padding="$2"
             >
-              <FiClock size={20} color={colors.blue600 || "#2563EB"} />
+              <FiAlertTriangle size={20} color={colors.yellow600 || "#D97706"} />
             </YStack>
             <YStack flex={1}>
               <Text
                 fontSize={15}
                 fontWeight="600"
-                color={colors.blue800 || "#1E40AF"}
+                color={colors.yellow700 || "#B45309"}
               >
-                Paiement reçu - En attente de distribution
+                Litige en cours ⚠️
               </Text>
               <Text
                 fontSize={13}
-                color={colors.blue700 || "#1D4ED8"}
+                color={colors.yellow600 || "#D97706"}
                 marginTop="$1"
               >
-                {formatAmount(paymentStatus.amount)} - Cliquez sur le bouton
-                pour libérer les fonds au freelance.
+                Un problème a été signalé. La libération automatique des fonds est bloquée jusqu'à résolution.
               </Text>
             </YStack>
           </XStack>
-
-          {paymentStatus.canRelease && (
-            <XStack marginTop="$3" justifyContent="flex-end">
-              <Button
-                variant="primary"
-                size="sm"
-                onPress={releaseFunds}
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <XStack alignItems="center" gap="$2">
-                    <Spinner size="small" color={colors.white} />
-                    <Text color={colors.white} fontSize={13}>
-                      Distribution...
-                    </Text>
-                  </XStack>
-                ) : (
-                  <XStack alignItems="center" gap="$2">
-                    <FiSend size={16} color={colors.white} />
-                    <Text color={colors.white} fontSize={13} fontWeight="600">
-                      Libérer les fonds
-                    </Text>
-                  </XStack>
-                )}
-              </Button>
-            </XStack>
-          )}
-
-          {error && (
-            <Text
-              fontSize={12}
-              color={colors.red600 || "#DC2626"}
-              marginTop="$2"
-            >
-              {error}
-            </Text>
-          )}
         </YStack>
+      );
+    }
+
+    // Paiement reçu - Peut signaler un problème
+    if (paymentStatus.status === "received") {
+      return (
+        <>
+          <YStack
+            backgroundColor={colors.blue50 || "#EFF6FF"}
+            borderRadius={12}
+            padding="$4"
+            marginBottom="$4"
+            borderWidth={1}
+            borderColor={colors.blue200 || "#BFDBFE"}
+          >
+            <XStack alignItems="center" gap="$3">
+              <YStack
+                backgroundColor={colors.blue100 || "#DBEAFE"}
+                borderRadius={100}
+                padding="$2"
+              >
+                <FiClock size={20} color={colors.blue600 || "#2563EB"} />
+              </YStack>
+              <YStack flex={1}>
+                <Text
+                  fontSize={15}
+                  fontWeight="600"
+                  color={colors.blue800 || "#1E40AF"}
+                >
+                  Paiement reçu - Libération automatique prévue
+                </Text>
+                <Text
+                  fontSize={13}
+                  color={colors.blue700 || "#1D4ED8"}
+                  marginTop="$1"
+                >
+                  {formatAmount(paymentStatus.amount)} - Les fonds seront libérés automatiquement à la fin de la mission.
+                </Text>
+              </YStack>
+            </XStack>
+
+            {paymentStatus.canReportDispute && (
+              <XStack marginTop="$3" justifyContent="flex-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onPress={() => setShowDisputeModal(true)}
+                  disabled={isProcessing}
+                >
+                  <XStack alignItems="center" gap="$2">
+                    <FiAlertTriangle size={16} color={colors.yellow600 || "#D97706"} />
+                    <Text
+                      color={colors.yellow600 || "#D97706"}
+                      fontSize={13}
+                      fontWeight="600"
+                    >
+                      Signaler un problème
+                    </Text>
+                  </XStack>
+                </Button>
+              </XStack>
+            )}
+
+            {error && (
+              <Text
+                fontSize={12}
+                color={colors.red600 || "#DC2626"}
+                marginTop="$2"
+              >
+                {error}
+              </Text>
+            )}
+          </YStack>
+
+          <DisputeModal
+            open={showDisputeModal}
+            onOpenChange={setShowDisputeModal}
+            onConfirm={handleReportDispute}
+          />
+        </>
       );
     }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { YStack, XStack, Text, Spinner } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import type { ConversationWithDetails } from "@shiftly/data";
@@ -7,7 +8,8 @@ import { ChatThread } from "./ChatThread";
 import { MessageInput } from "./MessageInput";
 import type { Message } from "@shiftly/data";
 import { useMissionPaymentInConversation } from "@/hooks/stripe/useMissionPaymentInConversation";
-import { FiCreditCard, FiCheck, FiClock, FiSend, FiAlertCircle } from "react-icons/fi";
+import { DisputeModal } from "@/components/dispute";
+import { FiCreditCard, FiCheck, FiClock, FiAlertCircle, FiAlertTriangle } from "react-icons/fi";
 
 interface ConversationViewProps {
   conversation: ConversationWithDetails;
@@ -34,6 +36,8 @@ export function ConversationView({
   onClose,
   getOtherParticipantName,
 }: ConversationViewProps) {
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+
   const handleSend = async (content: string) => {
     await onSendMessage(content);
     onMarkAsRead();
@@ -48,8 +52,20 @@ export function ConversationView({
     isProcessing,
     error: paymentError,
     startCheckout,
-    releaseFunds,
+    reportDispute,
+    refreshPaymentInfo,
   } = useMissionPaymentInConversation(conversation, currentUserId);
+
+  const handleReportDispute = async (
+    reason: string,
+    description?: string
+  ): Promise<void> => {
+    const result = await reportDispute(reason, description);
+    if (result.success) {
+      setShowDisputeModal(false);
+      await refreshPaymentInfo();
+    }
+  };
 
   // Formater le montant en euros
   const formatAmount = (amountInCents: number | null) => {
@@ -118,15 +134,27 @@ export function ConversationView({
                     </Text>
                   </YStack>
                 </>
+              ) : paymentInfo.hasDispute ? (
+                <>
+                  <FiAlertTriangle size={18} color={colors.yellow600 || "#D97706"} />
+                  <YStack flex={1}>
+                    <Text fontSize={13} fontWeight="600" color={colors.yellow700 || "#B45309"}>
+                      Litige en cours ⚠️
+                    </Text>
+                    <Text fontSize={12} color={colors.yellow600 || "#D97706"}>
+                      Un problème a été signalé. La libération des fonds est bloquée.
+                    </Text>
+                  </YStack>
+                </>
               ) : paymentInfo.status === "received" ? (
                 <>
                   <FiClock size={18} color={colors.blue600 || "#2563EB"} />
                   <YStack flex={1}>
                     <Text fontSize={13} fontWeight="600" color={colors.blue700 || "#1D4ED8"}>
-                      Paiement reçu - En attente de distribution
+                      Paiement reçu - Libération automatique prévue
                     </Text>
                     <Text fontSize={12} color={colors.blue600 || "#2563EB"}>
-                      {formatAmount(paymentInfo.amount)} - Cliquez pour libérer les fonds
+                      {formatAmount(paymentInfo.amount)} - Les fonds seront libérés automatiquement à la fin de la mission
                     </Text>
                   </YStack>
                 </>
@@ -195,29 +223,24 @@ export function ConversationView({
               </Button>
             )}
 
-            {/* Bouton de libération des fonds */}
-            {paymentInfo.canRelease && (
+            {/* Bouton pour signaler un problème */}
+            {paymentInfo.canReportDispute && (
               <Button
-                variant="primary"
+                variant="outline"
                 size="sm"
-                onPress={releaseFunds}
+                onPress={() => setShowDisputeModal(true)}
                 disabled={isProcessing || isLoadingPayment}
               >
-                {isProcessing ? (
-                  <XStack alignItems="center" gap="$2">
-                    <Spinner size="small" color={colors.white} />
-                    <Text color={colors.white} fontSize={13}>
-                      Distribution...
-                    </Text>
-                  </XStack>
-                ) : (
-                  <XStack alignItems="center" gap="$2">
-                    <FiSend size={16} color={colors.white} />
-                    <Text color={colors.white} fontSize={13} fontWeight="600">
-                      Libérer les fonds
-                    </Text>
-                  </XStack>
-                )}
+                <XStack alignItems="center" gap="$2">
+                  <FiAlertTriangle size={16} color={colors.yellow600 || "#D97706"} />
+                  <Text
+                    color={colors.yellow600 || "#D97706"}
+                    fontSize={13}
+                    fontWeight="600"
+                  >
+                    Signaler un problème
+                  </Text>
+                </XStack>
               </Button>
             )}
           </XStack>
@@ -296,6 +319,14 @@ export function ConversationView({
 
       {/* Input */}
       <MessageInput onSend={handleSend} isSending={isSending} />
+
+      {/* Modal de signalement de problème */}
+      <DisputeModal
+        open={showDisputeModal}
+        onOpenChange={setShowDisputeModal}
+        onConfirm={handleReportDispute}
+        missionTitle={paymentInfo?.missionTitle}
+      />
     </YStack>
   );
 }
