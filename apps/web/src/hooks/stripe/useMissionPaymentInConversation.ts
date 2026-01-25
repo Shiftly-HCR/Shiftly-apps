@@ -18,7 +18,8 @@ export interface MissionPaymentInfo {
   missionId: string;
   missionTitle: string;
   canPay: boolean; // Peut lancer le checkout
-  canRelease: boolean; // Peut libérer les fonds
+  canReportDispute: boolean; // Peut signaler un problème
+  hasDispute: boolean; // Un litige est en cours
   paymentId?: string;
   freelancerAmount?: number | null; // Montant que le freelance recevra (85%)
 }
@@ -83,7 +84,7 @@ export function useMissionPaymentInConversation(
       // Vérifier s'il existe un paiement pour cette mission
       const { data: payment, error: paymentError } = await supabase
         .from("mission_payments")
-        .select("id, status, amount")
+        .select("id, status, amount, has_dispute")
         .eq("mission_id", missionId)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -91,9 +92,11 @@ export function useMissionPaymentInConversation(
 
       let status: MissionPaymentStatus = "unpaid";
       let paymentId: string | undefined;
+      let hasDispute = false;
 
       if (payment && !paymentError) {
         paymentId = payment.id;
+        hasDispute = payment.has_dispute || false;
         switch (payment.status) {
           case "pending":
             status = "pending";
@@ -122,8 +125,9 @@ export function useMissionPaymentInConversation(
       const canPay =
         isRecruiter && status === "unpaid" && amount !== null && amount > 0;
 
-      // Le recruteur peut libérer les fonds si le paiement est reçu
-      const canRelease = isRecruiter && status === "received";
+      // Le recruteur peut signaler un problème si le paiement est reçu et pas encore de litige
+      const canReportDispute =
+        isRecruiter && status === "received" && !hasDispute;
 
       // Calculer le montant que le freelance recevra (85%)
       const freelancerAmount = amount ? Math.floor((amount * 85) / 100) : null;
@@ -134,7 +138,8 @@ export function useMissionPaymentInConversation(
         missionId,
         missionTitle: mission.title || conversation.mission.title,
         canPay,
-        canRelease,
+        canReportDispute,
+        hasDispute,
         paymentId,
         freelancerAmount,
       });
@@ -206,63 +211,64 @@ export function useMissionPaymentInConversation(
     }
   }, [paymentInfo?.canPay, conversation?.mission?.id]);
 
-  // Libérer les fonds (distribuer aux freelance/commercial)
-  const releaseFunds = useCallback(async () => {
-    if (!paymentInfo?.canRelease || !conversation?.mission?.id) {
-      return { success: false, error: "Action non autorisée" };
-    }
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      // Récupérer le token de session pour l'authentification
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
+  // Signaler un problème (bloque la libération automatique)
+  const reportDispute = useCallback(
+    async (reason: string, description?: string) => {
+      if (!paymentInfo?.canReportDispute || !conversation?.mission?.id) {
+        return { success: false, error: "Action non autorisée" };
       }
 
-      const response = await fetch(
-        `/api/missions/${conversation.mission.id}/release`,
-        {
-          method: "POST",
-          headers,
-          credentials: "include",
+      setIsProcessing(true);
+      setError(null);
+
+      try {
+        // Récupérer le token de session pour l'authentification
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+
+        if (accessToken) {
+          headers["Authorization"] = `Bearer ${accessToken}`;
         }
-      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Erreur lors de la libération des fonds"
+        const response = await fetch(
+          `/api/missions/${conversation.mission.id}/dispute`,
+          {
+            method: "POST",
+            headers,
+            credentials: "include",
+            body: JSON.stringify({ reason, description }),
+          }
         );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Erreur lors du signalement");
+        }
+
+        // Rafraîchir les informations de paiement
+        await fetchPaymentInfo();
+
+        return {
+          success: data.success,
+          dispute: data.dispute,
+        };
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Erreur lors du signalement";
+        console.error("Erreur lors du signalement:", err);
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      } finally {
+        setIsProcessing(false);
       }
-
-      // Rafraîchir les informations de paiement
-      await fetchPaymentInfo();
-
-      return {
-        success: data.success,
-        paymentStatus: data.paymentStatus,
-        summary: data.summary,
-      };
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Erreur lors de la libération";
-      console.error("Erreur lors de la libération des fonds:", err);
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [paymentInfo?.canRelease, conversation?.mission?.id, fetchPaymentInfo]);
+    },
+    [paymentInfo?.canReportDispute, conversation?.mission?.id, fetchPaymentInfo]
+  );
 
   return {
     isRecruiter,
@@ -272,7 +278,7 @@ export function useMissionPaymentInConversation(
     isProcessing,
     error,
     startCheckout,
-    releaseFunds,
+    reportDispute,
     refreshPaymentInfo: fetchPaymentInfo,
   };
 }

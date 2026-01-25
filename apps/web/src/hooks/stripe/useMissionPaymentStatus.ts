@@ -16,7 +16,8 @@ export interface MissionPaymentStatusInfo {
   freelancerAmount: number | null; // Montant que le freelance recevra (85%)
   paidAt?: string | null;
   distributedAt?: string | null;
-  canRelease: boolean; // Peut libérer les fonds
+  canReportDispute: boolean; // Peut signaler un problème
+  hasDispute: boolean; // Un litige est en cours
 }
 
 /**
@@ -46,7 +47,7 @@ export function useMissionPaymentStatus(
       // Récupérer le paiement de la mission
       const { data: payment, error: paymentError } = await supabase
         .from("mission_payments")
-        .select("id, status, amount, paid_at, distributed_at")
+        .select("id, status, amount, paid_at, distributed_at, has_dispute")
         .eq("mission_id", missionId)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -63,7 +64,8 @@ export function useMissionPaymentStatus(
           status: "unpaid",
           amount: null,
           freelancerAmount: null,
-          canRelease: false,
+          canReportDispute: false,
+          hasDispute: false,
         });
         return;
       }
@@ -93,8 +95,10 @@ export function useMissionPaymentStatus(
         ? Math.floor((payment.amount * 85) / 100)
         : null;
 
-      // Le recruteur peut libérer les fonds si le statut est "received"
-      const canRelease = isRecruiter && status === "received";
+      const hasDispute = payment.has_dispute || false;
+
+      // Le recruteur peut signaler un problème si le statut est "received" et pas de litige
+      const canReportDispute = isRecruiter && status === "received" && !hasDispute;
 
       setPaymentStatus({
         status,
@@ -102,7 +106,8 @@ export function useMissionPaymentStatus(
         freelancerAmount,
         paidAt: payment.paid_at,
         distributedAt: payment.distributed_at,
-        canRelease,
+        canReportDispute,
+        hasDispute,
       });
     } catch (err: unknown) {
       const errorMessage =
@@ -119,64 +124,67 @@ export function useMissionPaymentStatus(
     fetchPaymentStatus();
   }, [fetchPaymentStatus]);
 
-  // Libérer les fonds
-  const releaseFunds = useCallback(async () => {
-    if (!missionId || !paymentStatus?.canRelease) {
-      return { success: false, error: "Action non autorisée" };
-    }
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
+  // Signaler un problème
+  const reportDispute = useCallback(
+    async (reason: string, description?: string) => {
+      if (!missionId || !paymentStatus?.canReportDispute) {
+        return { success: false, error: "Action non autorisée" };
       }
 
-      const response = await fetch(`/api/missions/${missionId}/release`, {
-        method: "POST",
-        headers,
-        credentials: "include",
-      });
+      setIsProcessing(true);
+      setError(null);
 
-      const data = await response.json();
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
 
-      if (!response.ok) {
-        throw new Error(data.error || "Erreur lors de la libération des fonds");
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+
+        if (accessToken) {
+          headers["Authorization"] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch(`/api/missions/${missionId}/dispute`, {
+          method: "POST",
+          headers,
+          credentials: "include",
+          body: JSON.stringify({ reason, description }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Erreur lors du signalement");
+        }
+
+        // Rafraîchir le statut
+        await fetchPaymentStatus();
+
+        return {
+          success: data.success,
+          dispute: data.dispute,
+        };
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Erreur lors du signalement";
+        console.error("Erreur lors du signalement:", err);
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      } finally {
+        setIsProcessing(false);
       }
-
-      // Rafraîchir le statut
-      await fetchPaymentStatus();
-
-      return {
-        success: data.success,
-        paymentStatus: data.paymentStatus,
-        summary: data.summary,
-      };
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Erreur lors de la libération";
-      console.error("Erreur lors de la libération des fonds:", err);
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [missionId, paymentStatus?.canRelease, fetchPaymentStatus]);
+    },
+    [missionId, paymentStatus?.canReportDispute, fetchPaymentStatus]
+  );
 
   return {
     paymentStatus,
     isLoading,
     isProcessing,
     error,
-    releaseFunds,
+    reportDispute,
     refreshPaymentStatus: fetchPaymentStatus,
   };
 }

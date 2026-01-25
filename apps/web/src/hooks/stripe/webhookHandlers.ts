@@ -1258,6 +1258,234 @@ export async function handleChargeRefunded(
 }
 
 /**
+ * Handler pour charge.dispute.created - Dispute Stripe créée
+ * Si un transfert a déjà été fait, il faut le reverser
+ */
+export async function handleChargeDisputeCreated(
+  dispute: Stripe.Dispute
+): Promise<void> {
+  console.log(`⚖️ [Dispute] Traitement charge.dispute.created: ${dispute.id}`);
+
+  const supabase = getSupabaseServiceRole();
+  const stripe = getStripeClient();
+
+  // Récupérer le Charge ID
+  const chargeId =
+    typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+
+  if (!chargeId) {
+    console.warn("⚠️ [Dispute] Pas de charge ID trouvé");
+    return;
+  }
+
+  // Récupérer le PaymentIntent depuis le Charge
+  const charge = await stripe.charges.retrieve(chargeId);
+  const paymentIntentId =
+    typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+  if (!paymentIntentId) {
+    console.warn("⚠️ [Dispute] Pas de PaymentIntent ID trouvé");
+    return;
+  }
+
+  // Trouver le mission_payment
+  const { data: payment, error: paymentError } = await supabase
+    .from("mission_payments")
+    .select("id, mission_id, status, released_at")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .single();
+
+  if (paymentError || !payment) {
+    console.warn(
+      `⚠️ [Dispute] Paiement introuvable pour PaymentIntent ${paymentIntentId}`
+    );
+    return;
+  }
+
+  // Créer ou mettre à jour le litige dans mission_disputes
+  const { data: existingDispute } = await supabase
+    .from("mission_disputes")
+    .select("id")
+    .eq("stripe_dispute_id", dispute.id)
+    .maybeSingle();
+
+  if (existingDispute) {
+    console.log(`ℹ️ [Dispute] Litige ${dispute.id} déjà enregistré`);
+    return;
+  }
+
+  // Créer le litige
+  const { data: disputeRecord, error: disputeError } = await supabase
+    .from("mission_disputes")
+    .insert({
+      mission_id: payment.mission_id,
+      mission_payment_id: payment.id,
+      reporter_id: payment.mission_id, // Pas de reporter_id pour dispute Stripe
+      reason: `Dispute Stripe: ${dispute.reason || "Non spécifié"}`,
+      description: dispute.evidence?.customer_communication || null,
+      status: "open",
+      stripe_dispute_id: dispute.id,
+      stripe_dispute_status: dispute.status,
+      is_stripe_dispute: true,
+    })
+    .select()
+    .single();
+
+  if (disputeError || !disputeRecord) {
+    console.error("❌ [Dispute] Erreur création litige:", disputeError);
+    return;
+  }
+
+  // Mettre à jour mission_payments
+  await supabase
+    .from("mission_payments")
+    .update({
+      has_dispute: true,
+    })
+    .eq("id", payment.id);
+
+  // Si des transferts ont déjà été faits, les reverser
+  if (payment.released_at) {
+    console.log(
+      `🔄 [Dispute] Transferts déjà effectués, reversement nécessaire`
+    );
+
+    const { data: transfers } = await supabase
+      .from("mission_transfers")
+      .select("id, stripe_transfer_id, amount, type")
+      .eq("mission_payment_id", payment.id)
+      .eq("status", "created");
+
+    if (transfers && transfers.length > 0) {
+      for (const transfer of transfers) {
+        if (!transfer.stripe_transfer_id) continue;
+
+        try {
+          console.log(
+            `🔄 [Dispute] Reversement transfert ${transfer.stripe_transfer_id}`
+          );
+
+          const reversal = await stripe.transfers.createReversal(
+            transfer.stripe_transfer_id,
+            {
+              amount: transfer.amount,
+              reason: "dispute",
+              metadata: {
+                dispute_id: dispute.id,
+                mission_id: payment.mission_id,
+                mission_payment_id: payment.id,
+              },
+            }
+          );
+
+          // Mettre à jour le transfert
+          await supabase
+            .from("mission_transfers")
+            .update({
+              status: "reversed",
+              error_message: `Reversé suite à dispute Stripe: ${dispute.id}`,
+            })
+            .eq("id", transfer.id);
+
+          console.log(
+            `✅ [Dispute] Transfert ${transfer.stripe_transfer_id} reversé: ${reversal.id}`
+          );
+        } catch (error) {
+          console.error(
+            `❌ [Dispute] Erreur reversement transfert ${transfer.stripe_transfer_id}:`,
+            error
+          );
+        }
+      }
+    }
+  }
+
+  console.log(
+    `✅ [Dispute] Litige Stripe ${dispute.id} enregistré pour paiement ${payment.id}`
+  );
+
+  // TODO: Notifier l'admin
+}
+
+/**
+ * Handler pour charge.dispute.updated - Statut de dispute changé
+ */
+export async function handleChargeDisputeUpdated(
+  dispute: Stripe.Dispute
+): Promise<void> {
+  console.log(`⚖️ [Dispute] Traitement charge.dispute.updated: ${dispute.id}`);
+
+  const supabase = getSupabaseServiceRole();
+
+  // Mettre à jour le statut de la dispute
+  const { error } = await supabase
+    .from("mission_disputes")
+    .update({
+      stripe_dispute_status: dispute.status,
+    })
+    .eq("stripe_dispute_id", dispute.id);
+
+  if (error) {
+    console.error("❌ [Dispute] Erreur mise à jour statut:", error);
+  } else {
+    console.log(`✅ [Dispute] Statut mis à jour: ${dispute.status}`);
+  }
+}
+
+/**
+ * Handler pour charge.dispute.closed - Dispute résolue
+ */
+export async function handleChargeDisputeClosed(
+  dispute: Stripe.Dispute
+): Promise<void> {
+  console.log(`⚖️ [Dispute] Traitement charge.dispute.closed: ${dispute.id}`);
+
+  const supabase = getSupabaseServiceRole();
+
+  // Mettre à jour le statut
+  const status = dispute.status === "won" ? "resolved" : "open"; // Si perdu, on garde ouvert pour admin
+
+  const { error } = await supabase
+    .from("mission_disputes")
+    .update({
+      stripe_dispute_status: dispute.status,
+      status: status,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("stripe_dispute_id", dispute.id);
+
+  if (error) {
+    console.error("❌ [Dispute] Erreur mise à jour fermeture:", error);
+  } else {
+    console.log(
+      `✅ [Dispute] Dispute ${dispute.id} fermée avec statut: ${dispute.status}`
+    );
+
+    // Si la dispute est gagnée (won), on peut libérer les fonds
+    if (dispute.status === "won") {
+      // Récupérer le mission_payment
+      const { data: disputeRecord } = await supabase
+        .from("mission_disputes")
+        .select("mission_payment_id")
+        .eq("stripe_dispute_id", dispute.id)
+        .single();
+
+      if (disputeRecord) {
+        // Mettre has_dispute = false pour permettre la libération
+        await supabase
+          .from("mission_payments")
+          .update({
+            has_dispute: false,
+          })
+          .eq("id", disputeRecord.mission_payment_id);
+      }
+    }
+  }
+}
+
+/**
  * Traite un event Stripe
  */
 export async function processStripeEvent(event: Stripe.Event): Promise<void> {
@@ -1325,6 +1553,19 @@ export async function processStripeEvent(event: Stripe.Event): Promise<void> {
 
       case "charge.refunded":
         await handleChargeRefunded(event.data.object as Stripe.Charge);
+        break;
+
+      // === DISPUTES STRIPE ===
+      case "charge.dispute.created":
+        await handleChargeDisputeCreated(event.data.object as Stripe.Dispute);
+        break;
+
+      case "charge.dispute.updated":
+        await handleChargeDisputeUpdated(event.data.object as Stripe.Dispute);
+        break;
+
+      case "charge.dispute.closed":
+        await handleChargeDisputeClosed(event.data.object as Stripe.Dispute);
         break;
 
       default:

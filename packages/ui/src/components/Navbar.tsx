@@ -365,7 +365,6 @@ export function Navbar({
                 cursor="pointer"
                 hoverStyle={{ opacity: 0.8 }}
                 onPress={() => handleMenuClick(onLogoutClick)}
-                onClick={() => handleMenuClick(onLogoutClick)}
                 role="button"
                 tabIndex={0}
                 padding="$2"
@@ -382,6 +381,7 @@ export function Navbar({
         <>
           {/* Overlay */}
           <YStack
+            // @ts-expect-error: 'fixed' is required for overlay positioning, but not present in Tamagui types
             position="fixed"
             top={0}
             left={0}
@@ -394,6 +394,7 @@ export function Navbar({
 
           {/* Menu Drawer */}
           <YStack
+            // @ts-expect-error: 'fixed' is used for mobile drawer, tamagui type may not match CSS
             position="fixed"
             top={0}
             right={0}
@@ -504,7 +505,10 @@ export function Navbar({
                         />
                       )}
                       {onMessagingClick && (
-                        <MenuLink label="Messagerie" onPress={onMessagingClick} />
+                        <MenuLink
+                          label="Messagerie"
+                          onPress={onMessagingClick}
+                        />
                       )}
                     </>
                   )}
@@ -519,7 +523,8 @@ export function Navbar({
                         />
                       )}
                       {/* Lien Mes paiements pour freelances et commerciaux */}
-                      {(userRole === "freelance" || userRole === "commercial") &&
+                      {(userRole === "freelance" ||
+                        userRole === "commercial") &&
                         onPaymentsClick && (
                           <MenuLink
                             label="Mes paiements"
@@ -537,8 +542,14 @@ export function Navbar({
                             label="Abonnement"
                             onPress={onSubscriptionClick}
                           />
-                          <MenuLink label="Freelance" onPress={onFreelanceClick} />
-                          <MenuLink label="Messagerie" onPress={onMessagingClick} />
+                          <MenuLink
+                            label="Freelance"
+                            onPress={onFreelanceClick}
+                          />
+                          <MenuLink
+                            label="Messagerie"
+                            onPress={onMessagingClick}
+                          />
                         </>
                       )}
                     </>
