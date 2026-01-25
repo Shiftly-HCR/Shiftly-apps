@@ -2,11 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useRecruiterMissions, useEstablishments } from "@/hooks";
-import { useCachedEstablishment } from "@/hooks/cache/useCachedEstablishment";
+import { useCreateMission, useUploadMissionImage, useEstablishments, useEstablishment } from "@/hooks/queries";
 import {
-  createMission,
-  uploadMissionImage,
   geocodeAddress,
   reverseGeocode,
   debounce,
@@ -20,10 +17,10 @@ type Step = 1 | 2 | 3 | 4 | 5;
  */
 export function useCreateMissionPage(initialEstablishmentId?: string) {
   const router = useRouter();
-  const { refresh } = useRecruiterMissions();
-  const { establishments } = useEstablishments();
+  const createMissionMutation = useCreateMission();
+  const uploadImageMutation = useUploadMissionImage();
+  const { data: establishments = [] } = useEstablishments();
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Étape 1: Infos générales
@@ -67,11 +64,8 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
-  // Utiliser le hook de cache pour charger l'établissement
-  const { data: selectedEstablishment } = useCachedEstablishment(
-    selectedEstablishmentId,
-    false
-  );
+  // Utiliser le hook React Query pour charger l'établissement
+  const { data: selectedEstablishment } = useEstablishment(selectedEstablishmentId);
 
   // Charger l'adresse de l'établissement si sélectionné
   useEffect(() => {
@@ -239,7 +233,6 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
 
   const handleSubmit = async (saveAsDraft: boolean = false) => {
     setError("");
-    setIsLoading(true);
 
     try {
       // Créer la mission
@@ -266,7 +259,7 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
         }
       }
 
-      const missionResult = await createMission({
+      const missionResult = await createMissionMutation.mutateAsync({
         title,
         description,
         skills: skillsArray.length > 0 ? skillsArray : undefined,
@@ -288,24 +281,23 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
 
       if (!missionResult.success) {
         setError(missionResult.error || "Erreur lors de la création");
-        setIsLoading(false);
         return;
       }
 
       // Upload l'image si elle existe
       if (missionImage && missionResult.mission) {
-        await uploadMissionImage(missionResult.mission.id, missionImage);
+        await uploadImageMutation.mutateAsync({
+          missionId: missionResult.mission.id,
+          file: missionImage,
+        });
       }
 
-      // Rafraîchir le cache des missions
-      await refresh();
-
+      // React Query invalide automatiquement le cache, pas besoin de refresh manuel
       // Redirection vers la liste des missions
       router.push("/missions");
     } catch (err) {
       console.error(err);
       setError("Une erreur est survenue");
-      setIsLoading(false);
     }
   };
 
@@ -313,7 +305,7 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     // États des étapes
     currentStep,
     setCurrentStep,
-    isLoading,
+    isLoading: createMissionMutation.isPending || uploadImageMutation.isPending,
     error,
     setError,
 

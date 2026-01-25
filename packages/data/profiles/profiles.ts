@@ -1,6 +1,22 @@
 import { supabase } from "../supabaseClient";
 import { uploadImage, replaceImage, deleteImage } from "../helpers/imageUpload";
 
+export type SubscriptionStatus =
+  | "active"
+  | "trialing"
+  | "past_due"
+  | "canceled"
+  | "unpaid"
+  | "incomplete"
+  | "incomplete_expired"
+  | "paused";
+
+export type ConnectOnboardingStatus =
+  | "not_started"
+  | "pending"
+  | "complete"
+  | "restricted";
+
 export interface Profile {
   id: string;
   created_at?: string;
@@ -14,6 +30,22 @@ export interface Profile {
   note?: number;
   phone?: string;
   email?: string;
+  is_premium?: boolean;
+  subscription_plan_id?: string;
+  // Champs Stripe Billing
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+  subscription_status?: SubscriptionStatus;
+  current_period_end?: string;
+  cancel_at_period_end?: boolean;
+  subscription_price_id?: string;
+  // Champs Stripe Connect
+  stripe_account_id?: string;
+  connect_onboarding_status?: ConnectOnboardingStatus;
+  connect_payouts_enabled?: boolean;
+  connect_charges_enabled?: boolean;
+  connect_requirements_due?: Record<string, unknown>;
+  // Autres champs
   daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
   hourly_rate?: number; // Tarif horaire en euros
   availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
@@ -161,9 +193,12 @@ export async function updateProfile(
     if (params.phone !== undefined) updateData.phone = params.phone;
     if (params.bio !== undefined) updateData.bio = params.bio;
     if (params.photo_url !== undefined) updateData.photo_url = params.photo_url;
-    if (params.daily_rate !== undefined) updateData.daily_rate = params.daily_rate;
-    if (params.hourly_rate !== undefined) updateData.hourly_rate = params.hourly_rate;
-    if (params.availability !== undefined) updateData.availability = params.availability;
+    if (params.daily_rate !== undefined)
+      updateData.daily_rate = params.daily_rate;
+    if (params.hourly_rate !== undefined)
+      updateData.hourly_rate = params.hourly_rate;
+    if (params.availability !== undefined)
+      updateData.availability = params.availability;
 
     const { data, error } = await supabase
       .from("profiles")
@@ -189,6 +224,63 @@ export async function updateProfile(
     return {
       success: false,
       error: "Une erreur est survenue lors de la mise à jour du profil",
+    };
+  }
+}
+
+/**
+ * Met à jour le statut premium de l'utilisateur actuel
+ */
+export async function updatePremiumStatus(
+  isPremium: boolean,
+  planId?: string
+): Promise<{ success: boolean; error?: string; profile?: Profile }> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Utilisateur non connecté",
+      };
+    }
+
+    const updateData: any = {
+      is_premium: isPremium,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Si un planId est fourni, le stocker
+    if (planId) {
+      updateData.subscription_plan_id = planId;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .update(updateData)
+      .eq("id", user.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erreur lors de la mise à jour du statut premium:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      profile: data,
+    };
+  } catch (err) {
+    console.error("Erreur lors de la mise à jour du statut premium:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la mise à jour du statut premium",
     };
   }
 }

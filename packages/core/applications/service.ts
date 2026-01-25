@@ -11,6 +11,7 @@ import {
 import { getMissionById } from "@shiftly/data";
 import { getCurrentProfile } from "@shiftly/data";
 import { supabase } from "@shiftly/data";
+import { getOrCreateConversation, sendMessageAsUser } from "@shiftly/data";
 
 /**
  * Résultat d'une opération sur une candidature
@@ -137,7 +138,8 @@ export async function getMissionApplications(missionId: string) {
     if (mission.recruiter_id !== user.id) {
       return {
         success: false,
-        error: "Vous n'êtes pas autorisé à voir les candidatures de cette mission",
+        error:
+          "Vous n'êtes pas autorisé à voir les candidatures de cette mission",
         applications: [],
       };
     }
@@ -222,6 +224,24 @@ export async function updateApplicationStatus(
       };
     }
 
+    // Si le statut passe à "accepted", créer une conversation et envoyer un message automatique
+    if (status === "accepted") {
+      try {
+        await handleApplicationAccepted({
+          missionId: mission.id,
+          missionTitle: mission.title,
+          recruiterId: mission.recruiter_id,
+          freelanceId: application.user_id,
+        });
+      } catch (err) {
+        // Log l'erreur mais ne bloque pas la mise à jour du statut
+        console.error(
+          "Erreur lors de la création de la conversation automatique:",
+          err
+        );
+      }
+    }
+
     return {
       success: true,
       applicationId: result.application?.id,
@@ -256,6 +276,76 @@ export async function getUserApplications(userId?: string) {
 }
 
 /**
+ * Gère les actions automatiques quand une candidature est acceptée :
+ * - Crée ou récupère une conversation entre le recruteur et le freelance
+ * - Envoie un message automatique du recruteur au freelance
+ */
+async function handleApplicationAccepted({
+  missionId,
+  missionTitle,
+  recruiterId,
+  freelanceId,
+}: {
+  missionId: string;
+  missionTitle: string;
+  recruiterId: string;
+  freelanceId: string;
+}): Promise<void> {
+  console.log(
+    `📨 [Application] Création de conversation automatique pour mission ${missionId}`
+  );
+
+  // 1. Créer ou récupérer la conversation
+  const conversationResult = await getOrCreateConversation({
+    missionId,
+    recruiterId,
+    freelanceId,
+  });
+
+  if (!conversationResult.success || !conversationResult.conversation) {
+    console.error(
+      "❌ [Application] Échec de la création de conversation:",
+      conversationResult.error
+    );
+    throw new Error(
+      conversationResult.error || "Impossible de créer la conversation"
+    );
+  }
+
+  const conversation = conversationResult.conversation;
+  console.log(
+    `✅ [Application] Conversation créée/récupérée: ${conversation.id}`
+  );
+
+  // 2. Envoyer un message automatique du recruteur
+  const autoMessage = `🎉 Félicitations ! Vous avez été sélectionné(e) pour la mission "${missionTitle}".
+
+Je souhaite vous confirmer que votre candidature a retenu toute mon attention et j'aimerais vous proposer cette mission.
+
+N'hésitez pas à me contacter via cette conversation pour discuter des détails ou si vous avez des questions.
+
+À très bientôt !`;
+
+  const messageResult = await sendMessageAsUser({
+    conversationId: conversation.id,
+    senderId: recruiterId,
+    content: autoMessage,
+  });
+
+  if (!messageResult.success) {
+    console.error(
+      "❌ [Application] Échec de l'envoi du message automatique:",
+      messageResult.error
+    );
+    // On ne throw pas ici car la conversation a quand même été créée
+  } else {
+    console.log(
+      `✅ [Application] Message automatique envoyé: ${messageResult.message?.id}`
+    );
+  }
+}
+
+/**
  * Retourne les transitions de statut valides depuis un statut donné
  */
 function getValidStatusTransitions(
@@ -284,4 +374,3 @@ function getValidStatusTransitions(
       return [];
   }
 }
-

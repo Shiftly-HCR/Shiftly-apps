@@ -62,7 +62,7 @@ export class SessionCacheManager {
       return false;
     }
 
-   return true;
+    return true;
   }
 
   /**

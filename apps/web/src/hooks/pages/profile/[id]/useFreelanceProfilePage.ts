@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import {
-  useCachedProfile,
-  useCachedFreelanceData,
+  useProfile,
+  useFreelanceData,
   useCurrentProfile,
 } from "@/hooks";
 
@@ -18,31 +18,36 @@ export function useFreelanceProfilePage() {
   const params = useParams();
   const freelanceId = params?.id as string;
 
+  // Charger le profil via React Query
   const { 
     data: profile, 
     isLoading: isLoadingProfile,
     isFetching: isFetchingProfile,
     error: profileError 
-  } = useCachedProfile(freelanceId);
+  } = useProfile(freelanceId);
+
+  // Charger les données freelance (expériences, éducations)
   const {
-    experiences,
-    educations,
-    isLoading: isLoadingExperiences,
-  } = useCachedFreelanceData(freelanceId);
-  const { profile: currentProfile } = useCurrentProfile();
+    data: freelanceData,
+    isLoading: isLoadingFreelanceData,
+  } = useFreelanceData(freelanceId);
+
+  // Profil de l'utilisateur actuel
+  const { data: currentProfile } = useCurrentProfile();
+  
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   // isLoading est true si on charge pour la première fois
   // isFetching est true si on recharge (même avec placeholderData)
-  const isLoading = isLoadingProfile || isLoadingExperiences;
+  const isLoading = isLoadingProfile || isLoadingFreelanceData;
   const isFetching = isFetchingProfile;
 
   return {
     freelanceId,
-    profile: profile || null, // S'assurer que profile n'est jamais undefined
-    experiences,
-    educations,
-    currentProfile,
+    profile: profile || null,
+    experiences: freelanceData?.experiences || [],
+    educations: freelanceData?.educations || [],
+    currentProfile: currentProfile || null,
     activeTab,
     setActiveTab,
     isLoading,

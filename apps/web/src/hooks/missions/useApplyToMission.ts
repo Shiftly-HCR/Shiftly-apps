@@ -1,50 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { applyToMission } from "@shiftly/core";
+import { useApplyToMission as useApplyToMissionMutation } from "@/hooks/queries";
 import type { CreateApplicationParams } from "@shiftly/data";
 
 /**
  * Hook pour postuler à une mission
+ * @deprecated Utilisez directement useApplyToMission depuis @/hooks/queries
  */
 export function useApplyToMission() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const mutation = useApplyToMissionMutation();
 
   const apply = async (params: CreateApplicationParams) => {
-    setIsLoading(true);
-    setError(null);
-    setSuccess(false);
-
     try {
-      const result = await applyToMission(params);
-      if (result.success) {
-        setSuccess(true);
-        return { success: true };
-      } else {
-        setError(result.error || "Erreur lors de la candidature");
-        return { success: false, error: result.error };
-      }
+      const result = await mutation.mutateAsync(params);
+      return result;
     } catch (err: any) {
-      const errorMessage = err.message || "Une erreur est survenue";
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsLoading(false);
+      return { success: false, error: err.message || "Une erreur est survenue" };
     }
   };
 
   const reset = () => {
-    setError(null);
-    setSuccess(false);
+    mutation.reset();
   };
 
   return {
     apply,
-    isLoading,
-    error,
-    success,
+    isLoading: mutation.isPending,
+    error: mutation.error?.message || null,
+    success: mutation.isSuccess,
     reset,
   };
 }

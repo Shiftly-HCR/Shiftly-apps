@@ -432,6 +432,56 @@ export async function markConversationAsRead(conversationId: string): Promise<{
 }
 
 /**
+ * Envoie un message au nom d'un utilisateur spécifique (pour les messages automatiques)
+ * Cette fonction ne vérifie PAS l'authentification - à utiliser uniquement côté backend
+ */
+export async function sendMessageAsUser({
+  conversationId,
+  senderId,
+  content,
+}: {
+  conversationId: string;
+  senderId: string;
+  content: string;
+}): Promise<{
+  success: boolean;
+  error?: string;
+  message?: Message;
+}> {
+  try {
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: conversationId,
+        sender_id: senderId,
+        content: content.trim(),
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erreur lors de l'envoi du message automatique:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: data,
+    };
+  } catch (err: any) {
+    console.error("Erreur lors de l'envoi du message automatique:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de l'envoi du message",
+    };
+  }
+}
+
+/**
  * Supprime une conversation et tous ses messages
  */
 export async function deleteConversation(

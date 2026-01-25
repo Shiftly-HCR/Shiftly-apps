@@ -1,50 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { updateApplicationStatus as updateApplicationStatusService } from "@shiftly/core";
+import { useUpdateApplicationStatus as useUpdateApplicationStatusMutation } from "@/hooks/queries";
 import type { ApplicationStatus } from "@shiftly/data";
 
 /**
  * Hook pour mettre à jour le statut d'une candidature
+ * @deprecated Utilisez directement useUpdateApplicationStatus depuis @/hooks/queries
  */
 export function useUpdateApplicationStatus() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const mutation = useUpdateApplicationStatusMutation();
 
   const updateStatus = async (applicationId: string, status: ApplicationStatus) => {
-    setIsLoading(true);
-    setError(null);
-    setSuccess(false);
-
     try {
-      const result = await updateApplicationStatusService(applicationId, status);
-      if (result.success) {
-        setSuccess(true);
-        return { success: true };
-      } else {
-        setError(result.error || "Erreur lors de la mise à jour du statut");
-        return { success: false, error: result.error };
-      }
+      const result = await mutation.mutateAsync({ applicationId, status });
+      return result;
     } catch (err: any) {
-      const errorMessage = err.message || "Une erreur est survenue";
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsLoading(false);
+      return { success: false, error: err.message || "Une erreur est survenue" };
     }
   };
 
   const reset = () => {
-    setError(null);
-    setSuccess(false);
+    mutation.reset();
   };
 
   return {
     updateStatus,
-    isLoading,
-    error,
-    success,
+    isLoading: mutation.isPending,
+    error: mutation.error?.message || null,
+    success: mutation.isSuccess,
     reset,
   };
 }

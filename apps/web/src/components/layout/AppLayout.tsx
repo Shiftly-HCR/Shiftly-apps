@@ -57,6 +57,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         onFreelanceClick={() => router.push("/freelance")}
         onMessagingClick={() => router.push("/messagerie")}
         onCommercialClick={() => router.push("/commercial")}
+        onPaymentsClick={() => router.push("/payments")}
+        onAdminDisputesClick={() => router.push("/admin/disputes")}
+        onAdminDashboardClick={() => router.push("/admin/dashboard")}
         onLogoutClick={handleLogout}
       />
       <YStack flex={1}>{children}</YStack>

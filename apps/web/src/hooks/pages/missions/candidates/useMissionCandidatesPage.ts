@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useCachedMission } from "@/hooks";
+import { useMission } from "@/hooks";
 import { useCurrentProfile } from "@/hooks";
 import { useMissionApplications } from "@/hooks";
 import { useUpdateApplicationStatus } from "@/hooks";
@@ -30,7 +30,7 @@ export function useMissionCandidatesPage() {
     "all"
   );
 
-  const { data: mission, isLoading: isLoadingMission } = useCachedMission(missionId);
+  const { data: mission, isLoading: isLoadingMission } = useMission(missionId);
   const { profile } = useCurrentProfile();
   const {
     applications,
