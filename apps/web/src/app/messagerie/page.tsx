@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import { AppLayout, ConversationsList, ConversationView } from "@/components";
@@ -8,7 +9,7 @@ import { useConversations } from "@/hooks";
 import { formatLastMessageTime } from "@/utils/messagingHelpers";
 import { useCurrentProfile } from "@/hooks";
 
-export default function MessageriePage() {
+function MessagerieContent() {
   const { profile } = useCurrentProfile();
   const {
     conversations,
@@ -25,54 +26,75 @@ export default function MessageriePage() {
   const chat = useChat(selectedConversationId);
 
   return (
-    <AppLayout>
-      <YStack flex={1} backgroundColor={colors.backgroundLight}>
-        <XStack flex={1} height="100%">
-          {/* Liste des conversations */}
-          <ConversationsList
-            conversations={conversations}
-            selectedConversationId={selectedConversationId}
-            onSelectConversation={setSelectedConversationId}
-            getOtherParticipantName={getOtherParticipantName}
-            formatTime={formatLastMessageTime}
-            isLoading={isLoadingConversations}
-            onConversationDeleted={refreshConversations}
-          />
+    <YStack flex={1} backgroundColor={colors.backgroundLight}>
+      <XStack flex={1} height="100%">
+        {/* Liste des conversations */}
+        <ConversationsList
+          conversations={conversations}
+          selectedConversationId={selectedConversationId}
+          onSelectConversation={setSelectedConversationId}
+          getOtherParticipantName={getOtherParticipantName}
+          formatTime={formatLastMessageTime}
+          isLoading={isLoadingConversations}
+          onConversationDeleted={refreshConversations}
+        />
 
-          {/* Conversation sélectionnée */}
-          {selectedConversationId && selectedConversation ? (
-            <ConversationView
-              conversation={selectedConversation}
-              messages={chat.messages}
-              currentUserId={profile?.id || ""}
-              senderNames={senderNames}
-              isLoading={chat.isLoading}
-              isSending={chat.isSending}
-              onSendMessage={chat.sendMessage}
-              onMarkAsRead={chat.markAsRead}
-              onClose={() => setSelectedConversationId(null)}
-              getOtherParticipantName={getOtherParticipantName}
-            />
-          ) : (
-            <YStack
-              flex={1}
-              alignItems="center"
-              justifyContent="center"
-              gap="$4"
-              padding="$6"
-              backgroundColor={colors.white}
-            >
-              <Text fontSize={18} fontWeight="600" color={colors.gray700}>
-                Sélectionnez une conversation
-              </Text>
-              <Text fontSize={14} color={colors.gray500} textAlign="center">
-                Choisissez une conversation dans la liste pour commencer à
-                échanger
-              </Text>
-            </YStack>
-          )}
-        </XStack>
-      </YStack>
+        {/* Conversation sélectionnée */}
+        {selectedConversationId && selectedConversation ? (
+          <ConversationView
+            conversation={selectedConversation}
+            messages={chat.messages}
+            currentUserId={profile?.id || ""}
+            senderNames={senderNames}
+            isLoading={chat.isLoading}
+            isSending={chat.isSending}
+            onSendMessage={chat.sendMessage}
+            onMarkAsRead={chat.markAsRead}
+            onClose={() => setSelectedConversationId(null)}
+            getOtherParticipantName={getOtherParticipantName}
+          />
+        ) : (
+          <YStack
+            flex={1}
+            alignItems="center"
+            justifyContent="center"
+            gap="$4"
+            padding="$6"
+            backgroundColor={colors.white}
+          >
+            <Text fontSize={18} fontWeight="600" color={colors.gray700}>
+              Sélectionnez une conversation
+            </Text>
+            <Text fontSize={14} color={colors.gray500} textAlign="center">
+              Choisissez une conversation dans la liste pour commencer à
+              échanger
+            </Text>
+          </YStack>
+        )}
+      </XStack>
+    </YStack>
+  );
+}
+
+export default function MessageriePage() {
+  return (
+    <AppLayout>
+      <Suspense
+        fallback={
+          <YStack
+            flex={1}
+            alignItems="center"
+            justifyContent="center"
+            backgroundColor={colors.backgroundLight}
+          >
+            <Text fontSize={16} color={colors.gray500}>
+              Chargement...
+            </Text>
+          </YStack>
+        }
+      >
+        <MessagerieContent />
+      </Suspense>
     </AppLayout>
   );
 }
