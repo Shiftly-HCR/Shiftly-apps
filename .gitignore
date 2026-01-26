@@ -87,6 +87,9 @@ Desktop.ini
 # Lock files (optional – if you don’t want to commit pnpm lock)
 pnpm-lock.yaml
 
+#vercel
+.vercel
+
 # =========================
 # END OF FILE
 # =========================
