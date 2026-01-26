@@ -1,6 +1,6 @@
 "use client";
 
-import { YStack, XStack, Text, Image } from "tamagui";
+import { YStack, XStack, Text, Image, Spinner } from "tamagui";
 import { Button, Input, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useLoginPage } from "@/hooks";
@@ -25,7 +25,29 @@ export default function LoginPage() {
       justifyContent="center"
       padding="$4"
       minHeight="100vh"
+      position="relative"
     >
+      {/* Overlay de chargement */}
+      {isLoading && (
+        <YStack
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          backgroundColor="rgba(249, 250, 251, 0.95)"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={1000}
+          gap="$4"
+        >
+          <Spinner size="large" color={colors.shiftlyViolet} />
+          <Text fontSize={16} fontWeight="600" color="#2B2B2B">
+            Connexion en cours...
+          </Text>
+        </YStack>
+      )}
+
       <YStack
         maxWidth={440}
         padding="$6"
@@ -39,6 +61,7 @@ export default function LoginPage() {
         shadowOpacity={1}
         shadowRadius={12}
         elevation={4}
+        opacity={isLoading ? 0.5 : 1}
       >
         <YStack gap="$5" alignItems="center">
           {/* Logo */}
