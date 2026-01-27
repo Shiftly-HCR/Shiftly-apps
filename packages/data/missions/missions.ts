@@ -191,6 +191,102 @@ export async function getRecruiterMissions(): Promise<Mission[]> {
 }
 
 /**
+ * Crée ou récupère une mission "directe" pour permettre une conversation entre recruteur et freelance
+ * Cette mission est utilisée pour les conversations qui ne sont pas liées à une mission spécifique
+ */
+export async function getOrCreateDirectConversationMission(
+  recruiterId: string,
+  freelanceId: string
+): Promise<{
+  success: boolean;
+  error?: string;
+  mission?: Mission;
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user || user.id !== recruiterId) {
+      return {
+        success: false,
+        error: "Vous devez être le recruteur pour créer cette conversation",
+      };
+    }
+
+    // Chercher une mission "directe" existante pour ce recruteur et ce freelance
+    // On utilise un titre spécial pour identifier ces missions
+    const missionTitle = `Contact direct - ${freelanceId.substring(0, 8)}`;
+    
+    const { data: existingMission, error: selectError } = await supabase
+      .from("missions")
+      .select("*")
+      .eq("recruiter_id", recruiterId)
+      .eq("title", missionTitle)
+      .eq("status", "draft")
+      .single();
+
+    if (existingMission) {
+      return {
+        success: true,
+        mission: existingMission,
+      };
+    }
+
+    // Si pas de mission existante, créer une nouvelle mission "directe"
+    const { data: newMission, error: insertError } = await supabase
+      .from("missions")
+      .insert({
+        recruiter_id: recruiterId,
+        title: missionTitle,
+        description: "Conversation directe avec le freelance",
+        status: "draft",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      // Si l'erreur est due à une contrainte d'unicité ou autre, réessayer de récupérer
+      if (insertError.code === "23505" || insertError.code === "PGRST116") {
+        const { data: retryMission } = await supabase
+          .from("missions")
+          .select("*")
+          .eq("recruiter_id", recruiterId)
+          .eq("title", missionTitle)
+          .eq("status", "draft")
+          .single();
+
+        if (retryMission) {
+          return {
+            success: true,
+            mission: retryMission,
+          };
+        }
+      }
+
+      console.error("Erreur lors de la création de la mission directe:", insertError);
+      return {
+        success: false,
+        error: insertError.message,
+      };
+    }
+
+    return {
+      success: true,
+      mission: newMission,
+    };
+  } catch (err) {
+    console.error("Erreur lors de la création/récupération de la mission directe:", err);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la création de la conversation",
+    };
+  }
+}
+
+/**
  * Récupère toutes les missions publiées (pour les freelances)
  */
 export async function getPublishedMissions(): Promise<Mission[]> {

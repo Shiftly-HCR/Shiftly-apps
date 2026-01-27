@@ -49,6 +49,17 @@ export function useMissionPaymentInConversation(
       return;
     }
 
+    // Vérifier si c'est une mission "Contact direct" (factice) - ne pas charger les infos de paiement
+    const missionTitle = conversation.mission.title || "";
+    const isDirectConversationMission =
+      missionTitle.startsWith("Contact direct -") ||
+      missionTitle.startsWith("Conversation directe");
+
+    if (isDirectConversationMission) {
+      setPaymentInfo(null);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 

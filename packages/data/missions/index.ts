@@ -9,6 +9,7 @@ export {
   uploadMissionImage,
   publishMission,
   closeMission,
+  getOrCreateDirectConversationMission,
   type Mission,
   type CreateMissionParams,
   type UpdateMissionParams,
