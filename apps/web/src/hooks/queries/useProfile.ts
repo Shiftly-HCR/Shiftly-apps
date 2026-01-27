@@ -41,10 +41,12 @@ export function useCurrentProfile() {
 
   return {
     ...query,
+    profile: query.data ?? null,
     isAuthResolved,
     isUnauthenticated,
     isProfileMissing,
   } as typeof query & {
+    profile: Profile | null;
     isAuthResolved: boolean;
     isUnauthenticated: boolean;
     isProfileMissing: boolean;
