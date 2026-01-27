@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient";
 import { uploadImage, replaceImage, deleteImage } from "../helpers/imageUpload";
+import { GiConsoleController } from "react-icons/gi";
 
 export interface Mission {
   id: string;
@@ -77,9 +78,7 @@ export interface UpdateMissionParams {
 /**
  * Crée une nouvelle mission
  */
-export async function createMission(
-  params: CreateMissionParams
-): Promise<{
+export async function createMission(params: CreateMissionParams): Promise<{
   success: boolean;
   error?: string;
   mission?: Mission;
@@ -133,7 +132,7 @@ export async function createMission(
  * Récupère une mission par son ID
  */
 export async function getMissionById(
-  missionId: string
+  missionId: string,
 ): Promise<Mission | null> {
   try {
     const { data, error } = await supabase
@@ -176,7 +175,7 @@ export async function getRecruiterMissions(): Promise<Mission[]> {
     if (error) {
       console.error(
         "Erreur lors de la récupération des missions du recruteur:",
-        error
+        error,
       );
       return [];
     }
@@ -185,7 +184,7 @@ export async function getRecruiterMissions(): Promise<Mission[]> {
   } catch (err) {
     console.error(
       "Erreur lors de la récupération des missions du recruteur:",
-      err
+      err,
     );
     return [];
   }
@@ -205,16 +204,138 @@ export async function getPublishedMissions(): Promise<Mission[]> {
     if (error) {
       console.error(
         "Erreur lors de la récupération des missions publiées:",
-        error
+        error,
       );
       return [];
     }
 
     return data || [];
   } catch (err) {
+    console.error("Erreur lors de la récupération des missions publiées:", err);
+    return [];
+  }
+}
+
+/**
+ * Récupère toutes les missions pour lesquelles un freelance a postulé
+ * Utilise une jointure SQL pour récupérer les missions directement
+ */
+export async function getFreelanceAppliedMissions(
+  userId?: string,
+): Promise<Mission[]> {
+  try {
+    let targetUserId = userId;
+    console.log("targetUserId", targetUserId);
+
+    // Si aucun userId n'est fourni, utiliser l'utilisateur connecté
+    if (!targetUserId) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        console.log("getFreelanceAppliedMissions: Aucun utilisateur connecté");
+        return [];
+      }
+      targetUserId = user.id;
+    }
+
+    console.log("tergetUserId final:", targetUserId);
+
+    console.log(
+      "getFreelanceAppliedMissions: Recherche pour user_id:",
+      targetUserId,
+    );
+
+    // Récupérer d'abord les candidatures du freelance pour obtenir les mission_id
+    const { data: applications, error: applicationsError } = await supabase
+      .from("mission_applications")
+      .select("mission_id")
+      .eq("user_id", targetUserId);
+
+    if (applicationsError) {
+      console.error(
+        "Erreur lors de la récupération des candidatures:",
+        applicationsError,
+      );
+      return [];
+    }
+
+    if (!applications || applications.length === 0) {
+      console.log(
+        "getFreelanceAppliedMissions: Aucune candidature trouvée pour user_id:",
+        targetUserId,
+      );
+      return [];
+    }
+
+    console.log(
+      "getFreelanceAppliedMissions: Nombre de candidatures trouvées:",
+      applications.length,
+    );
+
+    // Extraire les IDs des missions (en supprimant les doublons au cas où)
+    const missionIds = [
+      ...new Set(applications.map((app) => app.mission_id).filter(Boolean)),
+    ];
+
+    console.log(
+      "getFreelanceAppliedMissions: Mission IDs à récupérer:",
+      missionIds.length,
+      "IDs",
+    );
+
+    if (missionIds.length === 0) {
+      console.log(
+        "getFreelanceAppliedMissions: Aucun mission_id valide trouvé",
+      );
+      return [];
+    }
+
+    // Supabase peut avoir des limites sur .in(), donc on traite par lots si nécessaire
+    // Limite pratique: 1000 éléments par requête
+    const BATCH_SIZE = 1000;
+    const allMissions: Mission[] = [];
+
+    for (let i = 0; i < missionIds.length; i += BATCH_SIZE) {
+      const batch = missionIds.slice(i, i + BATCH_SIZE);
+
+      const { data: missions, error: missionsError } = await supabase
+        .from("missions")
+        .select("*")
+        .in("id", batch)
+        .order("created_at", { ascending: false });
+
+      if (missionsError) {
+        console.error(
+          `Erreur lors de la récupération des missions (lot ${i / BATCH_SIZE + 1}):`,
+          missionsError,
+        );
+        // Continuer avec les autres lots même en cas d'erreur
+        continue;
+      }
+
+      if (missions && missions.length > 0) {
+        allMissions.push(...missions);
+      }
+    }
+
+    // Trier toutes les missions par date de création décroissante
+    allMissions.sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    console.log(
+      "getFreelanceAppliedMissions: Nombre total de missions récupérées:",
+      allMissions.length,
+    );
+
+    return allMissions;
+  } catch (err) {
     console.error(
-      "Erreur lors de la récupération des missions publiées:",
-      err
+      "Erreur lors de la récupération des missions du freelance:",
+      err,
     );
     return [];
   }
@@ -225,7 +346,7 @@ export async function getPublishedMissions(): Promise<Mission[]> {
  */
 export async function updateMission(
   missionId: string,
-  params: UpdateMissionParams
+  params: UpdateMissionParams,
 ): Promise<{
   success: boolean;
   error?: string;
@@ -337,7 +458,7 @@ export async function deleteMission(missionId: string): Promise<{
  */
 export async function uploadMissionImage(
   missionId: string,
-  file: File
+  file: File,
 ): Promise<{
   success: boolean;
   error?: string;
@@ -373,7 +494,7 @@ export async function uploadMissionImage(
       file,
       oldImagePath,
       "mission-images",
-      `missions/${user.id}`
+      `missions/${user.id}`,
     );
 
     if (!uploadResult.success) {
@@ -437,4 +558,3 @@ export async function closeMission(missionId: string): Promise<{
 }> {
   return updateMission(missionId, { status: "closed" });
 }
-

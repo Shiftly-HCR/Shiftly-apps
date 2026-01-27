@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getPublishedMissions,
   getRecruiterMissions,
+  getFreelanceAppliedMissions,
   getMissionById,
   createMission,
   updateMission,
@@ -32,6 +33,17 @@ export function useRecruiterMissions() {
   return useQuery({
     queryKey: ["missions", "recruiter"],
     queryFn: getRecruiterMissions,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook pour récupérer les missions pour lesquelles le freelance a postulé
+ */
+export function useFreelanceAppliedMissions() {
+  return useQuery({
+    queryKey: ["missions", "freelance", "applied"],
+    queryFn: getFreelanceAppliedMissions,
     staleTime: 2 * 60 * 1000,
   });
 }

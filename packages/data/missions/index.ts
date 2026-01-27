@@ -3,6 +3,7 @@ export {
   getMissionById,
   getRecruiterMissions,
   getPublishedMissions,
+  getFreelanceAppliedMissions,
   updateMission,
   deleteMission,
   uploadMissionImage,
