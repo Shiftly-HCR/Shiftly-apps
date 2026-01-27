@@ -1,5 +1,6 @@
 import { createTamagui, createTokens } from "tamagui";
 import { getDefaultTamaguiConfig } from "@tamagui/config-default";
+import { createInterFont } from "@tamagui/font-inter";
 import {
   shiftlyLight,
   shiftlyDark,
@@ -80,11 +81,21 @@ const tokens = createTokens({
 });
 
 const configDefault = getDefaultTamaguiConfig();
+const interFont = createInterFont();
 
 export const config = createTamagui({
   ...configDefault,
   themeClassNameOnRoot: true,
   defaultTheme: "light",
+  fonts: {
+    ...configDefault.fonts,
+    heading: interFont,
+    body: interFont,
+  },
+  settings: {
+    ...configDefault.settings,
+    defaultFont: "body",
+  },
   tokens,
   themes: {
     light: shiftlyLight,
