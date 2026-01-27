@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { YStack } from "tamagui";
 import { useRouter } from "next/navigation";
 import { PageLoading } from "@/components";

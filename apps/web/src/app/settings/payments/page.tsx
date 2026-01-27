@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+export const dynamic = "force-dynamic";
+
+import { useEffect, Suspense } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
 import { useSearchParams, useRouter } from "next/navigation";
 import { colors, Button } from "@shiftly/ui";
@@ -15,7 +17,7 @@ import {
   FiLoader,
 } from "react-icons/fi";
 
-export default function PaymentsSettingsPage() {
+function PaymentsSettingsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
@@ -437,6 +439,14 @@ export default function PaymentsSettingsPage() {
         </YStack>
       </ScrollView>
     </AppLayout>
+  );
+}
+
+export default function PaymentsSettingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <PaymentsSettingsPageContent />
+    </Suspense>
   );
 }
 
