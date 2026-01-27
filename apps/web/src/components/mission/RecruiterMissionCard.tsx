@@ -1,9 +1,10 @@
 "use client";
 
-import { YStack } from "tamagui";
-import { MissionCard } from "@shiftly/ui";
+import { YStack, XStack } from "tamagui";
+import { MissionCard, Button } from "@shiftly/ui";
 import { StatusBadge } from "@/components";
 import { colors } from "@shiftly/ui";
+import { Trash2 } from "lucide-react";
 import type { Mission } from "@shiftly/data";
 
 interface RecruiterMissionCardProps {
@@ -11,6 +12,7 @@ interface RecruiterMissionCardProps {
   onPress: () => void;
   onEdit: () => void;
   onManageCandidates: () => void;
+  onDelete: () => void;
 }
 
 export function RecruiterMissionCard({
@@ -18,6 +20,7 @@ export function RecruiterMissionCard({
   onPress,
   onEdit,
   onManageCandidates,
+  onDelete,
 }: RecruiterMissionCardProps) {
   const getStatusLabel = (status?: string) => {
     switch (status) {
@@ -72,6 +75,28 @@ export function RecruiterMissionCard({
         label={getStatusLabel(mission.status)}
         backgroundColor={getStatusColor(mission.status)}
       />
+
+      {/* Bouton de suppression */}
+      <XStack
+        position="absolute"
+        top="$2"
+        right="$2"
+        zIndex={10}
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          circular
+          backgroundColor="rgba(255, 255, 255, 0.95)"
+          borderColor="#EF4444"
+          onPress={(e: any) => {
+            e?.stopPropagation();
+            onDelete();
+          }}
+        >
+          <Trash2 size={16} color="#EF4444" />
+        </Button>
+      </XStack>
     </YStack>
   );
 }
