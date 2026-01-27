@@ -1,7 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo run build --filter=@shiftly/web",
-  "installCommand": "pnpm install --no-frozen-lockfile",
-  "framework": null,
-  "rootDirectory": "apps/web"
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=@shiftly/web",
+  "installCommand": "pnpm install --no-frozen-lockfile"
 }
