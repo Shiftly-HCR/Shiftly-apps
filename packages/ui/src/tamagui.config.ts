@@ -1,5 +1,5 @@
 import { createTamagui, createTokens } from "tamagui";
-import { config as configDefault } from "@tamagui/config-default";
+import { getDefaultTamaguiConfig } from "@tamagui/config-default";
 import {
   shiftlyLight,
   shiftlyDark,
@@ -78,6 +78,8 @@ const tokens = createTokens({
     1000: 1000,
   },
 });
+
+const configDefault = getDefaultTamaguiConfig();
 
 export const config = createTamagui({
   ...configDefault,
