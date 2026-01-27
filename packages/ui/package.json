@@ -12,8 +12,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tamagui-build",
-    "watch": "tamagui-build --watch"
+    "build": "tamagui-build --config ./src/tamagui.config.ts",
+    "watch": "tamagui-build --config ./src/tamagui.config.ts --watch"
   },
   "dependencies": {
     "@tamagui/animations-react-native": "^1.135.3",
