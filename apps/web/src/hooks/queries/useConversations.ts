@@ -31,7 +31,7 @@ export function useUserConversations() {
 /**
  * Hook pour supprimer une conversation
  */
-export function useDeleteConversation() {
+export function useDeleteConversationMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
