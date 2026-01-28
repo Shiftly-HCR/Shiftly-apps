@@ -287,7 +287,7 @@ export function ConversationView({
                       Paiement reçu ! 🎉
                     </Text>
                     <Text fontSize={12} color={colors.green600 || "#059669"}>
-                      {formatAmount(paymentInfo.freelancerAmount)} ont été versés
+                      {formatAmount(paymentInfo.freelancerAmount ?? null)} ont été versés
                       sur votre compte
                     </Text>
                   </YStack>
@@ -305,8 +305,8 @@ export function ConversationView({
                     </Text>
                     <Text fontSize={12} color={colors.blue600 || "#2563EB"}>
                       Le recruteur a payé la mission. Vous recevrez{" "}
-                      {formatAmount(paymentInfo.freelancerAmount)} à la fin de la
-                      mission.
+                      {formatAmount(paymentInfo.freelancerAmount ?? null)} à la fin
+                      de la mission.
                     </Text>
                   </YStack>
                 </>
