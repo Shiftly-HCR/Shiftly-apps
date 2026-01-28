@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser, signIn, signOut, signUp } from "@shiftly/data";
 import type { User } from "@shiftly/data";
 
+type SessionLike = { access_token?: string } | null;
+
 /**
  * Hook pour récupérer l'utilisateur actuel
  */
@@ -18,10 +20,10 @@ export function useCurrentUser() {
   return {
     ...query,
     user: query.data ?? null,
-    session: null,
+    session: null as SessionLike,
   } as typeof query & {
     user: User | null;
-    session: null;
+    session: SessionLike;
   };
 }
 
