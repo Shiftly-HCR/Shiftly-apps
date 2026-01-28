@@ -82,7 +82,6 @@ function ProgressBar({ duration, color }: { duration: number; color: string }) {
         height="100%"
         backgroundColor={color}
         width={`${progress}%`}
-        animation="quick"
       />
     </YStack>
   );
@@ -145,7 +144,6 @@ export function ShiftlyToast() {
       exitStyle={{ opacity: 0, x: 100 }}
       x={0}
       opacity={1}
-      animation="quick"
       viewportName={currentToast.viewportName}
     >
       <YStack

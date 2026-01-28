@@ -6,7 +6,7 @@ import {
   type SubscriptionPlan,
 } from "./plans";
 
-const STRIPE_API_VERSION: Stripe.LatestApiVersion = "2024-06-20";
+const STRIPE_API_VERSION: Stripe.LatestApiVersion = "2025-02-24.acacia";
 
 let stripeClient: Stripe | null = null;
 

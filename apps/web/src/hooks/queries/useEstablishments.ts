@@ -100,11 +100,7 @@ export function useEstablishment(establishmentId: string | null) {
     queryKey: ["establishments", establishmentId],
     queryFn: async () => {
       if (!establishmentId) return null;
-      const result = await getEstablishmentById(establishmentId);
-      if (result.success && result.establishment) {
-        return result.establishment;
-      }
-      return null;
+      return await getEstablishmentById(establishmentId);
     },
     enabled: !!establishmentId,
     staleTime: 5 * 60 * 1000,

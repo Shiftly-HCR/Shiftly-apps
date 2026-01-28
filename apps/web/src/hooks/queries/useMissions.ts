@@ -61,7 +61,7 @@ export function useRecruiterMissions() {
 export function useFreelanceAppliedMissions() {
   const query = useQuery({
     queryKey: ["missions", "freelance", "applied"],
-    queryFn: getFreelanceAppliedMissions,
+    queryFn: () => getFreelanceAppliedMissions(),
     staleTime: 2 * 60 * 1000,
   });
 

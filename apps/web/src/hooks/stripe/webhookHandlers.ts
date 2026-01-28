@@ -1371,7 +1371,6 @@ export async function handleChargeDisputeCreated(
             transfer.stripe_transfer_id,
             {
               amount: transfer.amount,
-              reason: "dispute",
               metadata: {
                 dispute_id: dispute.id,
                 mission_id: payment.mission_id,

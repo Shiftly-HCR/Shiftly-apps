@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser, signIn, signOut, signUp } from "@shiftly/data";
-import type { User } from "@shiftly/data";
+import type { User } from "@supabase/supabase-js";
 
 type SessionLike = { access_token?: string } | null;
 

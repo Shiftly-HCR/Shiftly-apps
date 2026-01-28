@@ -223,7 +223,9 @@ export async function getFreelanceExperiences(): Promise<
  * Crée ou met à jour une expérience
  */
 export async function upsertFreelanceExperience(
-  experience: Omit<FreelanceExperience, "id" | "created_at" | "updated_at">
+  experience: Omit<FreelanceExperience, "id" | "created_at" | "updated_at"> & {
+    id?: string;
+  }
 ): Promise<{
   success: boolean;
   error?: string;
@@ -367,7 +369,9 @@ export async function getFreelanceEducations(): Promise<FreelanceEducation[]> {
  * Crée ou met à jour une formation
  */
 export async function upsertFreelanceEducation(
-  education: Omit<FreelanceEducation, "id" | "created_at" | "updated_at">
+  education: Omit<FreelanceEducation, "id" | "created_at" | "updated_at"> & {
+    id?: string;
+  }
 ): Promise<{
   success: boolean;
   error?: string;

@@ -28,7 +28,7 @@ export function Header({
       <XStack alignItems="center" gap="$3">
         {showAvatar && (
           <AvatarComponent
-            source={{ uri: avatarUrl }}
+            src={avatarUrl}
             onPress={onAvatarPress}
             size="$3"
           />

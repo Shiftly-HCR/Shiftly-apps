@@ -3,7 +3,7 @@
 import { XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import { ViewToggle, type ViewMode } from "./ViewToggle";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 interface ActiveFiltersProps {
   filters: string[];
@@ -11,7 +11,7 @@ interface ActiveFiltersProps {
   onClearAll: () => void;
   viewToggle?: {
     currentMode: ViewMode;
-    options: Array<{ mode: ViewMode; icon: ReactNode; label?: string }>;
+    options: Array<{ mode: ViewMode; icon: ReactElement; label?: string }>;
     onModeChange: (mode: ViewMode) => void;
   };
 }
@@ -94,4 +94,3 @@ export function ActiveFilters({
     </XStack>
   );
 }
-

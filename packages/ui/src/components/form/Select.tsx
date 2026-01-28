@@ -43,7 +43,7 @@ export const Select = ({
         </Label>
       )}
 
-      <TSelect value={value} onValueChange={onValueChange} disabled={disabled}>
+      <TSelect value={value} onValueChange={onValueChange}>
         <TSelect.Trigger
           backgroundColor="$surface"
           borderRadius="$3"
@@ -53,6 +53,7 @@ export const Select = ({
           paddingVertical={12}
           minHeight={48}
           opacity={disabled ? 0.5 : 1}
+          pointerEvents={disabled ? "none" : "auto"}
           hoverStyle={{
             borderColor: "$primary",
           }}
@@ -81,7 +82,6 @@ export const Select = ({
               </Sheet.ScrollView>
             </Sheet.Frame>
             <Sheet.Overlay
-              animation="lazy"
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
             />
