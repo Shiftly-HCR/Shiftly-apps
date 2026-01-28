@@ -12,6 +12,7 @@ export const colors = {
   whiteViolet: "#FAF8FC", // Blanc avec teinte violette subtile (optionnel)
   gray900: "#2B2B2B",
   gray700: "#6B7280",
+  gray600: "#4B5563",
   gray500: "#9CA3AF",
   gray200: "#E5E5E5",
   gray100: "#EAEAEA",
