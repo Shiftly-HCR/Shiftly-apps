@@ -36,6 +36,7 @@ export const colors = {
   red200: "#FECACA",
   red600: "#DC2626",
   red700: "#B91C1C",
+  purple50: "#F5F3FF",
   black: "#000000",
   backgroundLight: "#F9FAFB",
 };
