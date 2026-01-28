@@ -141,7 +141,7 @@ export function useMissionDetailPage() {
     hasApplied,
     isCheckingApplication,
     updateStatus: (applicationId: string, status: ApplicationStatus) =>
-      updateStatusMutation.mutate({ applicationId, status }),
+      updateStatusMutation.mutateAsync({ applicationId, status }),
     refetchApplications,
     handleApply,
     formatDateShort,
