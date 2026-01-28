@@ -204,8 +204,9 @@ export async function POST(req: NextRequest) {
 
     // Vérifier que l'utilisateur est bien le destinataire
     let isDestination = false;
-    let transferType: "freelancer_payout" | "commercial_commission";
-    let amount: number;
+    let transferType: "freelancer_payout" | "commercial_commission" | null =
+      null;
+    let amount: number | null = null;
 
     if (userProfile.role === "freelance" && finance.freelancer_id === user.id) {
       isDestination = true;
@@ -220,7 +221,7 @@ export async function POST(req: NextRequest) {
       amount = finance.commercial_fee_amount;
     }
 
-    if (!isDestination) {
+    if (!isDestination || !transferType || amount == null) {
       return NextResponse.json(
         { error: "Vous n'êtes pas le destinataire de ce paiement" },
         { status: 403 }
