@@ -256,7 +256,12 @@ export default function EditMissionPage() {
     }
   };
 
-  const handleImageChange = (file: File) => {
+  const handleImageChange = (file: File | null) => {
+    if (!file) {
+      handleImageRemove();
+      return;
+    }
+
     setMissionImage(file);
     // Créer un aperçu
     const reader = new FileReader();
