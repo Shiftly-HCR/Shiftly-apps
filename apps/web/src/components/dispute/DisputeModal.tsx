@@ -84,9 +84,7 @@ export function DisputeModal({
     setError(null);
 
     try {
-      // Envoyer le label lisible au lieu de la valeur enum
-      const reasonLabel = getReasonLabel(selectedReason);
-      await onConfirm(reasonLabel, description);
+      await onConfirm(selectedReason, description);
       // Réinitialiser le formulaire
       setSelectedReason(null);
       setDescription("");
