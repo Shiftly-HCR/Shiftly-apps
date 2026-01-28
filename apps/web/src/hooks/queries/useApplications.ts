@@ -6,8 +6,9 @@ import {
   getApplicationsByMission,
   createApplication,
   checkApplicationExists,
-  type MissionApplication,
   type CreateApplicationParams,
+  type MissionApplicationWithMission,
+  type MissionApplicationWithProfile,
 } from "@shiftly/data";
 import { updateApplicationStatus } from "@shiftly/core";
 import type { ApplicationStatus } from "@shiftly/data";
@@ -26,7 +27,7 @@ export function useUserApplications() {
     ...query,
     applications: query.data ?? [],
   } as typeof query & {
-    applications: MissionApplication[];
+    applications: MissionApplicationWithMission[];
   };
 }
 
@@ -45,7 +46,7 @@ export function useMissionApplications(missionId: string | null) {
     ...query,
     applications: query.data ?? [],
   } as typeof query & {
-    applications: MissionApplication[];
+    applications: MissionApplicationWithProfile[];
   };
 }
 
