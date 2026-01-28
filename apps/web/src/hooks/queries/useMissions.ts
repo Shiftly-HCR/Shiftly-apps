@@ -30,11 +30,20 @@ export function usePublishedMissions() {
  * Hook pour récupérer les missions du recruteur actuel
  */
 export function useRecruiterMissions() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["missions", "recruiter"],
     queryFn: getRecruiterMissions,
     staleTime: 2 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    refresh: async () => {
+      await query.refetch();
+    },
+  } as typeof query & {
+    refresh: () => Promise<void>;
+  };
 }
 
 /**
