@@ -16,7 +16,7 @@ import {
  * Hook pour récupérer tous les établissements de l'utilisateur
  */
 export function useEstablishments() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["establishments", "my"],
     queryFn: async () => {
       const result = await listMyEstablishments();
@@ -29,6 +29,13 @@ export function useEstablishments() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  return {
+    ...query,
+    establishments: query.data ?? [],
+  } as typeof query & {
+    establishments: Establishment[];
+  };
 }
 
 /**
