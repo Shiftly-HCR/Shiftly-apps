@@ -11,12 +11,21 @@ import { colors } from "@shiftly/ui";
  */
 export function useFreelanceMissionsPage() {
   const { data: profile, isLoading: isLoadingProfile } = useCurrentProfile();
-  const { data: appliedMissions = [], isLoading: isLoadingAppliedMissions } = useFreelanceAppliedMissions();
-  const { data: publishedMissions = [], isLoading: isLoadingPublishedMissions } = usePublishedMissions();
+  const {
+    missions: appliedMissions = [],
+    isLoading: isLoadingAppliedMissions,
+  } = useFreelanceAppliedMissions();
+  const {
+    missions: publishedMissions = [],
+    isLoading: isLoadingPublishedMissions,
+  } = usePublishedMissions();
   const isLoading = isLoadingProfile || isLoadingAppliedMissions || isLoadingPublishedMissions;
 
   // Calculer les missions récentes et recommandées depuis le cache
-  const { missions, recommendedMissions } = useMemo(() => {
+  const { missions, recommendedMissions } = useMemo<{
+    missions: Mission[];
+    recommendedMissions: Mission[];
+  }>(() => {
     // Les missions récentes sont celles pour lesquelles le freelance a postulé
     // Trier par date de création décroissante (les plus récentes en premier)
     const recentMissions = appliedMissions.slice(0, 10); // Limiter à 10 missions récentes
@@ -106,4 +115,3 @@ export function useFreelanceMissionsPage() {
     getStatusColor,
   };
 }
-

@@ -58,12 +58,19 @@ export function useCurrentProfile() {
 }
 
 export function useProfile(profileId: string | null) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["profile", profileId],
     queryFn: () => (profileId ? getProfileById(profileId) : null),
     enabled: !!profileId,
     staleTime: 5 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    profile: query.data ?? null,
+  } as typeof query & {
+    profile: Profile | null;
+  };
 }
 
 export function useUpdateProfile() {

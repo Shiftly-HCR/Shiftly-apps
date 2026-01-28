@@ -19,11 +19,18 @@ import {
  * Hook pour récupérer toutes les missions publiées
  */
 export function usePublishedMissions() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["missions", "published"],
     queryFn: getPublishedMissions,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  return {
+    ...query,
+    missions: query.data ?? [],
+  } as typeof query & {
+    missions: Mission[];
+  };
 }
 
 /**
@@ -38,10 +45,12 @@ export function useRecruiterMissions() {
 
   return {
     ...query,
+    missions: query.data ?? [],
     refresh: async () => {
       await query.refetch();
     },
   } as typeof query & {
+    missions: Mission[];
     refresh: () => Promise<void>;
   };
 }
@@ -50,23 +59,37 @@ export function useRecruiterMissions() {
  * Hook pour récupérer les missions pour lesquelles le freelance a postulé
  */
 export function useFreelanceAppliedMissions() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["missions", "freelance", "applied"],
     queryFn: getFreelanceAppliedMissions,
     staleTime: 2 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    missions: query.data ?? [],
+  } as typeof query & {
+    missions: Mission[];
+  };
 }
 
 /**
  * Hook pour récupérer une mission par ID
  */
 export function useMission(missionId: string | null) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["missions", missionId],
     queryFn: () => (missionId ? getMissionById(missionId) : null),
     enabled: !!missionId,
     staleTime: 2 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    mission: query.data ?? null,
+  } as typeof query & {
+    mission: Mission | null;
+  };
 }
 
 /**

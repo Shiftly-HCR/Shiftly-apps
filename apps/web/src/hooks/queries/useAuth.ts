@@ -8,12 +8,21 @@ import type { User } from "@shiftly/data";
  * Hook pour récupérer l'utilisateur actuel
  */
 export function useCurrentUser() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["auth", "user"],
     queryFn: getCurrentUser,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
   });
+
+  return {
+    ...query,
+    user: query.data ?? null,
+    session: null,
+  } as typeof query & {
+    user: User | null;
+    session: null;
+  };
 }
 
 /**
