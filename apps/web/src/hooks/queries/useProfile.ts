@@ -42,11 +42,15 @@ export function useCurrentProfile() {
   return {
     ...query,
     profile: query.data ?? null,
+    refresh: async () => {
+      await query.refetch();
+    },
     isAuthResolved,
     isUnauthenticated,
     isProfileMissing,
   } as typeof query & {
     profile: Profile | null;
+    refresh: () => Promise<void>;
     isAuthResolved: boolean;
     isUnauthenticated: boolean;
     isProfileMissing: boolean;
