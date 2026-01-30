@@ -109,13 +109,13 @@ Les environnements spécifiques (.env.local, .env.production) sont ignorés par 
 ## 🧱 Roadmap Technique
 
 - [x] Monorepo Turborepo + pnpm
-- [ ] Apps Web (Next.js) & Mobile (Expo)
-- [ ] Supabase (Auth + DB + Storage)
-- [ ] Stripe Connect (paiements Premium & commissions)
-- [ ] Chat Realtime (Supabase + LiveKit)
+- [x] Apps Web (Next.js) & Mobile (Expo)
+- [x] Supabase (Auth + DB + Storage)
+- [x] Stripe Connect (paiements Premium & commissions)
+- [x] Chat Realtime (Supabase + LiveKit)
 - [ ] Visio intégrée
 - [ ] Analytics & monitoring (PostHog + Sentry)
-- [ ] CI/CD (Vercel + EAS Build)
+- [x] CI/CD (Vercel + EAS Build)
 - [ ] Tests (Vitest / Detox)
 
 ## 👥 Auteurs et contributeurs

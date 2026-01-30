@@ -27,13 +27,11 @@ export function useFreelanceProfilePage() {
   } = useProfile(freelanceId);
 
   // Charger les données freelance (expériences, éducations)
-  const {
-    data: freelanceData,
-    isLoading: isLoadingFreelanceData,
-  } = useFreelanceData(freelanceId);
+  const freelanceData = useFreelanceData(freelanceId);
+  const { isLoading: isLoadingFreelanceData } = freelanceData;
 
   // Profil de l'utilisateur actuel
-  const { data: currentProfile } = useCurrentProfile();
+  const { profile: currentProfile } = useCurrentProfile();
   
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
@@ -45,8 +43,8 @@ export function useFreelanceProfilePage() {
   return {
     freelanceId,
     profile: profile || null,
-    experiences: freelanceData?.experiences || [],
-    educations: freelanceData?.educations || [],
+    experiences: freelanceData.experiences || [],
+    educations: freelanceData.educations || [],
     currentProfile: currentProfile || null,
     activeTab,
     setActiveTab,
@@ -55,4 +53,3 @@ export function useFreelanceProfilePage() {
     profileError,
   };
 }
-

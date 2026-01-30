@@ -102,11 +102,16 @@ export function AllEstablishmentsList() {
                   <Briefcase size={14} color={colors.gray500} />
                   <Text fontSize={12} color={colors.gray500}>
                     Créé le{" "}
-                    {new Date(establishment.created_at).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                    {establishment.created_at
+                      ? new Date(establishment.created_at).toLocaleDateString(
+                          "fr-FR",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }
+                        )
+                      : "-"}
                   </Text>
                 </XStack>
               </XStack>
@@ -117,4 +122,3 @@ export function AllEstablishmentsList() {
     </YStack>
   );
 }
-

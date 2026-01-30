@@ -14,6 +14,7 @@ export function useLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleLogin = async () => {
     setError("");
@@ -31,6 +32,9 @@ export function useLoginPage() {
         return;
       }
 
+      // Marquer comme en cours de redirection
+      setIsRedirecting(true);
+
       // React Query invalide automatiquement le cache via onSuccess
       // Rediriger vers la page d'accueil
       router.push("/home");
@@ -47,7 +51,7 @@ export function useLoginPage() {
     setPassword,
     // États généraux
     error,
-    isLoading: signInMutation.isPending,
+    isLoading: signInMutation.isPending || isRedirecting,
     // Handlers
     handleLogin,
   };

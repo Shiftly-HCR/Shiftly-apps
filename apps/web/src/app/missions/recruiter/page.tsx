@@ -17,6 +17,7 @@ export default function RecruiterMissionsPage() {
     handleMissionClick,
     handleEditMission,
     handleManageCandidates,
+    handleDeleteMission,
   } = useRecruiterMissionsPage();
 
   if (isLoading) {
@@ -43,6 +44,7 @@ export default function RecruiterMissionsPage() {
             onMissionClick={handleMissionClick}
             onEditMission={handleEditMission}
             onManageCandidates={handleManageCandidates}
+            onDeleteMission={handleDeleteMission}
           />
         </YStack>
       </ScrollView>

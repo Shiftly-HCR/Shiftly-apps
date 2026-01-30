@@ -20,10 +20,10 @@ export function ChatBubble({
         bg={isMe ? "$violet9" : "$gray3"}
         padding="$3"
         borderRadius="$4"
-        brtl={isMe ? "$1" : "$4"}
-        brtr={isMe ? "$4" : "$1"}
-        brbl={isMe ? "$4" : "$1"}
-        brbr={isMe ? "$1" : "$4"}
+        borderTopLeftRadius={isMe ? "$1" : "$4"}
+        borderTopRightRadius={isMe ? "$4" : "$1"}
+        borderBottomLeftRadius={isMe ? "$4" : "$1"}
+        borderBottomRightRadius={isMe ? "$1" : "$4"}
       >
         {!isMe && senderName && (
           <Paragraph size="$2" fontWeight="600" marginBottom="$1" color="$gray11">

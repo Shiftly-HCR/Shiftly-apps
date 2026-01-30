@@ -76,6 +76,11 @@ export function ConversationView({
     }).format(amountInCents / 100);
   };
 
+  // Vérifier si la mission est une mission "Contact direct" (factice)
+  const isDirectConversationMission =
+    conversation?.mission?.title?.startsWith("Contact direct -") ||
+    conversation?.mission?.title?.startsWith("Conversation directe");
+
   return (
     <YStack flex={1} backgroundColor={colors.white}>
       {/* En-tête de la conversation */}
@@ -102,8 +107,8 @@ export function ConversationView({
         </XStack>
       </YStack>
 
-      {/* Bandeau de paiement (visible uniquement pour le recruteur) */}
-      {isRecruiter && paymentInfo && (
+      {/* Bandeau de paiement (visible uniquement pour le recruteur et si ce n'est pas une mission "Contact direct") */}
+      {isRecruiter && paymentInfo && !isDirectConversationMission && (
         <YStack
           padding="$3"
           backgroundColor={
@@ -254,9 +259,10 @@ export function ConversationView({
         </YStack>
       )}
 
-      {/* Bandeau de paiement (visible pour le freelance) */}
+      {/* Bandeau de paiement (visible pour le freelance et si ce n'est pas une mission "Contact direct") */}
       {isFreelance &&
         paymentInfo &&
+        !isDirectConversationMission &&
         (paymentInfo.status === "received" || paymentInfo.status === "distributed") && (
           <YStack
             padding="$3"
@@ -281,7 +287,7 @@ export function ConversationView({
                       Paiement reçu ! 🎉
                     </Text>
                     <Text fontSize={12} color={colors.green600 || "#059669"}>
-                      {formatAmount(paymentInfo.freelancerAmount)} ont été versés
+                      {formatAmount(paymentInfo.freelancerAmount ?? null)} ont été versés
                       sur votre compte
                     </Text>
                   </YStack>
@@ -299,8 +305,8 @@ export function ConversationView({
                     </Text>
                     <Text fontSize={12} color={colors.blue600 || "#2563EB"}>
                       Le recruteur a payé la mission. Vous recevrez{" "}
-                      {formatAmount(paymentInfo.freelancerAmount)} à la fin de la
-                      mission.
+                      {formatAmount(paymentInfo.freelancerAmount ?? null)} à la fin
+                      de la mission.
                     </Text>
                   </YStack>
                 </>

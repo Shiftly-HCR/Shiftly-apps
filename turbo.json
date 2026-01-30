@@ -6,7 +6,25 @@
       "persistent": true
     },
     "build": {
-      "outputs": [".next/**", "dist/**", "build/**", "web-build/**"]
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**", "build/**", "web-build/**"],
+      "env": [
+        "SUPABASE_SERVICE_ROLE",
+        "STRIPE_PUBLIC_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "STRIPE_CONNECT_RETURN_URL",
+        "STRIPE_CONNECT_REFRESH_URL",
+        "STRIPE_CHECKOUT_SUCCESS_URL",
+        "STRIPE_CHECKOUT_CANCEL_URL",
+        "STRIPE_PRICE_ESTABLISHMENT",
+        "STRIPE_PRICE_FREELANCE_STUDENT",
+        "STRIPE_PRICE_FREELANCE_CLASSIC",
+        "STRIPE_PRICE_ESTABLISHMENT_ANNUAL",
+        "STRIPE_PRICE_FREELANCE_STUDENT_ANNUAL",
+        "STRIPE_PRICE_FREELANCE_CLASSIC_ANNUAL",
+        "CRON_SECRET"
+      ]
     },
     "lint": {},
     "typecheck": {

@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import type { Mission } from "@shiftly/data";
-import { useCurrentProfile, usePublishedMissions } from "@/hooks";
+import { useCurrentProfile, usePublishedMissions, useFreelanceAppliedMissions } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 /**
@@ -11,21 +11,30 @@ import { colors } from "@shiftly/ui";
  */
 export function useFreelanceMissionsPage() {
   const { data: profile, isLoading: isLoadingProfile } = useCurrentProfile();
-  const { data: publishedMissions = [], isLoading: isLoadingMissions } = usePublishedMissions();
-  const isLoading = isLoadingProfile || isLoadingMissions;
+  const {
+    missions: appliedMissions = [],
+    isLoading: isLoadingAppliedMissions,
+  } = useFreelanceAppliedMissions();
+  const {
+    missions: publishedMissions = [],
+    isLoading: isLoadingPublishedMissions,
+  } = usePublishedMissions();
+  const isLoading = isLoadingProfile || isLoadingAppliedMissions || isLoadingPublishedMissions;
 
   // Calculer les missions récentes et recommandées depuis le cache
-  const { missions, recommendedMissions } = useMemo(() => {
-    // Simuler des missions récentes pour le freelance
-    // En production, il faudrait une table de candidatures
-    // Prendre seulement 2 missions pour les missions récentes pour laisser de la place aux recommandations
-    const recentMissions = publishedMissions.slice(0, 2);
+  const { missions, recommendedMissions } = useMemo<{
+    missions: Mission[];
+    recommendedMissions: Mission[];
+  }>(() => {
+    // Les missions récentes sont celles pour lesquelles le freelance a postulé
+    // Trier par date de création décroissante (les plus récentes en premier)
+    const recentMissions = appliedMissions.slice(0, 10); // Limiter à 10 missions récentes
 
-    // Prendre les missions suivantes comme recommandations (sauf celles déjà affichées)
+    // Prendre les missions publiées comme recommandations (sauf celles déjà affichées)
     // Filtrer les missions déjà affichées et prendre jusqu'à 3 missions recommandées
-    const recentMissionIds = new Set(recentMissions.map((m) => m.id));
+    const appliedMissionIds = new Set(appliedMissions.map((m) => m.id));
     let recommended = publishedMissions
-      .filter((m) => !recentMissionIds.has(m.id))
+      .filter((m) => !appliedMissionIds.has(m.id))
       .slice(0, 3);
 
     // Si aucune mission recommandée n'est disponible (toutes sont dans les missions récentes),
@@ -38,7 +47,7 @@ export function useFreelanceMissionsPage() {
       missions: recentMissions,
       recommendedMissions: recommended,
     };
-  }, [publishedMissions]);
+  }, [appliedMissions, publishedMissions]);
 
   const getFullName = useCallback(() => {
     if (!profile) return "Utilisateur";
@@ -106,4 +115,3 @@ export function useFreelanceMissionsPage() {
     getStatusColor,
   };
 }
-

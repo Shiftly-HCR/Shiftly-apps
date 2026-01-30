@@ -1,6 +1,7 @@
 "use client";
 
-import { YStack, XStack, Text, Button } from "tamagui";
+import { YStack, XStack, Text } from "tamagui";
+import { Button } from "@shiftly/ui";
 import { MessageCircle } from "lucide-react";
 import { ChatThread, MessageInput } from "@/components";
 
@@ -142,4 +143,3 @@ export function MissionChatSection({
     </YStack>
   );
 }
-

@@ -37,6 +37,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
+  const handleNavigation = (path: string) => {
+    // Si on est sur la page profile et qu'on navigue ailleurs, forcer un rechargement
+    // pour éviter les problèmes de navigation bloquée
+    if (typeof window !== "undefined" && window.location.pathname === "/profile" && path !== "/profile") {
+      window.location.href = path;
+    } else {
+      router.push(path);
+    }
+  };
+
   return (
     <YStack flex={1} minHeight="100vh" backgroundColor="#F9FAFB">
       <Navbar
@@ -50,30 +60,30 @@ export function AppLayout({ children }: AppLayoutProps) {
         }
         userAvatar={profile?.photo_url || ""}
         userRole={profile?.role}
-        onHomeClick={() => router.push("/home")}
-        onProfileClick={() => router.push("/profile")}
-        onMissionsClick={() => router.push("/missions")}
-        onSubscriptionClick={() => router.push("/subscription")}
-        onFreelanceClick={() => router.push("/freelance")}
-        onMessagingClick={() => router.push("/messagerie")}
-        onCommercialClick={() => router.push("/commercial")}
-        onPaymentsClick={() => router.push("/payments")}
-        onAdminDisputesClick={() => router.push("/admin/disputes")}
-        onAdminDashboardClick={() => router.push("/admin/dashboard")}
+        onHomeClick={() => handleNavigation("/home")}
+        onProfileClick={() => handleNavigation("/profile")}
+        onMissionsClick={() => handleNavigation("/missions")}
+        onSubscriptionClick={() => handleNavigation("/subscription")}
+        onFreelanceClick={() => handleNavigation("/freelance")}
+        onMessagingClick={() => handleNavigation("/messagerie")}
+        onCommercialClick={() => handleNavigation("/commercial")}
+        onPaymentsClick={() => handleNavigation("/payments")}
+        onAdminDisputesClick={() => handleNavigation("/admin/disputes")}
+        onAdminDashboardClick={() => handleNavigation("/admin/dashboard")}
         onLogoutClick={handleLogout}
       />
       <YStack flex={1}>{children}</YStack>
       <Footer
-        onHomeClick={() => router.push("/home")}
-        onMissionsClick={() => router.push("/missions")}
-        onProfileClick={() => router.push("/profile")}
-        onSubscriptionClick={() => router.push("/subscription")}
-        onHelpClick={() => router.push("/help")}
-        onContactClick={() => router.push("/contact")}
-        onFaqClick={() => router.push("/faq")}
-        onTermsClick={() => router.push("/terms")}
-        onPrivacyClick={() => router.push("/privacy")}
-        onLegalClick={() => router.push("/legal")}
+        onHomeClick={() => handleNavigation("/home")}
+        onMissionsClick={() => handleNavigation("/missions")}
+        onProfileClick={() => handleNavigation("/profile")}
+        onSubscriptionClick={() => handleNavigation("/subscription")}
+        onHelpClick={() => handleNavigation("/help")}
+        onContactClick={() => handleNavigation("/contact")}
+        onFaqClick={() => handleNavigation("/faq")}
+        onTermsClick={() => handleNavigation("/terms")}
+        onPrivacyClick={() => handleNavigation("/privacy")}
+        onLegalClick={() => handleNavigation("/legal")}
       />
     </YStack>
   );

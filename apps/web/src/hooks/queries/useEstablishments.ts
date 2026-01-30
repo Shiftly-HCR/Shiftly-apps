@@ -16,7 +16,7 @@ import {
  * Hook pour récupérer tous les établissements de l'utilisateur
  */
 export function useEstablishments() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["establishments", "my"],
     queryFn: async () => {
       const result = await listMyEstablishments();
@@ -29,13 +29,20 @@ export function useEstablishments() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  return {
+    ...query,
+    establishments: query.data ?? [],
+  } as typeof query & {
+    establishments: Establishment[];
+  };
 }
 
 /**
  * Hook pour récupérer tous les établissements (pour les commerciaux)
  */
 export function useAllEstablishments() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["establishments", "all"],
     queryFn: async () => {
       const result = await listAllEstablishments();
@@ -49,13 +56,20 @@ export function useAllEstablishments() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
+
+  return {
+    ...query,
+    establishments: query.data ?? [],
+  } as typeof query & {
+    establishments: Establishment[];
+  };
 }
 
 /**
  * Hook pour récupérer les établissements du commercial courant
  */
 export function useMyCommercialEstablishments() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["establishments", "my-commercial"],
     queryFn: async () => {
       const result = await listMyCommercialEstablishments();
@@ -69,25 +83,35 @@ export function useMyCommercialEstablishments() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
+
+  return {
+    ...query,
+    establishments: query.data ?? [],
+  } as typeof query & {
+    establishments: Establishment[];
+  };
 }
 
 /**
  * Hook pour récupérer un établissement par ID
  */
 export function useEstablishment(establishmentId: string | null) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["establishments", establishmentId],
     queryFn: async () => {
       if (!establishmentId) return null;
-      const result = await getEstablishmentById(establishmentId);
-      if (result.success && result.establishment) {
-        return result.establishment;
-      }
-      return null;
+      return await getEstablishmentById(establishmentId);
     },
     enabled: !!establishmentId,
     staleTime: 5 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    establishment: query.data ?? null,
+  } as typeof query & {
+    establishment: Establishment | null;
+  };
 }
 
 /**

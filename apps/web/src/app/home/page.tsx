@@ -1,7 +1,6 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
+import { useEffect } from "react";
 import { YStack, XStack, ScrollView } from "tamagui";
 import { MissionFilters } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
@@ -15,10 +14,12 @@ import {
   MissionMapView,
 } from "@/components";
 import { useHomePage } from "@/hooks";
+import { useCurrentProfile } from "@/hooks/queries";
 import type { ViewMode } from "@/components/ui/ViewToggle";
 
 export default function HomePage() {
   const router = useRouter();
+  const { data: profile, isLoading: isLoadingProfile, isAuthResolved } = useCurrentProfile();
   const {
     isLoading,
     viewMode,
@@ -34,7 +35,15 @@ export default function HomePage() {
     handleMissionClick,
   } = useHomePage();
 
-  if (isLoading) {
+  // Rediriger les recruteurs vers la page freelance
+  useEffect(() => {
+    if (isAuthResolved && profile?.role === "recruiter") {
+      router.replace("/freelance");
+    }
+  }, [profile?.role, isAuthResolved, router]);
+
+  // Afficher un loader pendant le chargement du profil ou si on est recruteur (en attente de redirection)
+  if (isLoading || isLoadingProfile || !isAuthResolved || profile?.role === "recruiter") {
     return <PageLoading />;
   }
 

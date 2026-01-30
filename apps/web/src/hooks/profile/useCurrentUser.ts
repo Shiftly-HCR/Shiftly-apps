@@ -1,7 +1,7 @@
 "use client";
 
 import { useCurrentUser as useCurrentUserQuery } from "@/hooks/queries";
-import type { User } from "@shiftly/data";
+import type { User } from "@supabase/supabase-js";
 
 /**
  * Hook pour accéder à l'utilisateur Supabase
@@ -22,4 +22,3 @@ export function useCurrentUser(): {
     error: error?.message || null,
   };
 }
-

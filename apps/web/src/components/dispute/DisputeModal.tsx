@@ -84,9 +84,7 @@ export function DisputeModal({
     setError(null);
 
     try {
-      // Envoyer le label lisible au lieu de la valeur enum
-      const reasonLabel = getReasonLabel(selectedReason);
-      await onConfirm(reasonLabel, description);
+      await onConfirm(selectedReason, description);
       // Réinitialiser le formulaire
       setSelectedReason(null);
       setDescription("");
@@ -104,7 +102,7 @@ export function DisputeModal({
     <>
       {/* Overlay */}
       <YStack
-        position="fixed"
+        position="absolute"
         top={0}
         left={0}
         right={0}
@@ -116,7 +114,7 @@ export function DisputeModal({
 
       {/* Dialog */}
       <YStack
-        position="fixed"
+        position="absolute"
         top="50%"
         left="50%"
         transform="translate(-50%, -50%)"

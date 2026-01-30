@@ -161,7 +161,7 @@ export const MissionDetailCard = ({
             </Text>
             <XStack gap="$2" flexWrap="wrap">
               {skills.map((skill, index) => (
-                <Badge key={index} variant="outline">
+                <Badge key={index} variant="default">
                   {skill}
                 </Badge>
               ))}

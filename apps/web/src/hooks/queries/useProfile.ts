@@ -41,10 +41,16 @@ export function useCurrentProfile() {
 
   return {
     ...query,
+    profile: query.data ?? null,
+    refresh: async () => {
+      await query.refetch();
+    },
     isAuthResolved,
     isUnauthenticated,
     isProfileMissing,
   } as typeof query & {
+    profile: Profile | null;
+    refresh: () => Promise<void>;
     isAuthResolved: boolean;
     isUnauthenticated: boolean;
     isProfileMissing: boolean;
@@ -52,12 +58,19 @@ export function useCurrentProfile() {
 }
 
 export function useProfile(profileId: string | null) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["profile", profileId],
     queryFn: () => (profileId ? getProfileById(profileId) : null),
     enabled: !!profileId,
     staleTime: 5 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    profile: query.data ?? null,
+  } as typeof query & {
+    profile: Profile | null;
+  };
 }
 
 export function useUpdateProfile() {

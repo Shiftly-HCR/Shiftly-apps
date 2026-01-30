@@ -125,7 +125,7 @@ export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
 
   return (...args: Parameters<T>) => {
     if (timeout) {
@@ -137,4 +137,3 @@ export function debounce<T extends (...args: any[]) => any>(
     }, delay);
   };
 }
-

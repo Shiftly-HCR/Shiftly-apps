@@ -7,7 +7,11 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@shiftly/data";
 
-export type ConnectOnboardingStatus = "not_started" | "pending" | "complete";
+export type ConnectOnboardingStatus =
+  | "not_started"
+  | "pending"
+  | "complete"
+  | "restricted";
 
 export interface ConnectStatus {
   stripeAccountId: string | null;
@@ -19,10 +23,15 @@ export interface ConnectStatus {
 
 export interface UseConnectOnboardingReturn {
   status: ConnectStatus | null;
+  connectStatus: ConnectStatus | null;
   isLoading: boolean;
+  isCreatingAccount: boolean;
+  isCreatingLink: boolean;
   error: string | null;
   refreshStatus: () => Promise<void>;
+  fetchConnectStatus: () => Promise<void>;
   startOnboarding: () => Promise<string | null>;
+  continueOnboarding: () => Promise<string | null>;
 }
 
 /**
@@ -134,9 +143,14 @@ export function useConnectOnboarding(): UseConnectOnboardingReturn {
 
   return {
     status,
+    connectStatus: status,
     isLoading,
+    isCreatingAccount: isLoading,
+    isCreatingLink: isLoading,
     error,
     refreshStatus,
+    fetchConnectStatus: refreshStatus,
     startOnboarding,
+    continueOnboarding: startOnboarding,
   };
 }

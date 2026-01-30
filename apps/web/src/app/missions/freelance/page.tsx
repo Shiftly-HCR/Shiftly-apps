@@ -143,12 +143,18 @@ export default function FreelanceMissionsPage() {
 
               {/* Statistiques rapides */}
               <PageSection title="Statistiques rapides">
+                {profile?.id && (
+                  <Text fontSize={14} color={colors.gray600} marginBottom="$2">
+                    ID: {profile.id}
+                  </Text>
+                )}
+
                 <XStack gap="$4" flexWrap="wrap">
                   <StatisticsCard
                     label="Missions actives"
                     value={
                       missions.filter(
-                        (m) => getMissionStatus(m) === "in_progress"
+                        (m) => getMissionStatus(m) === "in_progress",
                       ).length
                     }
                     minWidth={180}
@@ -164,6 +170,12 @@ export default function FreelanceMissionsPage() {
                     value="80%"
                     minWidth={180}
                   />
+                </XStack>
+              </PageSection>
+
+              <PageSection title="Suivi de missions">
+                <XStack>
+                  <Text> Mission en cours</Text>
                 </XStack>
               </PageSection>
             </YStack>
@@ -187,16 +199,16 @@ export default function FreelanceMissionsPage() {
 
                         if (mission.start_date && mission.end_date) {
                           const start = new Date(
-                            mission.start_date
+                            mission.start_date,
                           ).toLocaleDateString("fr-FR", formatOptions);
                           const end = new Date(
-                            mission.end_date
+                            mission.end_date,
                           ).toLocaleDateString("fr-FR", formatOptions);
                           return `Du ${start} au ${end}`;
                         }
                         if (mission.start_date) {
                           const start = new Date(
-                            mission.start_date
+                            mission.start_date,
                           ).toLocaleDateString("fr-FR", formatOptions);
                           return `Le ${start}`;
                         }
