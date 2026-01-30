@@ -19,6 +19,15 @@
     "clean": "turbo run clean && rimraf node_modules .turbo",
     "format": "prettier --write ."
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "@tailwindcss/oxide",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  },
   "devDependencies": {
     "eslint": "^9.37.0",
     "prettier": "^3.6.2",

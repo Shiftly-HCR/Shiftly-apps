@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";

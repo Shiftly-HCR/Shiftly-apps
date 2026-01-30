@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { YStack, XStack, Text } from "tamagui";
 import { Button, Input, RadioGroup, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";

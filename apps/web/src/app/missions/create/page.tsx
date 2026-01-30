@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { AppLayout } from "@/components";
@@ -10,7 +13,7 @@ import {
 import { useCreateMissionPage } from "@/hooks";
 import { useSearchParams } from "next/navigation";
 
-export default function CreateMissionPage() {
+function CreateMissionPageContent() {
   const searchParams = useSearchParams();
   const establishmentId = searchParams.get("establishment") || undefined;
 
@@ -202,5 +205,13 @@ export default function CreateMissionPage() {
         </YStack>
       </ScrollView>
     </AppLayout>
+  );
+}
+
+export default function CreateMissionPage() {
+  return (
+    <Suspense fallback={null}>
+      <CreateMissionPageContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+export const dynamic = "force-dynamic";
+
+import { useState, useEffect, Suspense } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
 import { X } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -50,7 +52,7 @@ const faqItems = [
   },
 ];
 
-export default function SubscriptionPage() {
+function SubscriptionPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -72,7 +74,7 @@ export default function SubscriptionPage() {
     error: cancelError,
   } = useCancelSubscription();
   const [loadingPlanId, setLoadingPlanId] = useState<SubscriptionPlanId | null>(
-    null
+    null,
   );
   const [error, setError] = useState<string | null>(null);
   const [hasProcessedPayment, setHasProcessedPayment] = useState(false);
@@ -109,7 +111,7 @@ export default function SubscriptionPage() {
           router.replace(newUrl.pathname + newUrl.search);
         } else {
           setError(
-            result.error || "Erreur lors de l'activation de l'abonnement"
+            result.error || "Erreur lors de l'activation de l'abonnement",
           );
         }
       });
@@ -162,7 +164,7 @@ export default function SubscriptionPage() {
         console.error("Erreur HTTP:", response.status, data);
         throw new Error(
           data?.error ||
-            `Erreur ${response.status}: Impossible de démarrer le paiement Stripe`
+            `Erreur ${response.status}: Impossible de démarrer le paiement Stripe`,
         );
       }
 
@@ -178,7 +180,7 @@ export default function SubscriptionPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Une erreur est survenue lors du démarrage du paiement"
+          : "Une erreur est survenue lors du démarrage du paiement",
       );
       setLoadingPlanId(null);
     }
@@ -201,7 +203,7 @@ export default function SubscriptionPage() {
 
   // Obtenir le statut d'abonnement avec label
   const getSubscriptionStatusLabel = (
-    status: string | undefined | null
+    status: string | undefined | null,
   ): string => {
     switch (status) {
       case "active":
@@ -434,7 +436,7 @@ export default function SubscriptionPage() {
                     size="md"
                     onPress={async () => {
                       console.log(
-                        "🔄 Clic sur le bouton 'Gérer mon abonnement'"
+                        "🔄 Clic sur le bouton 'Gérer mon abonnement'",
                       );
                       setError(null);
                       try {
@@ -442,12 +444,12 @@ export default function SubscriptionPage() {
                       } catch (err) {
                         console.error(
                           "❌ Erreur lors de l'ouverture du portail:",
-                          err
+                          err,
                         );
                         setError(
                           err instanceof Error
                             ? err.message
-                            : "Une erreur est survenue lors de l'ouverture du portail"
+                            : "Une erreur est survenue lors de l'ouverture du portail",
                         );
                       }
                     }}
@@ -586,7 +588,7 @@ export default function SubscriptionPage() {
                   size="md"
                   onPress={() => {
                     console.log(
-                      "❌ Annulation de la modal de désabonnement (bouton Annuler)"
+                      "❌ Annulation de la modal de désabonnement (bouton Annuler)",
                     );
                     setShowCancelModal(false);
                   }}
@@ -598,7 +600,7 @@ export default function SubscriptionPage() {
                   size="md"
                   onPress={async () => {
                     console.log(
-                      "✅ Confirmation de l'annulation de l'abonnement"
+                      "✅ Confirmation de l'annulation de l'abonnement",
                     );
                     setShowCancelModal(false);
                     setCancelSuccess(false);
@@ -606,7 +608,7 @@ export default function SubscriptionPage() {
 
                     try {
                       console.log(
-                        "📤 Appel de l'API pour annuler l'abonnement..."
+                        "📤 Appel de l'API pour annuler l'abonnement...",
                       );
                       const result = await cancelSubscription();
                       console.log("📥 Résultat de l'annulation:", result);
@@ -620,7 +622,7 @@ export default function SubscriptionPage() {
                       } else {
                         console.error(
                           "❌ Erreur lors de l'annulation:",
-                          result.error
+                          result.error,
                         );
                         setError(result.error || "Erreur lors de l'annulation");
                       }
@@ -629,7 +631,7 @@ export default function SubscriptionPage() {
                       setError(
                         err instanceof Error
                           ? err.message
-                          : "Une erreur est survenue lors de l'annulation"
+                          : "Une erreur est survenue lors de l'annulation",
                       );
                     }
                   }}
@@ -842,5 +844,13 @@ export default function SubscriptionPage() {
         </YStack>
       </ScrollView>
     </AppLayout>
+  );
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={null}>
+      <SubscriptionPageContent />
+    </Suspense>
   );
 }
