@@ -12,6 +12,7 @@ interface RecruiterMissionsListProps {
   onMissionClick: (missionId: string) => void;
   onEditMission: (missionId: string) => void;
   onManageCandidates: (missionId: string) => void;
+  onDeleteMission: (missionId: string, missionTitle: string) => void;
 }
 
 export function RecruiterMissionsList({
@@ -20,6 +21,7 @@ export function RecruiterMissionsList({
   onMissionClick,
   onEditMission,
   onManageCandidates,
+  onDeleteMission,
 }: RecruiterMissionsListProps) {
   return (
     <PageSection title="Toutes les missions">
@@ -37,6 +39,7 @@ export function RecruiterMissionsList({
             onPress={() => onMissionClick(mission.id)}
             onEdit={() => onEditMission(mission.id)}
             onManageCandidates={() => onManageCandidates(mission.id)}
+            onDelete={() => onDeleteMission(mission.id, mission.title)}
           />
         ))}
       </XStack>

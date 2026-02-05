@@ -70,8 +70,13 @@ export function Navbar({
       return;
     }
 
+    // Par défaut, rediriger selon le rôle si disponible
     if (typeof window !== "undefined") {
-      window.location.href = "/home";
+      if (userRole === "recruiter") {
+        window.location.href = "/freelance";
+      } else {
+        window.location.href = "/";
+      }
     }
   };
 

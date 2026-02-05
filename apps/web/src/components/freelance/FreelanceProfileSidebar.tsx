@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { YStack, XStack, Text } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { FiMessageCircle, FiBookmark, FiDollarSign } from "react-icons/fi";
-import { navigateToMessaging } from "@/utils/chatService";
+import { openConversation } from "@/utils/chatService";
+import { useCurrentProfile } from "@/hooks/queries";
+import { getOrCreateDirectConversationMission } from "@shiftly/data";
 import type { Profile, FreelanceProfile } from "@shiftly/data";
 
 interface FreelanceProfileSidebarProps {
@@ -20,6 +23,8 @@ export function FreelanceProfileSidebar({
   profile,
 }: FreelanceProfileSidebarProps) {
   const router = useRouter();
+  const { data: currentProfile } = useCurrentProfile();
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
 
   return (
     <YStack
@@ -101,14 +106,52 @@ export function FreelanceProfileSidebar({
       <Button
         variant="secondary"
         size="md"
-        onPress={() => {
-          navigateToMessaging(router);
+        onPress={async () => {
+          if (!currentProfile || isCreatingConversation || currentProfile.role !== "recruiter") {
+            return;
+          }
+
+          setIsCreatingConversation(true);
+          try {
+            // Créer ou récupérer une mission "directe" pour cette conversation
+            const missionResult = await getOrCreateDirectConversationMission(
+              currentProfile.id,
+              freelanceId
+            );
+
+            if (!missionResult.success || !missionResult.mission) {
+              console.error("Erreur lors de la création de la mission:", missionResult.error);
+              setIsCreatingConversation(false);
+              return;
+            }
+
+            // Créer ou récupérer la conversation
+            const conversationResult = await openConversation(
+              {
+                missionId: missionResult.mission.id,
+                recruiterId: currentProfile.id,
+                freelanceId: freelanceId,
+              },
+              (conversationId) => {
+                router.push(`/messagerie?conversation=${conversationId}`);
+              }
+            );
+
+            if (!conversationResult.success) {
+              console.error("Erreur lors de la création de la conversation:", conversationResult.error);
+            }
+          } catch (error) {
+            console.error("Erreur lors du démarrage du chat:", error);
+          } finally {
+            setIsCreatingConversation(false);
+          }
         }}
         width="100%"
+        disabled={isCreatingConversation}
       >
         <XStack gap="$2" alignItems="center" justifyContent="center">
           <FiMessageCircle size={18} />
-          <Text>Démarrer un chat</Text>
+          <Text>{isCreatingConversation ? "Création..." : "Démarrer un chat"}</Text>
         </XStack>
       </Button>
     </YStack>

@@ -6,8 +6,9 @@ import {
   getApplicationsByMission,
   createApplication,
   checkApplicationExists,
-  type MissionApplication,
   type CreateApplicationParams,
+  type MissionApplicationWithMission,
+  type MissionApplicationWithProfile,
 } from "@shiftly/data";
 import { updateApplicationStatus } from "@shiftly/core";
 import type { ApplicationStatus } from "@shiftly/data";
@@ -16,30 +17,44 @@ import type { ApplicationStatus } from "@shiftly/data";
  * Hook pour récupérer les candidatures de l'utilisateur actuel
  */
 export function useUserApplications() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["applications", "user"],
     queryFn: () => getApplicationsByUser(),
     staleTime: 1 * 60 * 1000, // 1 minute
   });
+
+  return {
+    ...query,
+    applications: query.data ?? [],
+  } as typeof query & {
+    applications: MissionApplicationWithMission[];
+  };
 }
 
 /**
  * Hook pour récupérer les candidatures d'une mission
  */
 export function useMissionApplications(missionId: string | null) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["applications", "mission", missionId],
     queryFn: () => (missionId ? getApplicationsByMission(missionId) : []),
     enabled: !!missionId,
     staleTime: 1 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    applications: query.data ?? [],
+  } as typeof query & {
+    applications: MissionApplicationWithProfile[];
+  };
 }
 
 /**
  * Hook pour vérifier si l'utilisateur a déjà postulé à une mission
  */
 export function useCheckApplication(missionId: string | null) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["applications", "check", missionId],
     queryFn: async () => {
       if (!missionId) return false;
@@ -52,6 +67,13 @@ export function useCheckApplication(missionId: string | null) {
     enabled: !!missionId,
     staleTime: 1 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    hasApplied: query.data ?? false,
+  } as typeof query & {
+    hasApplied: boolean;
+  };
 }
 
 /**
@@ -86,7 +108,7 @@ export function useApplyToMission() {
 export function useUpdateApplicationStatus() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({
       applicationId,
       status,
@@ -103,4 +125,17 @@ export function useUpdateApplicationStatus() {
       }
     },
   });
+
+  return {
+    ...mutation,
+    updateStatus: async (applicationId: string, status: ApplicationStatus) =>
+      mutation.mutateAsync({ applicationId, status }),
+    isLoading: mutation.isPending,
+  } as typeof mutation & {
+    updateStatus: (
+      applicationId: string,
+      status: ApplicationStatus
+    ) => ReturnType<typeof mutation.mutateAsync>;
+    isLoading: boolean;
+  };
 }

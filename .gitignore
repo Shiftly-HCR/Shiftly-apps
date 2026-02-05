@@ -4,7 +4,6 @@
 
 # Node
 node_modules/
-pnpm-lock.yaml
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -84,8 +83,8 @@ ehthumbs.db
 Icon?
 Desktop.ini
 
-# Lock files (optional – if you don’t want to commit pnpm lock)
-pnpm-lock.yaml
+#vercel
+.vercel
 
 # Vercel
 .vercel

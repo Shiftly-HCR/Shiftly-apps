@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useMission, useCurrentProfile, useApplyToMission as useApplyMutation, useCheckApplication, useMissionApplications as useMissionApplicationsQuery, useUpdateApplicationStatus, useUserApplications } from "@/hooks/queries";
 import { useMissionChat } from "@/hooks";
+import type { ApplicationStatus } from "@shiftly/data";
 
 /**
  * Hook pour gérer la logique de la page de détail d'une mission
@@ -139,11 +140,10 @@ export function useMissionDetailPage() {
     applySuccess: applyMutation.isSuccess,
     hasApplied,
     isCheckingApplication,
-    updateStatus: (applicationId: string, status: "pending" | "accepted" | "rejected") =>
-      updateStatusMutation.mutate({ applicationId, status }),
+    updateStatus: (applicationId: string, status: ApplicationStatus) =>
+      updateStatusMutation.mutateAsync({ applicationId, status }),
     refetchApplications,
     handleApply,
     formatDateShort,
   };
 }
-

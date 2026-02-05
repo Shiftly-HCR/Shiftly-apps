@@ -66,17 +66,21 @@ export function useFreelanceEducations(userId: string | null) {
 /**
  * Hook pour récupérer toutes les données d'un freelance (profil + expériences + formations)
  */
-export function useFreelanceData(userId: string | null) {
+export function useFreelanceData(userId: string | null = null) {
   const profile = useFreelanceProfile(userId);
   const experiences = useFreelanceExperiences(userId);
   const educations = useFreelanceEducations(userId);
 
   return {
     profile: profile.data,
+    freelanceProfile: profile.data,
     experiences: experiences.data || [],
     educations: educations.data || [],
     isLoading: profile.isLoading || experiences.isLoading || educations.isLoading,
     error: profile.error || experiences.error || educations.error,
+    refreshProfile: profile.refetch,
+    refreshExperiences: experiences.refetch,
+    refreshEducations: educations.refetch,
   };
 }
 
@@ -92,7 +96,7 @@ export function useUpdateFreelanceProfile() {
       if (result.success && result.profile) {
         // Mettre à jour le cache
         queryClient.setQueryData(
-          ["freelance", "profile", result.profile.user_id],
+          ["freelance", "profile", result.profile.id],
           result.profile
         );
         // Invalider la liste des freelances

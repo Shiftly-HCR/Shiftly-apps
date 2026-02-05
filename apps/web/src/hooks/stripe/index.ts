@@ -1,8 +1,7 @@
 export * from "./webhookHandlers";
-export * from "./connectWebhookHandlers";
 export * from "./useBillingPortal";
 export * from "./useCancelSubscription";
 export * from "./useConnectOnboarding";
-export * from "./useMissionPayment";
-export * from "./useMissionPaymentInConversation";
-export * from "./useMissionPaymentStatus";
+export { useMissionPayment, useMissionReleaseFunds } from "./useMissionPayment";
+export { useMissionPaymentInConversation } from "./useMissionPaymentInConversation";
+export { useMissionPaymentStatus } from "./useMissionPaymentStatus";

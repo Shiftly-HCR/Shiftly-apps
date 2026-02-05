@@ -52,14 +52,14 @@ export function Footer({
 
   const handleNavigation = (
     callback?: () => void,
-    defaultPath: string
+    defaultPath?: string
   ) => {
     if (callback) {
       callback();
       return;
     }
 
-    if (typeof window !== "undefined") {
+    if (defaultPath && typeof window !== "undefined") {
       window.location.href = defaultPath;
     }
   };
@@ -269,4 +269,3 @@ export function Footer({
     </YStack>
   );
 }
-

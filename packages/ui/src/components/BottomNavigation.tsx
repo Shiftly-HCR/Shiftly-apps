@@ -1,5 +1,6 @@
-import { XStack, Button, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { Home, Briefcase, MessageCircle, User } from "@tamagui/lucide-icons";
+import { Button } from "./Button";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -34,7 +35,7 @@ export function BottomNavigation({
           <Button
             key={tab.id}
             variant="ghost"
-            size="$3"
+            size="md"
             onPress={() => onTabChange(tab.id)}
             alignItems="center"
             justifyContent="center"
@@ -45,8 +46,9 @@ export function BottomNavigation({
             <YStack alignItems="center" gap="$1">
               <Icon size="$1.5" color={isActive ? "$violet10" : "$gray10"} />
               <YStack
-                size="$1"
-                bg={isActive ? "$violet10" : "transparent"}
+                width={6}
+                height={6}
+                backgroundColor={isActive ? "$violet10" : "transparent"}
                 borderRadius="$2"
               />
             </YStack>

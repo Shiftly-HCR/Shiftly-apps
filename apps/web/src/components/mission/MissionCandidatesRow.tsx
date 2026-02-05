@@ -220,7 +220,6 @@ export function MissionCandidatesRow({
               zIndex={1000}
               enterStyle={{ opacity: 0, scale: 0.95 }}
               exitStyle={{ opacity: 0, scale: 0.95 }}
-              animation="quick"
             >
               <YStack minWidth={180}>
                 {availableStatuses.map((status, index) => (
