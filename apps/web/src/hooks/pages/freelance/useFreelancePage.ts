@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { FreelanceProfile } from "@shiftly/data";
 import { usePublishedFreelances } from "@/hooks/queries";
+import { useSearchQuery } from "@/hooks/search";
 import type { FreelanceFiltersState } from "@shiftly/ui";
 
 export const positionOptions = [
@@ -33,6 +34,7 @@ export const locationOptions = [
  */
 export function useFreelancePage() {
   const router = useRouter();
+  const { searchQuery } = useSearchQuery();
   const { data: freelances = [], isLoading, error } = usePublishedFreelances();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<FreelanceFiltersState>({});
@@ -42,9 +44,30 @@ export function useFreelancePage() {
     console.error("Erreur lors du chargement des freelances:", error);
   }
 
-  // Filtrer les freelances selon les critères
+  // Filtrer les freelances selon les critères (filtres + recherche texte ?q=)
   const filteredFreelances = useMemo(() => {
     return freelances.filter((freelance) => {
+      // Search query: each token must match at least one of first_name, last_name, headline, bio, summary, location, skills
+      const query = searchQuery.trim().toLowerCase();
+      if (query) {
+        const tokens = query.split(/\s+/).filter(Boolean);
+        const searchable =
+          [
+            freelance.first_name,
+            freelance.last_name,
+            freelance.headline,
+            freelance.bio,
+            freelance.summary,
+            freelance.location,
+            freelance.skills?.join(" "),
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+        const allTokensMatch = tokens.every((token) => searchable.includes(token));
+        if (!allTokensMatch) return false;
+      }
+
       // Filtre par position (headline ou skills)
       if (filters.position && filters.position !== "all") {
         const headline = freelance.headline?.toLowerCase() || "";
@@ -81,7 +104,7 @@ export function useFreelancePage() {
 
       return true;
     });
-  }, [freelances, filters]);
+  }, [freelances, filters, searchQuery]);
 
   // Générer les tags de filtres actifs pour l'affichage
   const activeFilterTags = useMemo(() => {

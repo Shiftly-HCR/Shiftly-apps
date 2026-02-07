@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Mission } from "@shiftly/data";
 import { usePublishedMissions } from "@/hooks/queries";
+import { useSearchQuery } from "@/hooks/search";
 import type { MissionFiltersState } from "@shiftly/ui";
 
 export const positionOptions = [
@@ -40,6 +41,7 @@ export const dateRangeOptions = [
  */
 export function useHomePage() {
   const router = useRouter();
+  const { searchQuery } = useSearchQuery();
   const { data: missions = [], isLoading, error } = usePublishedMissions();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<MissionFiltersState>({});
@@ -87,9 +89,24 @@ export function useHomePage() {
     return diffInHours <= 48;
   };
 
-  // Filtrer les missions selon les critères
+  // Filtrer les missions selon les critères (filtres + recherche texte ?q=)
   const filteredMissions = useMemo(() => {
     return missions.filter((mission) => {
+      // Search query: each token must match at least one of title, description, skills, address, city, postal_code
+      const query = searchQuery.trim().toLowerCase();
+      if (query) {
+        const tokens = query.split(/\s+/).filter(Boolean);
+        const title = mission.title?.toLowerCase() || "";
+        const description = mission.description?.toLowerCase() || "";
+        const skillsStr = mission.skills?.join(" ").toLowerCase() || "";
+        const address = mission.address?.toLowerCase() || "";
+        const city = mission.city?.toLowerCase() || "";
+        const postalCode = mission.postal_code?.toLowerCase() || "";
+        const searchable = `${title} ${description} ${skillsStr} ${address} ${city} ${postalCode}`;
+        const allTokensMatch = tokens.every((token) => searchable.includes(token));
+        if (!allTokensMatch) return false;
+      }
+
       // Filtre par position (skills)
       if (filters.position && filters.position !== "all") {
         const skills = mission.skills?.join(" ").toLowerCase() || "";
@@ -177,7 +194,7 @@ export function useHomePage() {
 
       return true;
     });
-  }, [missions, filters]);
+  }, [missions, filters, searchQuery]);
 
   // Générer les tags de filtres actifs pour l'affichage
   const activeFilterTags = useMemo(() => {
