@@ -196,6 +196,7 @@ export function FreelanceFilters({
                 borderRadius={3}
               />
             </YStack>
+            {/* Split hit areas at midpoint so min (left) and max (right) don't overlap */}
             <XStack
               position="absolute"
               width="100%"
@@ -217,7 +218,7 @@ export function FreelanceFilters({
                 style={{
                   position: "absolute",
                   left: 0,
-                  width: `${((dailyRate[1] - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
+                  width: `${((((dailyRate[0] + dailyRate[1]) / 2) - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
                   height: "100%",
                   opacity: 0,
                   cursor: "pointer",
@@ -239,8 +240,8 @@ export function FreelanceFilters({
                 }}
                 style={{
                   position: "absolute",
-                  left: `${((dailyRate[0] - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
-                  width: `${((DAILY_RATE_MAX - dailyRate[0]) / DAILY_RATE_RANGE) * 100}%`,
+                  left: `${((((dailyRate[0] + dailyRate[1]) / 2) - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
+                  width: `${100 - ((((dailyRate[0] + dailyRate[1]) / 2) - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
                   height: "100%",
                   opacity: 0,
                   cursor: "pointer",
