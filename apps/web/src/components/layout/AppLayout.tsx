@@ -17,6 +17,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     isLoading,
     searchValue,
     setSearchValue,
+    handleSearchSubmit,
     handleLogout,
   } = useAppLayout();
 
@@ -51,7 +52,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     <YStack flex={1} minHeight="100vh" backgroundColor="#F9FAFB">
       <Navbar
         searchValue={searchValue}
-        onSearch={setSearchValue}
+        onChangeText={setSearchValue}
+        onSearch={handleSearchSubmit}
         userName={
           profile?.first_name ||
           user?.user_metadata?.first_name ||

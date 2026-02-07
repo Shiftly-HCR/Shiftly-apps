@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser, useCurrentProfile, useSignOut } from "@/hooks/queries";
 
+const SEARCHABLE_PATHS = ["/home", "/freelance"] as const;
+
 /**
  * Hook pour gérer la logique du layout de l'application
- * Gère l'authentification, la redirection et la déconnexion
+ * Gère l'authentification, la redirection, la déconnexion et la synchro recherche (URL ?q=)
  */
 export function useAppLayout() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [searchValue, setSearchValue] = useState("");
 
@@ -27,6 +31,31 @@ export function useAppLayout() {
   const signOutMutation = useSignOut();
 
   const isLoading = isLoadingUser || isLoadingProfile;
+
+  // Sync searchValue from URL when on a searchable page
+  useEffect(() => {
+    if (SEARCHABLE_PATHS.includes(pathname as (typeof SEARCHABLE_PATHS)[number])) {
+      setSearchValue(searchParams.get("q") ?? "");
+    }
+  }, [pathname, searchParams]);
+
+  // On search submit: update URL on /home or /freelance, else redirect to role-appropriate list with ?q=
+  const handleSearchSubmit = useCallback(
+    (value: string) => {
+      const trimmed = value.trim();
+      if (SEARCHABLE_PATHS.includes(pathname as (typeof SEARCHABLE_PATHS)[number])) {
+        const params = new URLSearchParams(searchParams.toString());
+        if (trimmed) params.set("q", trimmed);
+        else params.delete("q");
+        const query = params.toString();
+        router.push(query ? `${pathname}?${query}` : pathname);
+      } else {
+        const targetPath = profile?.role === "recruiter" ? "/freelance" : "/home";
+        router.push(trimmed ? `${targetPath}?q=${encodeURIComponent(trimmed)}` : targetPath);
+      }
+    },
+    [pathname, searchParams, profile?.role, router]
+  );
 
   /**
    * Rediriger vers /login UNIQUEMENT quand on est certain que l'utilisateur
@@ -75,6 +104,7 @@ export function useAppLayout() {
     isLoading,
     searchValue,
     setSearchValue,
+    handleSearchSubmit,
     handleLogout,
   };
 }
