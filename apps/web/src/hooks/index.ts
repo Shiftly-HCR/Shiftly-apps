@@ -25,6 +25,9 @@ export { useCommercialStats } from "./commercial/useCommercialStats";
 // Layout hooks
 export * from "./layout";
 
+// Search hooks
+export * from "./search";
+
 // Page hooks
 export * from "./pages";
 

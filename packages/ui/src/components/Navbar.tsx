@@ -6,6 +6,8 @@ import { colors } from "../theme";
 
 interface NavbarProps {
   onSearch?: (value: string) => void;
+  /** Called on each keystroke; if not provided, onSearch is used for both typing and submit */
+  onChangeText?: (value: string) => void;
   searchValue?: string;
   userAvatar?: string;
   userName?: string;
@@ -27,6 +29,7 @@ const MOBILE_BREAKPOINT = 768;
 
 export function Navbar({
   onSearch,
+  onChangeText,
   searchValue = "",
   userAvatar,
   userName = "Utilisateur",
@@ -178,7 +181,7 @@ export function Navbar({
             >
               <SearchBar
                 value={searchValue}
-                onChangeText={onSearch}
+                onChangeText={onChangeText ?? onSearch}
                 onSearch={() => onSearch && onSearch(searchValue || "")}
               />
             </YStack>
@@ -440,7 +443,7 @@ export function Navbar({
                   <YStack marginBottom="$4">
                     <SearchBar
                       value={searchValue}
-                      onChangeText={onSearch}
+                      onChangeText={onChangeText ?? onSearch}
                       onSearch={() => {
                         onSearch && onSearch(searchValue || "");
                         setMenuOpen(false);

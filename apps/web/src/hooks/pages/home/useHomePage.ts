@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Mission } from "@shiftly/data";
 import { usePublishedMissions } from "@/hooks/queries";
+import { useSearchQuery } from "@/hooks/search";
 import type { MissionFiltersState } from "@shiftly/ui";
 
 export const positionOptions = [
@@ -40,6 +41,7 @@ export const dateRangeOptions = [
  */
 export function useHomePage() {
   const router = useRouter();
+  const { searchQuery } = useSearchQuery();
   const { data: missions = [], isLoading, error } = usePublishedMissions();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<MissionFiltersState>({});
@@ -87,9 +89,24 @@ export function useHomePage() {
     return diffInHours <= 48;
   };
 
-  // Filtrer les missions selon les critères
+  // Filtrer les missions selon les critères (filtres + recherche texte ?q=)
   const filteredMissions = useMemo(() => {
     return missions.filter((mission) => {
+      // Search query: each token must match at least one of title, description, skills, address, city, postal_code
+      const query = searchQuery.trim().toLowerCase();
+      if (query) {
+        const tokens = query.split(/\s+/).filter(Boolean);
+        const title = mission.title?.toLowerCase() || "";
+        const description = mission.description?.toLowerCase() || "";
+        const skillsStr = mission.skills?.join(" ").toLowerCase() || "";
+        const address = mission.address?.toLowerCase() || "";
+        const city = mission.city?.toLowerCase() || "";
+        const postalCode = mission.postal_code?.toLowerCase() || "";
+        const searchable = `${title} ${description} ${skillsStr} ${address} ${city} ${postalCode}`;
+        const allTokensMatch = tokens.every((token) => searchable.includes(token));
+        if (!allTokensMatch) return false;
+      }
+
       // Filtre par position (skills)
       if (filters.position && filters.position !== "all") {
         const skills = mission.skills?.join(" ").toLowerCase() || "";
@@ -114,16 +131,12 @@ export function useHomePage() {
         }
       }
 
-      // Filtre par taux horaire
-      if (filters.hourlyRateMin && mission.hourly_rate) {
-        if (mission.hourly_rate < filters.hourlyRateMin) {
-          return false;
-        }
+      // Filtre par TJM (taux journalier)
+      if (filters.dailyRateMin != null && mission.daily_rate != null) {
+        if (mission.daily_rate < filters.dailyRateMin) return false;
       }
-      if (filters.hourlyRateMax && mission.hourly_rate) {
-        if (mission.hourly_rate > filters.hourlyRateMax) {
-          return false;
-        }
+      if (filters.dailyRateMax != null && mission.daily_rate != null) {
+        if (mission.daily_rate > filters.dailyRateMax) return false;
       }
 
       // Filtre par plage de dates
@@ -177,7 +190,7 @@ export function useHomePage() {
 
       return true;
     });
-  }, [missions, filters]);
+  }, [missions, filters, searchQuery]);
 
   // Générer les tags de filtres actifs pour l'affichage
   const activeFilterTags = useMemo(() => {
@@ -200,10 +213,10 @@ export function useHomePage() {
           ?.label || filters.dateRange;
       tags.push(dateLabel);
     }
-    if (filters.hourlyRateMin || filters.hourlyRateMax) {
-      const min = filters.hourlyRateMin || 15;
-      const max = filters.hourlyRateMax || 100;
-      tags.push(`${min}€ - ${max}€ / heure`);
+    if (filters.dailyRateMin != null || filters.dailyRateMax != null) {
+      const min = filters.dailyRateMin ?? 80;
+      const max = filters.dailyRateMax ?? 400;
+      tags.push(`${min}€ - ${max}€ / jour`);
     }
     if (filters.urgent) {
       tags.push("Urgent");
@@ -216,7 +229,7 @@ export function useHomePage() {
     const positionMatch = positionOptions.find((opt) => opt.label === tag);
     const locationMatch = locationOptions.find((opt) => opt.label === tag);
     const dateMatch = dateRangeOptions.find((opt) => opt.label === tag);
-    const rateMatch = tag.match(/(\d+)€ - (\d+)€ \/ heure/);
+    const rateMatch = tag.match(/(\d+)€ - (\d+)€ \/ jour/);
     const urgentMatch = tag === "Urgent";
 
     if (positionMatch) {
@@ -228,8 +241,8 @@ export function useHomePage() {
     } else if (rateMatch) {
       setFilters({
         ...filters,
-        hourlyRateMin: undefined,
-        hourlyRateMax: undefined,
+        dailyRateMin: undefined,
+        dailyRateMax: undefined,
       });
     } else if (urgentMatch) {
       setFilters({ ...filters, urgent: undefined });

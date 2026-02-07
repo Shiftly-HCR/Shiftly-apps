@@ -1,14 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { YStack, XStack, Text } from "tamagui";
 import { Select } from "./form/Select";
 import { RadioGroup } from "./form/RadioGroup";
 import { colors } from "../theme";
 
+const DAILY_RATE_MIN = 80;
+const DAILY_RATE_MAX = 400;
+const DAILY_RATE_RANGE = DAILY_RATE_MAX - DAILY_RATE_MIN;
+
 export interface MissionFiltersState {
   position?: string;
   location?: string;
-  hourlyRateMin?: number;
-  hourlyRateMax?: number;
+  dailyRateMin?: number;
+  dailyRateMax?: number;
   dateRange?: string;
   urgent?: boolean;
 }
@@ -51,10 +55,18 @@ export function MissionFilters({
   filters,
   onFiltersChange,
 }: MissionFiltersProps) {
-  const [hourlyRate, setHourlyRate] = useState<[number, number]>([
-    filters.hourlyRateMin || 15,
-    filters.hourlyRateMax || 100,
+  const [dailyRate, setDailyRate] = useState<[number, number]>([
+    filters.dailyRateMin ?? DAILY_RATE_MIN,
+    filters.dailyRateMax ?? DAILY_RATE_MAX,
   ]);
+
+  // Sync local slider state when filters change from outside (e.g. removeFilter clears rate)
+  useEffect(() => {
+    setDailyRate([
+      filters.dailyRateMin ?? DAILY_RATE_MIN,
+      filters.dailyRateMax ?? DAILY_RATE_MAX,
+    ]);
+  }, [filters.dailyRateMin, filters.dailyRateMax]);
 
   const handleFilterChange = (key: keyof MissionFiltersState, value: any) => {
     onFiltersChange({
@@ -63,22 +75,21 @@ export function MissionFilters({
     });
   };
 
-  const handleHourlyRateChange = (index: 0 | 1, value: number) => {
-    const newRate: [number, number] = [...hourlyRate];
+  const handleDailyRateChange = (index: 0 | 1, value: number) => {
+    const newRate: [number, number] = [...dailyRate];
     newRate[index] = value;
-    setHourlyRate(newRate);
+    setDailyRate(newRate);
 
-    // S'assurer que min <= max
-    if (index === 0 && value > hourlyRate[1]) {
+    if (index === 0 && value > dailyRate[1]) {
       newRate[1] = value;
-    } else if (index === 1 && value < hourlyRate[0]) {
+    } else if (index === 1 && value < dailyRate[0]) {
       newRate[0] = value;
     }
 
     onFiltersChange({
       ...filters,
-      hourlyRateMin: newRate[0],
-      hourlyRateMax: newRate[1],
+      dailyRateMin: newRate[0],
+      dailyRateMax: newRate[1],
     });
   };
 
@@ -135,10 +146,10 @@ export function MissionFilters({
         }
       />
 
-      {/* Taux horaire */}
+      {/* TJM (taux journalier) */}
       <YStack gap="$2">
         <Text fontSize={14} fontWeight="600" color={colors.gray900}>
-          Taux horaire
+          TJM (€ / jour)
         </Text>
         <YStack gap="$3">
           <XStack
@@ -148,10 +159,10 @@ export function MissionFilters({
             paddingHorizontal="$2"
           >
             <Text fontSize={14} color={colors.gray700} fontWeight="500">
-              {hourlyRate[0]}€
+              {dailyRate[0]}€
             </Text>
             <Text fontSize={14} color={colors.gray700} fontWeight="500">
-              {hourlyRate[1]}€
+              {dailyRate[1]}€
             </Text>
           </XStack>
           <YStack
@@ -160,7 +171,6 @@ export function MissionFilters({
             justifyContent="center"
             paddingHorizontal="$1"
           >
-            {/* Slider track */}
             <YStack
               height={6}
               backgroundColor={colors.gray200}
@@ -168,17 +178,16 @@ export function MissionFilters({
               position="relative"
               width="100%"
             >
-              {/* Active range */}
               <YStack
                 position="absolute"
-                left={`${((hourlyRate[0] - 15) / 85) * 100}%`}
-                width={`${((hourlyRate[1] - hourlyRate[0]) / 85) * 100}%`}
+                left={`${((dailyRate[0] - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`}
+                width={`${((dailyRate[1] - dailyRate[0]) / DAILY_RATE_RANGE) * 100}%`}
                 height={6}
                 backgroundColor={colors.shiftlyViolet}
                 borderRadius={3}
               />
             </YStack>
-            {/* Range inputs - using native HTML inputs for better compatibility */}
+            {/* Split hit areas at midpoint so min (left) and max (right) don't overlap */}
             <XStack
               position="absolute"
               width="100%"
@@ -188,18 +197,19 @@ export function MissionFilters({
             >
               <input
                 type="range"
-                min={15}
-                max={100}
-                value={hourlyRate[0]}
+                min={DAILY_RATE_MIN}
+                max={DAILY_RATE_MAX}
+                value={dailyRate[0]}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
-                  if (val < hourlyRate[1]) {
-                    handleHourlyRateChange(0, val);
+                  if (val < dailyRate[1]) {
+                    handleDailyRateChange(0, val);
                   }
                 }}
                 style={{
                   position: "absolute",
-                  width: "100%",
+                  left: 0,
+                  width: `${((((dailyRate[0] + dailyRate[1]) / 2) - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
                   height: "100%",
                   opacity: 0,
                   cursor: "pointer",
@@ -210,18 +220,19 @@ export function MissionFilters({
               />
               <input
                 type="range"
-                min={15}
-                max={100}
-                value={hourlyRate[1]}
+                min={DAILY_RATE_MIN}
+                max={DAILY_RATE_MAX}
+                value={dailyRate[1]}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
-                  if (val > hourlyRate[0]) {
-                    handleHourlyRateChange(1, val);
+                  if (val > dailyRate[0]) {
+                    handleDailyRateChange(1, val);
                   }
                 }}
                 style={{
                   position: "absolute",
-                  width: "100%",
+                  left: `${((((dailyRate[0] + dailyRate[1]) / 2) - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
+                  width: `${100 - ((((dailyRate[0] + dailyRate[1]) / 2) - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`,
                   height: "100%",
                   opacity: 0,
                   cursor: "pointer",
@@ -231,7 +242,6 @@ export function MissionFilters({
                 }}
               />
             </XStack>
-            {/* Visual handles */}
             <XStack
               position="absolute"
               width="100%"
@@ -241,7 +251,7 @@ export function MissionFilters({
             >
               <XStack
                 position="absolute"
-                left={`${((hourlyRate[0] - 15) / 85) * 100}%`}
+                left={`${((dailyRate[0] - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`}
                 transform={[{ translateX: -8 }]}
                 width={16}
                 height={16}
@@ -256,7 +266,7 @@ export function MissionFilters({
               />
               <XStack
                 position="absolute"
-                left={`${((hourlyRate[1] - 15) / 85) * 100}%`}
+                left={`${((dailyRate[1] - DAILY_RATE_MIN) / DAILY_RATE_RANGE) * 100}%`}
                 transform={[{ translateX: -8 }]}
                 width={16}
                 height={16}

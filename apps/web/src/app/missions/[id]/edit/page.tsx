@@ -206,16 +206,16 @@ export default function EditMissionPage() {
     return diffDays + 1; // +1 pour inclure le jour de début
   };
 
-  // Calculer automatiquement le TJM si le tarif horaire est renseigné
+  // Recalculate TJM from hourly rate whenever hourly rate or schedule changes
+  // (so it works on first load when mission has both values, and when user edits)
   useEffect(() => {
-    if (hourlyRate && !dailyRate) {
-      const hoursPerDay = calculateDailyHours();
-      if (hoursPerDay > 0) {
-        const calculatedDailyRate = parseFloat(hourlyRate) * hoursPerDay;
-        setDailyRate(calculatedDailyRate.toFixed(2));
-      }
+    if (!hourlyRate || isNaN(parseFloat(hourlyRate))) return;
+    const hoursPerDay = calculateDailyHours() || 8; // default 8h if no start/end time
+    if (hoursPerDay > 0) {
+      const calculatedDailyRate = parseFloat(hourlyRate) * hoursPerDay;
+      setDailyRate(calculatedDailyRate.toFixed(2));
     }
-  }, [hourlyRate, startTime, endTime, dailyRate]);
+  }, [hourlyRate, startTime, endTime]);
 
   // Calculer automatiquement le salaire total si le TJM est renseigné
   useEffect(() => {
