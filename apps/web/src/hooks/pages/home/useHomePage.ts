@@ -131,16 +131,12 @@ export function useHomePage() {
         }
       }
 
-      // Filtre par taux horaire
-      if (filters.hourlyRateMin && mission.hourly_rate) {
-        if (mission.hourly_rate < filters.hourlyRateMin) {
-          return false;
-        }
+      // Filtre par TJM (taux journalier)
+      if (filters.dailyRateMin != null && mission.daily_rate != null) {
+        if (mission.daily_rate < filters.dailyRateMin) return false;
       }
-      if (filters.hourlyRateMax && mission.hourly_rate) {
-        if (mission.hourly_rate > filters.hourlyRateMax) {
-          return false;
-        }
+      if (filters.dailyRateMax != null && mission.daily_rate != null) {
+        if (mission.daily_rate > filters.dailyRateMax) return false;
       }
 
       // Filtre par plage de dates
@@ -217,10 +213,10 @@ export function useHomePage() {
           ?.label || filters.dateRange;
       tags.push(dateLabel);
     }
-    if (filters.hourlyRateMin || filters.hourlyRateMax) {
-      const min = filters.hourlyRateMin || 15;
-      const max = filters.hourlyRateMax || 100;
-      tags.push(`${min}€ - ${max}€ / heure`);
+    if (filters.dailyRateMin != null || filters.dailyRateMax != null) {
+      const min = filters.dailyRateMin ?? 80;
+      const max = filters.dailyRateMax ?? 400;
+      tags.push(`${min}€ - ${max}€ / jour`);
     }
     if (filters.urgent) {
       tags.push("Urgent");
@@ -233,7 +229,7 @@ export function useHomePage() {
     const positionMatch = positionOptions.find((opt) => opt.label === tag);
     const locationMatch = locationOptions.find((opt) => opt.label === tag);
     const dateMatch = dateRangeOptions.find((opt) => opt.label === tag);
-    const rateMatch = tag.match(/(\d+)€ - (\d+)€ \/ heure/);
+    const rateMatch = tag.match(/(\d+)€ - (\d+)€ \/ jour/);
     const urgentMatch = tag === "Urgent";
 
     if (positionMatch) {
@@ -245,8 +241,8 @@ export function useHomePage() {
     } else if (rateMatch) {
       setFilters({
         ...filters,
-        hourlyRateMin: undefined,
-        hourlyRateMax: undefined,
+        dailyRateMin: undefined,
+        dailyRateMax: undefined,
       });
     } else if (urgentMatch) {
       setFilters({ ...filters, urgent: undefined });

@@ -80,6 +80,7 @@ export interface FreelanceProfile {
   daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
   hourly_rate?: number; // Tarif horaire en euros
   availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
+  badges?: string | string[]; // Badges/certifications (DB: _text)
   created_at?: string;
   updated_at?: string;
 }
