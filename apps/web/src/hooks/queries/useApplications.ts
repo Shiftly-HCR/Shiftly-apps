@@ -6,12 +6,46 @@ import {
   getApplicationsByMission,
   createApplication,
   checkApplicationExists,
+  getMonthlyApplicationsCount,
+  MONTHLY_APPLICATIONS_LIMIT,
   type CreateApplicationParams,
   type MissionApplicationWithMission,
   type MissionApplicationWithProfile,
 } from "@shiftly/data";
 import { updateApplicationStatus } from "@shiftly/core";
 import type { ApplicationStatus } from "@shiftly/data";
+import { useCurrentProfile } from "./useProfile";
+
+/** Query key for applications quota (monthly count / limit for non-premium) */
+export const APPLICATIONS_QUOTA_QUERY_KEY = ["applications", "quota"] as const;
+
+/**
+ * Hook pour le quota de candidatures mensuelles (freelances non premium : 10/mois).
+ * Retourne count, limit (null = illimité si premium), et canApply.
+ */
+export function useApplicationsQuota() {
+  const { profile } = useCurrentProfile();
+  const userId = profile?.id ?? null;
+
+  const countQuery = useQuery({
+    queryKey: [...APPLICATIONS_QUOTA_QUERY_KEY, userId],
+    queryFn: () => getMonthlyApplicationsCount(userId!),
+    enabled: !!userId,
+    staleTime: 1 * 60 * 1000,
+  });
+
+  const count = countQuery.data ?? 0;
+  const limit =
+    profile?.subscription_plan_id != null ? null : MONTHLY_APPLICATIONS_LIMIT;
+  const canApply = limit === null || count < limit;
+
+  return {
+    count,
+    limit,
+    canApply,
+    isLoading: countQuery.isLoading,
+  };
+}
 
 /**
  * Hook pour récupérer les candidatures de l'utilisateur actuel
@@ -86,16 +120,14 @@ export function useApplyToMission() {
     mutationFn: createApplication,
     onSuccess: (result, variables) => {
       if (result.success) {
-        // Invalider les candidatures de l'utilisateur
         queryClient.invalidateQueries({ queryKey: ["applications", "user"] });
-        // Invalider les candidatures de la mission
         queryClient.invalidateQueries({
           queryKey: ["applications", "mission", variables.mission_id],
         });
-        // Invalider le check de candidature
         queryClient.invalidateQueries({
           queryKey: ["applications", "check", variables.mission_id],
         });
+        queryClient.invalidateQueries({ queryKey: APPLICATIONS_QUOTA_QUERY_KEY });
       }
     },
   });
