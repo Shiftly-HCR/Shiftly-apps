@@ -29,8 +29,8 @@ import {
 import {
   useCurrentProfile,
   useUpdatePremiumStatus,
-  useCurrentUser,
 } from "@/hooks";
+import { getSession } from "@shiftly/data";
 import { useBillingPortal, useCancelSubscription } from "@/hooks/stripe";
 import { Button } from "@shiftly/ui";
 
@@ -60,7 +60,6 @@ function SubscriptionPageContent() {
     isLoading: isLoadingProfile,
     refresh: refreshProfile,
   } = useCurrentProfile();
-  const { session } = useCurrentUser();
   const { updatePremium, isLoading: isUpdatingPremium } =
     useUpdatePremiumStatus();
   const {
@@ -131,19 +130,18 @@ function SubscriptionPageContent() {
     try {
       console.log("Début de l'abonnement pour le plan:", planId);
 
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      // Ajouter le token dans les headers si disponible depuis la session
-      if (session?.access_token) {
-        headers["Authorization"] = `Bearer ${session.access_token}`;
-        console.log("Token ajouté aux headers");
-      } else {
-        console.log("Aucun token disponible");
+      const session = await getSession();
+      if (!session?.access_token) {
+        setError("Vous devez être connecté pour vous abonner.");
+        setLoadingPlanId(null);
+        return;
       }
 
-      console.log("Envoi de la requête vers /api/payments/checkout");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      };
+
       const response = await fetch("/api/payments/checkout", {
         method: "POST",
         headers,

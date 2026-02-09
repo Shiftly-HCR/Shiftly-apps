@@ -10,10 +10,44 @@ import {
   updateMission,
   deleteMission,
   uploadMissionImage,
+  getActiveMissionsCount,
+  MAX_ACTIVE_MISSIONS_RECRUITER_FREE,
   type Mission,
   type CreateMissionParams,
   type UpdateMissionParams,
 } from "@shiftly/data";
+import { useCurrentProfile } from "./useProfile";
+
+/** Query key for recruiter missions quota (active missions limit) */
+export const RECRUITER_MISSIONS_QUOTA_QUERY_KEY = ["missions", "quota"] as const;
+
+/**
+ * Hook pour le quota de missions actives (recruteurs non premium : 2 max).
+ * Retourne count, limit (null = illimité si premium), et canCreate.
+ */
+export function useRecruiterMissionsQuota() {
+  const { profile } = useCurrentProfile();
+  const recruiterId = profile?.role === "recruiter" ? profile?.id ?? null : null;
+
+  const countQuery = useQuery({
+    queryKey: [...RECRUITER_MISSIONS_QUOTA_QUERY_KEY, recruiterId],
+    queryFn: () => getActiveMissionsCount(recruiterId!),
+    enabled: !!recruiterId,
+    staleTime: 1 * 60 * 1000,
+  });
+
+  const count = countQuery.data ?? 0;
+  const limit =
+    profile?.subscription_plan_id != null ? null : MAX_ACTIVE_MISSIONS_RECRUITER_FREE;
+  const canCreate = limit === null || count < limit;
+
+  return {
+    count,
+    limit,
+    canCreate,
+    isLoading: countQuery.isLoading,
+  };
+}
 
 /**
  * Hook pour récupérer toutes les missions publiées
@@ -102,12 +136,10 @@ export function useCreateMission() {
     mutationFn: createMission,
     onSuccess: (result) => {
       if (result.success && result.mission) {
-        // Ajouter la mission au cache
         queryClient.setQueryData(["missions", result.mission.id], result.mission);
-        
-        // Invalider les listes de missions pour les recharger
         queryClient.invalidateQueries({ queryKey: ["missions", "published"] });
         queryClient.invalidateQueries({ queryKey: ["missions", "recruiter"] });
+        queryClient.invalidateQueries({ queryKey: RECRUITER_MISSIONS_QUOTA_QUERY_KEY });
       }
     },
   });
@@ -124,12 +156,10 @@ export function useUpdateMission() {
       updateMission(missionId, params),
     onSuccess: (result, variables) => {
       if (result.success && result.mission) {
-        // Mettre à jour le cache de la mission
         queryClient.setQueryData(["missions", variables.missionId], result.mission);
-        
-        // Invalider les listes de missions
         queryClient.invalidateQueries({ queryKey: ["missions", "published"] });
         queryClient.invalidateQueries({ queryKey: ["missions", "recruiter"] });
+        queryClient.invalidateQueries({ queryKey: RECRUITER_MISSIONS_QUOTA_QUERY_KEY });
       }
     },
   });
@@ -145,12 +175,10 @@ export function useDeleteMission() {
     mutationFn: deleteMission,
     onSuccess: (result, missionId) => {
       if (result.success) {
-        // Retirer la mission du cache
         queryClient.removeQueries({ queryKey: ["missions", missionId] });
-        
-        // Invalider les listes de missions
         queryClient.invalidateQueries({ queryKey: ["missions", "published"] });
         queryClient.invalidateQueries({ queryKey: ["missions", "recruiter"] });
+        queryClient.invalidateQueries({ queryKey: RECRUITER_MISSIONS_QUOTA_QUERY_KEY });
       }
     },
   });

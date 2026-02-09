@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { getProfileById } from "../profiles/profiles";
 import type {
   MissionApplication,
   MissionApplicationWithProfile,
@@ -7,6 +8,43 @@ import type {
   UpdateApplicationParams,
   ApplicationStatus,
 } from "../types/application";
+
+/** Maximum applications per month for non-premium freelances */
+export const MONTHLY_APPLICATIONS_LIMIT = 10;
+
+/**
+ * Returns start and end of current month in UTC (for counting applications).
+ */
+function getCurrentMonthBoundsUTC(): { start: string; end: string } {
+  const now = new Date();
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
+/**
+ * Returns the number of applications created by the user in the current calendar month (UTC).
+ */
+export async function getMonthlyApplicationsCount(userId: string): Promise<number> {
+  try {
+    const { start, end } = getCurrentMonthBoundsUTC();
+    const { count, error } = await supabase
+      .from("mission_applications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      console.error("Erreur lors du comptage des candidatures mensuelles:", error);
+      return 0;
+    }
+    return count ?? 0;
+  } catch (err) {
+    console.error("Erreur lors du comptage des candidatures mensuelles:", err);
+    return 0;
+  }
+}
 
 /**
  * Crée une nouvelle candidature pour une mission
@@ -37,6 +75,19 @@ export async function createApplication(
         success: false,
         error: "Vous avez déjà postulé à cette mission",
       };
+    }
+
+    // Non-premium freelances: enforce monthly application limit
+    const profile = await getProfileById(user.id);
+    if (profile && profile.subscription_plan_id == null) {
+      const count = await getMonthlyApplicationsCount(user.id);
+      if (count >= MONTHLY_APPLICATIONS_LIMIT) {
+        return {
+          success: false,
+          error:
+            "Vous avez atteint la limite de 10 candidatures pour ce mois. Passez Premium pour postuler sans limite.",
+        };
+      }
     }
 
     const { data, error } = await supabase

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useMission, useCurrentProfile, useApplyToMission as useApplyMutation, useCheckApplication, useMissionApplications as useMissionApplicationsQuery, useUpdateApplicationStatus, useUserApplications } from "@/hooks/queries";
+import { useMission, useCurrentProfile, useApplyToMission as useApplyMutation, useCheckApplication, useApplicationsQuota, useMissionApplications as useMissionApplicationsQuery, useUpdateApplicationStatus, useUserApplications } from "@/hooks/queries";
 import { useMissionChat } from "@/hooks";
 import type { ApplicationStatus } from "@shiftly/data";
 
@@ -19,6 +19,8 @@ export function useMissionDetailPage() {
   const applyMutation = useApplyMutation();
   const { data: hasApplied = false, isLoading: isCheckingApplication } =
     useCheckApplication(missionId);
+  const { count: applicationsCount, limit: applicationsLimit, canApply: canApplyByQuota } =
+    useApplicationsQuota();
 
   // Déterminer les rôles et permissions
   const isRecruiter = profile?.role === "recruiter";
@@ -140,6 +142,9 @@ export function useMissionDetailPage() {
     applySuccess: applyMutation.isSuccess,
     hasApplied,
     isCheckingApplication,
+    applicationsCount,
+    applicationsLimit,
+    canApplyByQuota,
     updateStatus: (applicationId: string, status: ApplicationStatus) =>
       updateStatusMutation.mutateAsync({ applicationId, status }),
     refetchApplications,
