@@ -1,6 +1,32 @@
 import { supabase } from "../supabaseClient";
+import { getProfileById } from "../profiles/profiles";
 import { uploadImage, replaceImage, deleteImage } from "../helpers/imageUpload";
 import { GiConsoleController } from "react-icons/gi";
+
+/** Maximum active missions (draft + published) for non-premium recruiters */
+export const MAX_ACTIVE_MISSIONS_RECRUITER_FREE = 2;
+
+/**
+ * Returns the number of active missions (draft or published) for a recruiter.
+ */
+export async function getActiveMissionsCount(recruiterId: string): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from("missions")
+      .select("id", { count: "exact", head: true })
+      .eq("recruiter_id", recruiterId)
+      .in("status", ["draft", "published"]);
+
+    if (error) {
+      console.error("Erreur lors du comptage des missions actives:", error);
+      return 0;
+    }
+    return count ?? 0;
+  } catch (err) {
+    console.error("Erreur lors du comptage des missions actives:", err);
+    return 0;
+  }
+}
 
 export interface Mission {
   id: string;
@@ -93,6 +119,19 @@ export async function createMission(params: CreateMissionParams): Promise<{
         success: false,
         error: "Utilisateur non connecté",
       };
+    }
+
+    // Non-premium recruiters: enforce max active missions (draft + published)
+    const profile = await getProfileById(user.id);
+    if (profile && profile.subscription_plan_id == null) {
+      const count = await getActiveMissionsCount(user.id);
+      if (count >= MAX_ACTIVE_MISSIONS_RECRUITER_FREE) {
+        return {
+          success: false,
+          error:
+            "Vous avez atteint la limite de 2 annonces (compte gratuit). Passez Premium pour publier sans limite.",
+        };
+      }
     }
 
     const { data, error } = await supabase
