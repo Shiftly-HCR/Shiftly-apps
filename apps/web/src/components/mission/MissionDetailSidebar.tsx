@@ -26,6 +26,12 @@ interface MissionDetailSidebarProps {
   applyError?: string | null;
   onApply: () => void;
   onManageCandidates?: () => void;
+  /** Monthly applications count (for non-premium freelances) */
+  applicationsCount?: number;
+  /** Monthly limit (null = unlimited for premium) */
+  applicationsLimit?: number | null;
+  /** Whether the freelance can still apply this month (quota not reached) */
+  canApplyByQuota?: boolean;
 }
 
 export function MissionDetailSidebar({
@@ -40,6 +46,9 @@ export function MissionDetailSidebar({
   applyError,
   onApply,
   onManageCandidates,
+  applicationsCount = 0,
+  applicationsLimit = null,
+  canApplyByQuota = true,
 }: MissionDetailSidebarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -266,20 +275,45 @@ export function MissionDetailSidebar({
                     Vous avez déjà postulé à cette mission
                   </Text>
                 </XStack>
+              ) : !canApplyByQuota && applicationsLimit != null ? (
+                <YStack gap="$2">
+                  <XStack
+                    paddingVertical="$3"
+                    paddingHorizontal="$4"
+                    backgroundColor="#FFF3CD"
+                    borderRadius={8}
+                    alignItems="center"
+                  >
+                    <Text fontSize={14} color="#856404" fontWeight="600">
+                      Vous avez atteint la limite de {applicationsLimit} candidatures ce mois (compte gratuit). Passez Premium pour postuler sans limite.
+                    </Text>
+                  </XStack>
+                  <Text fontSize={13} color="#666">
+                    {applicationsCount} / {applicationsLimit} candidatures ce mois
+                  </Text>
+                </YStack>
               ) : profile?.role === "freelance" ? (
-                <Button
-                  variant="primary"
-                  size="md"
-                  width="100%"
-                  onPress={onApply}
-                  disabled={
-                    isApplying ||
-                    isCheckingApplication ||
-                    mission?.status !== "published"
-                  }
-                >
-                  {isApplying ? "Envoi en cours..." : "Postuler à cette mission"}
-                </Button>
+                <YStack gap="$2">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    width="100%"
+                    onPress={onApply}
+                    disabled={
+                      isApplying ||
+                      isCheckingApplication ||
+                      mission?.status !== "published" ||
+                      !canApplyByQuota
+                    }
+                  >
+                    {isApplying ? "Envoi en cours..." : "Postuler à cette mission"}
+                  </Button>
+                  {applicationsLimit != null && (
+                    <Text fontSize={13} color="#666">
+                      {applicationsCount} / {applicationsLimit} candidatures ce mois
+                    </Text>
+                  )}
+                </YStack>
               ) : (
                 <YStack
                   padding="$3"

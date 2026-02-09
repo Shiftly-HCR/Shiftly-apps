@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useRecruiterMissions, useDeleteMission } from "@/hooks";
+import { useRecruiterMissions, useRecruiterMissionsQuota, useDeleteMission } from "@/hooks";
 import { useShiftlyToast } from "@shiftly/ui";
 
 /**
@@ -12,6 +12,8 @@ import { useShiftlyToast } from "@shiftly/ui";
 export function useRecruiterMissionsPage() {
   const router = useRouter();
   const { missions, isLoading } = useRecruiterMissions();
+  const { count: activeMissionsCount, limit: activeMissionsLimit, canCreate: canCreateMissionByQuota } =
+    useRecruiterMissionsQuota();
   const deleteMissionMutation = useDeleteMission();
   const toast = useShiftlyToast();
 
@@ -75,6 +77,9 @@ export function useRecruiterMissionsPage() {
     handleEditMission,
     handleManageCandidates,
     handleDeleteMission,
+    activeMissionsCount,
+    activeMissionsLimit,
+    canCreateMissionByQuota,
   };
 }
 

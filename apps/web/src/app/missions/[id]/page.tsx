@@ -48,6 +48,9 @@ export default function MissionDetailPage() {
     applySuccess,
     hasApplied,
     isCheckingApplication,
+    applicationsCount,
+    applicationsLimit,
+    canApplyByQuota,
     updateStatus,
     refetchApplications,
     handleApply,
@@ -182,6 +185,9 @@ export default function MissionDetailPage() {
               onManageCandidates={() =>
                 router.push(`/missions/${missionId}/candidates`)
               }
+              applicationsCount={applicationsCount}
+              applicationsLimit={applicationsLimit}
+              canApplyByQuota={canApplyByQuota}
             />
           </XStack>
         </YStack>

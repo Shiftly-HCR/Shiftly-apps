@@ -18,6 +18,9 @@ export default function RecruiterMissionsPage() {
     handleEditMission,
     handleManageCandidates,
     handleDeleteMission,
+    activeMissionsCount,
+    activeMissionsLimit,
+    canCreateMissionByQuota,
   } = useRecruiterMissionsPage();
 
   if (isLoading) {
@@ -45,6 +48,9 @@ export default function RecruiterMissionsPage() {
             onEditMission={handleEditMission}
             onManageCandidates={handleManageCandidates}
             onDeleteMission={handleDeleteMission}
+            canCreateMissionByQuota={canCreateMissionByQuota}
+            activeMissionsCount={activeMissionsCount}
+            activeMissionsLimit={activeMissionsLimit}
           />
         </YStack>
       </ScrollView>
