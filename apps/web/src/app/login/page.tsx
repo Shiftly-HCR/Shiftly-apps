@@ -135,7 +135,7 @@ export default function LoginPage() {
                   fontWeight="600"
                   cursor="pointer"
                   hoverStyle={{ textDecorationLine: "underline" }}
-                  onPress={() => console.log("Forgot password")}
+                  onPress={() => router.push("/forgot-password")}
                 >
                   Mot de passe oublié ?
                 </Text>
