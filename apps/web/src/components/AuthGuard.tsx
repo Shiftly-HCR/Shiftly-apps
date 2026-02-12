@@ -11,7 +11,12 @@ import { colors } from "@shiftly/ui";
 /**
  * Routes publiques accessibles sans authentification
  */
-const PUBLIC_ROUTES = ["/login", "/register"];
+const PUBLIC_ROUTES = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+];
 
 /**
  * Composant de protection des routes
