@@ -337,7 +337,8 @@ export function MissionDetailSidebar({
             </YStack>
           )}
 
-          <Button
+          {/* TODO: Feature not ready yet */}
+          {/* <Button
             variant="primary"
             size="md"
             width="100%"
@@ -354,7 +355,7 @@ export function MissionDetailSidebar({
               <Heart size={16} style={{ flexShrink: 0 }} color="white" />
               <Text color="white">Sauvegarder la mission</Text>
             </XStack>
-          </Button>
+          </Button> */}
 
           {/* Badge Shiftly certifie */}
           <XStack
