@@ -2,7 +2,13 @@
 
 import { useMemo, useCallback } from "react";
 import type { Mission } from "@shiftly/data";
-import { useCurrentProfile, usePublishedMissions, useFreelanceAppliedMissions } from "@/hooks";
+import type { ApplicationStatus } from "@shiftly/data";
+import {
+  useCurrentProfile,
+  usePublishedMissions,
+  useFreelanceAppliedMissions,
+  useUserApplications,
+} from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 /**
@@ -19,7 +25,13 @@ export function useFreelanceMissionsPage() {
     missions: publishedMissions = [],
     isLoading: isLoadingPublishedMissions,
   } = usePublishedMissions();
-  const isLoading = isLoadingProfile || isLoadingAppliedMissions || isLoadingPublishedMissions;
+  const { applications: userApplications = [], isLoading: isLoadingUserApplications } =
+    useUserApplications();
+  const isLoading =
+    isLoadingProfile ||
+    isLoadingAppliedMissions ||
+    isLoadingPublishedMissions ||
+    isLoadingUserApplications;
 
   // Calculer les missions récentes et recommandées depuis le cache
   const { missions, recommendedMissions } = useMemo<{
@@ -49,6 +61,26 @@ export function useFreelanceMissionsPage() {
     };
   }, [appliedMissions, publishedMissions]);
 
+  const applicationStats = useMemo(() => {
+    const accepted = userApplications.filter((a) => a.status === "accepted").length;
+    const pending = userApplications.filter((a) => a.status === "pending").length;
+    const total = userApplications.length;
+    const successRatePercent = total > 0 ? Math.round((accepted / total) * 100) : 0;
+    return {
+      activeMissionsCount: accepted,
+      pendingApplicationsCount: pending,
+      successRatePercent,
+    };
+  }, [userApplications]);
+
+  const applicationStatusByMissionId = useMemo(() => {
+    const map = new Map<string, ApplicationStatus>();
+    for (const app of userApplications) {
+      map.set(app.mission_id, app.status);
+    }
+    return map;
+  }, [userApplications]);
+
   const getFullName = useCallback(() => {
     if (!profile) return "Utilisateur";
     const firstName = profile.first_name || "";
@@ -65,52 +97,54 @@ export function useFreelanceMissionsPage() {
     });
   }, []);
 
-  const getMissionStatus = useCallback(
-    (mission: Mission): "in_progress" | "completed" | "pending" => {
-      // Logique simplifiée - en production, utiliser une table de candidatures
-      if (mission.status === "closed") return "completed";
-      if (mission.status === "published") return "in_progress";
-      return "pending";
+  const getApplicationStatusForMission = useCallback(
+    (missionId: string): ApplicationStatus | undefined => {
+      return applicationStatusByMissionId.get(missionId);
     },
-    []
+    [applicationStatusByMissionId]
   );
 
-  const getStatusLabel = useCallback(
-    (status: "in_progress" | "completed" | "pending") => {
-      switch (status) {
-        case "in_progress":
-          return "En cours";
-        case "completed":
-          return "Terminée";
-        case "pending":
-          return "En attente";
-      }
-    },
-    []
-  );
+  const getStatusLabel = useCallback((status: ApplicationStatus): string => {
+    switch (status) {
+      case "accepted":
+        return "Accepté";
+      case "rejected":
+        return "Refusé";
+      case "pending":
+      case "applied":
+        return "En attente";
+      case "shortlisted":
+        return "Présélectionné";
+      case "withdrawn":
+        return "Retiré";
+    }
+  }, []);
 
-  const getStatusColor = useCallback(
-    (status: "in_progress" | "completed" | "pending") => {
-      switch (status) {
-        case "in_progress":
-          return colors.shiftlyViolet;
-        case "completed":
-          return colors.gray500;
-        case "pending":
-          return "#F59E0B";
-      }
-    },
-    []
-  );
+  const getStatusColor = useCallback((status: ApplicationStatus): string => {
+    switch (status) {
+      case "accepted":
+        return colors.green600;
+      case "rejected":
+        return "#DC2626";
+      case "pending":
+      case "applied":
+        return "#F59E0B";
+      case "shortlisted":
+        return "#2563EB";
+      case "withdrawn":
+        return colors.gray500;
+    }
+  }, []);
 
   return {
     profile,
     missions,
     recommendedMissions,
+    applicationStats,
     isLoading,
     getFullName,
     formatDate,
-    getMissionStatus,
+    getApplicationStatusForMission,
     getStatusLabel,
     getStatusColor,
   };

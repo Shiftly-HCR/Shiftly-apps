@@ -100,12 +100,13 @@ export function useFreelancePage() {
         }
       }
 
+      // TODO: Feature not ready yet
       // Filtre par note
-      if (filters.rating && freelance.note) {
-        if (freelance.note < filters.rating) {
-          return false;
-        }
-      }
+      // if (filters.rating && freelance.note) {
+      //   if (freelance.note < filters.rating) {
+      //     return false;
+      //   }
+      // }
 
       // Filtre par TJM (taux journalier)
       if (filters.dailyRateMin != null && freelance.daily_rate != null) {
@@ -165,9 +166,10 @@ export function useFreelancePage() {
           ?.label || filters.availability;
       tags.push(availLabel);
     }
-    if (filters.rating) {
-      tags.push(`${filters.rating} ★ et +`);
-    }
+    // TODO: Feature not ready yet
+    // if (filters.rating) {
+    //   tags.push(`${filters.rating} ★ et +`);
+    // }
     if (filters.badge && filters.badge !== "all") {
       const badgeLabel =
         badgeOptions.find((opt) => opt.value === filters.badge)?.label ||
@@ -182,7 +184,8 @@ export function useFreelancePage() {
     const locationMatch = locationOptions.find((opt) => opt.label === tag);
     const rateMatch = tag.match(/(\d+)€ - (\d+)€ \/ jour/);
     const availabilityMatch = availabilityOptions.find((opt) => opt.label === tag);
-    const ratingMatch = tag.match(/(\d+) ★ et \+/);
+    // TODO: Feature not ready yet
+    // const ratingMatch = tag.match(/(\d+) ★ et \+/);
     const badgeMatch = badgeOptions.find((opt) => opt.label === tag);
 
     if (positionMatch) {
@@ -197,9 +200,12 @@ export function useFreelancePage() {
       });
     } else if (availabilityMatch) {
       setFilters({ ...filters, availability: undefined });
-    } else if (ratingMatch) {
-      setFilters({ ...filters, rating: undefined });
-    } else if (badgeMatch) {
+    }
+    // TODO: Feature not ready yet
+    // else if (ratingMatch) {
+    //   setFilters({ ...filters, rating: undefined });
+    // }
+    else if (badgeMatch) {
       setFilters({ ...filters, badge: undefined });
     }
   };

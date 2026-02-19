@@ -25,8 +25,9 @@ export function FreelanceProfileTabs({
   const tabs: Tab[] = [
     { id: "overview", label: "Aperçu" },
     { id: "availability", label: "Disponibilités" },
-    { id: "reviews", label: "Avis" },
-    { id: "documents", label: "Documents" },
+    // TODO: Feature not ready yet
+    // { id: "reviews", label: "Avis" },
+    // { id: "documents", label: "Documents" },
   ];
 
   return (

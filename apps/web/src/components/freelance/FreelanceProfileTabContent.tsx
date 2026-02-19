@@ -53,35 +53,37 @@ export function FreelanceProfileTabContent({
     );
   }
 
-  if (activeTab === "reviews") {
-    return (
-      <YStack
-        gap="$4"
-        padding="$4"
-        backgroundColor={colors.white}
-        borderRadius={12}
-      >
-        <Text fontSize={16} color={colors.gray700}>
-          Les avis seront affichés ici.
-        </Text>
-      </YStack>
-    );
-  }
+  // TODO: Feature not ready yet
+  // if (activeTab === "reviews") {
+  //   return (
+  //     <YStack
+  //       gap="$4"
+  //       padding="$4"
+  //       backgroundColor={colors.white}
+  //       borderRadius={12}
+  //     >
+  //       <Text fontSize={16} color={colors.gray700}>
+  //         Les avis seront affichés ici.
+  //       </Text>
+  //     </YStack>
+  //   );
+  // }
 
-  if (activeTab === "documents") {
-    return (
-      <YStack
-        gap="$4"
-        padding="$4"
-        backgroundColor={colors.white}
-        borderRadius={12}
-      >
-        <Text fontSize={16} color={colors.gray700}>
-          Les documents seront affichés ici.
-        </Text>
-      </YStack>
-    );
-  }
+  // TODO: Feature not ready yet
+  // if (activeTab === "documents") {
+  //   return (
+  //     <YStack
+  //       gap="$4"
+  //       padding="$4"
+  //       backgroundColor={colors.white}
+  //       borderRadius={12}
+  //     >
+  //       <Text fontSize={16} color={colors.gray700}>
+  //         Les documents seront affichés ici.
+  //       </Text>
+  //     </YStack>
+  //   );
+  // }
 
   return (
     <YStack
