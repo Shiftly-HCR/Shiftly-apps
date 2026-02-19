@@ -53,6 +53,27 @@ export default function FreelanceMissionsPage() {
           <XStack gap="$6" alignItems="flex-start" flexWrap="wrap">
             {/* Colonne gauche */}
             <YStack flex={1} minWidth={400} gap="$6">
+              {/* Statistiques rapides */}
+              <PageSection title="Statistiques rapides">
+                <XStack gap="$4" flexWrap="wrap">
+                  <StatisticsCard
+                    label="Missions actives"
+                    value={applicationStats.activeMissionsCount}
+                    minWidth={180}
+                  />
+                  <StatisticsCard
+                    label="Candidatures en attente"
+                    value={applicationStats.pendingApplicationsCount}
+                    valueColor={colors.shiftlyViolet}
+                    minWidth={180}
+                  />
+                  <StatisticsCard
+                    label="Taux de réussite"
+                    value={`${applicationStats.successRatePercent}%`}
+                    minWidth={180}
+                  />
+                </XStack>
+              </PageSection>
               {/* Mes missions récentes */}
               <PageSection title="Mes missions postulées">
                 {missions.length === 0 ? (
@@ -74,8 +95,9 @@ export default function FreelanceMissionsPage() {
                 ) : (
                   <YStack gap="$3">
                     {missions.map((mission) => {
-                      const applicationStatus =
-                        getApplicationStatusForMission(mission.id);
+                      const applicationStatus = getApplicationStatusForMission(
+                        mission.id,
+                      );
                       return (
                         <XStack
                           key={mission.id}
@@ -138,34 +160,6 @@ export default function FreelanceMissionsPage() {
                     })}
                   </YStack>
                 )}
-              </PageSection>
-
-              {/* Statistiques rapides */}
-              <PageSection title="Statistiques rapides">
-                {profile?.id && (
-                  <Text fontSize={14} color={colors.gray600} marginBottom="$2">
-                    ID: {profile.id}
-                  </Text>
-                )}
-
-                <XStack gap="$4" flexWrap="wrap">
-                  <StatisticsCard
-                    label="Missions actives"
-                    value={applicationStats.activeMissionsCount}
-                    minWidth={180}
-                  />
-                  <StatisticsCard
-                    label="Candidatures en attente"
-                    value={applicationStats.pendingApplicationsCount}
-                    valueColor={colors.shiftlyViolet}
-                    minWidth={180}
-                  />
-                  <StatisticsCard
-                    label="Taux de réussite"
-                    value={`${applicationStats.successRatePercent}%`}
-                    minWidth={180}
-                  />
-                </XStack>
               </PageSection>
             </YStack>
 
