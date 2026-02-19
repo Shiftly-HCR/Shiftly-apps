@@ -24,10 +24,11 @@ export default function FreelanceMissionsPage() {
     profile,
     missions,
     recommendedMissions,
+    applicationStats,
     isLoading,
     getFullName,
     formatDate,
-    getMissionStatus,
+    getApplicationStatusForMission,
     getStatusLabel,
     getStatusColor,
   } = useFreelanceMissionsPage();
@@ -53,7 +54,7 @@ export default function FreelanceMissionsPage() {
             {/* Colonne gauche */}
             <YStack flex={1} minWidth={400} gap="$6">
               {/* Mes missions récentes */}
-              <PageSection title="Mes missions récentes">
+              <PageSection title="Mes missions postulées">
                 {missions.length === 0 ? (
                   <YStack
                     padding="$6"
@@ -73,7 +74,8 @@ export default function FreelanceMissionsPage() {
                 ) : (
                   <YStack gap="$3">
                     {missions.map((mission) => {
-                      const status = getMissionStatus(mission);
+                      const applicationStatus =
+                        getApplicationStatusForMission(mission.id);
                       return (
                         <XStack
                           key={mission.id}
@@ -107,30 +109,27 @@ export default function FreelanceMissionsPage() {
                               >
                                 {mission.title}
                               </Text>
-                              <XStack
-                                paddingHorizontal="$2"
-                                paddingVertical="$1"
-                                borderRadius="$2"
-                                backgroundColor={getStatusColor(status) + "20"}
-                              >
-                                <Text
-                                  fontSize={12}
-                                  fontWeight="600"
-                                  color={getStatusColor(status)}
+                              {applicationStatus != null && (
+                                <XStack
+                                  paddingHorizontal="$2"
+                                  paddingVertical="$1"
+                                  borderRadius="$2"
+                                  backgroundColor={
+                                    getStatusColor(applicationStatus) + "20"
+                                  }
                                 >
-                                  {getStatusLabel(status)}
-                                </Text>
-                              </XStack>
+                                  <Text
+                                    fontSize={12}
+                                    fontWeight="600"
+                                    color={getStatusColor(applicationStatus)}
+                                  >
+                                    {getStatusLabel(applicationStatus)}
+                                  </Text>
+                                </XStack>
+                              )}
                             </XStack>
                             <Text fontSize={14} color={colors.gray500}>
                               Publiée le {formatDate(mission.created_at)}
-                            </Text>
-                            <Text
-                              fontSize={14}
-                              color={colors.gray700}
-                              fontWeight="500"
-                            >
-                              {Math.floor(Math.random() * 20) + 5} Candidats
                             </Text>
                           </YStack>
                           <FiArrowRight size={20} color={colors.gray500} />
@@ -152,30 +151,20 @@ export default function FreelanceMissionsPage() {
                 <XStack gap="$4" flexWrap="wrap">
                   <StatisticsCard
                     label="Missions actives"
-                    value={
-                      missions.filter(
-                        (m) => getMissionStatus(m) === "in_progress",
-                      ).length
-                    }
+                    value={applicationStats.activeMissionsCount}
                     minWidth={180}
                   />
                   <StatisticsCard
                     label="Candidatures en attente"
-                    value={15}
+                    value={applicationStats.pendingApplicationsCount}
                     valueColor={colors.shiftlyViolet}
                     minWidth={180}
                   />
                   <StatisticsCard
                     label="Taux de réussite"
-                    value="80%"
+                    value={`${applicationStats.successRatePercent}%`}
                     minWidth={180}
                   />
-                </XStack>
-              </PageSection>
-
-              <PageSection title="Suivi de missions">
-                <XStack>
-                  <Text> Mission en cours</Text>
                 </XStack>
               </PageSection>
             </YStack>
