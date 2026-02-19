@@ -99,10 +99,11 @@ export function FreelanceFilters({
     });
   };
 
-  const handleRatingClick = (rating: number) => {
-    const newRating = filters.rating === rating ? undefined : rating;
-    handleFilterChange("rating", newRating);
-  };
+  // TODO: Feature not ready yet
+  // const handleRatingClick = (rating: number) => {
+  //   const newRating = filters.rating === rating ? undefined : rating;
+  //   handleFilterChange("rating", newRating);
+  // };
 
   return (
     <YStack
@@ -293,8 +294,9 @@ export function FreelanceFilters({
         </YStack>
       </YStack>
 
+      {/* TODO: Feature not ready yet */}
       {/* Note */}
-      <YStack gap="$2">
+      {/* <YStack gap="$2">
         <Text fontSize={14} fontWeight="600" color={colors.gray900}>
           Note
         </Text>
@@ -330,7 +332,7 @@ export function FreelanceFilters({
             );
           })}
         </XStack>
-      </YStack>
+      </YStack> */}
 
       {/* Badges */}
       <RadioGroup
