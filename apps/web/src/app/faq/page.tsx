@@ -2,6 +2,7 @@
 
 import { YStack, Text, ScrollView } from "tamagui";
 import { AppLayout, PageHeader, FAQSection } from "@/components";
+import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 export default function FAQPage() {
@@ -97,10 +98,17 @@ export default function FAQPage() {
     },
   ];
 
+  const { isMobile } = useResponsive();
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={1200} width="100%" alignSelf="center" padding="$6" gap="$6">
+        <YStack
+          maxWidth={1200}
+          width="100%"
+          alignSelf="center"
+          padding={isMobile ? "$4" : "$6"}
+          gap="$6"
+        >
           <PageHeader
             title="Questions fréquentes (FAQ)"
             description="Trouvez rapidement les réponses à vos questions"

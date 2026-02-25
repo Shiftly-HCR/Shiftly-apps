@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { YStack, XStack, ScrollView, Text, Spinner } from "tamagui";
 import { colors, Button } from "@shiftly/ui";
 import { AppLayout, PageHeader } from "@/components";
-import { useCurrentProfile } from "@/hooks";
+import { useCurrentProfile, useResponsive } from "@/hooks";
 import { useConnectOnboarding } from "@/hooks/stripe/useConnectOnboarding";
 import { supabase } from "@shiftly/data";
 import {
@@ -39,6 +39,7 @@ interface PaymentItem {
 
 export default function PaymentsPage() {
   const { profile, isLoading: isLoadingProfile } = useCurrentProfile();
+  const { isMobile } = useResponsive();
   const {
     status: connectStatus,
     isLoading: isLoadingConnect,
@@ -356,7 +357,7 @@ export default function PaymentsPage() {
       <ScrollView flex={1} backgroundColor="#F9FAFB">
         <YStack
           flex={1}
-          padding="$4"
+          padding={isMobile ? "$4" : "$6"}
           gap="$6"
           maxWidth={1200}
           alignSelf="center"
@@ -486,6 +487,7 @@ export default function PaymentsPage() {
                   formatAmount={formatAmount}
                   formatDate={formatDate}
                   type="upcoming"
+                  isMobile={isMobile}
                 />
               ))}
             </YStack>
@@ -508,6 +510,7 @@ export default function PaymentsPage() {
                   formatAmount={formatAmount}
                   formatDate={formatDate}
                   type="upcoming"
+                  isMobile={isMobile}
                 />
               ))}
             </YStack>
@@ -536,6 +539,7 @@ export default function PaymentsPage() {
                   canRetry={payment.canRetry}
                   isRetrying={isRetrying === payment.id}
                   onRetry={() => handleRetryTransfer(payment)}
+                  isMobile={isMobile}
                 />
               ))}
             </YStack>
@@ -558,6 +562,7 @@ export default function PaymentsPage() {
                   formatAmount={formatAmount}
                   formatDate={formatDate}
                   type="completed"
+                  isMobile={isMobile}
                 />
               ))}
             </YStack>
@@ -602,6 +607,7 @@ function PaymentCard({
   canRetry,
   isRetrying,
   onRetry,
+  isMobile = false,
 }: {
   payment: PaymentItem;
   formatAmount: (amount: number) => string;
@@ -610,6 +616,7 @@ function PaymentCard({
   canRetry?: boolean;
   isRetrying?: boolean;
   onRetry?: () => void;
+  isMobile?: boolean;
 }) {
   const bgColor =
     type === "completed"
@@ -633,8 +640,13 @@ function PaymentCard({
       borderWidth={1}
       borderColor={payment.hasDispute ? colors.red200 || "#FECACA" : borderColor}
     >
-      <XStack justifyContent="space-between" alignItems="flex-start">
-        <YStack flex={1} gap="$1">
+      <XStack
+        flexDirection={isMobile ? "column" : "row"}
+        justifyContent="space-between"
+        alignItems={isMobile ? "stretch" : "flex-start"}
+        gap={isMobile ? "$3" : undefined}
+      >
+        <YStack flex={isMobile ? undefined : 1} gap="$1">
           <XStack alignItems="center" gap="$2" flexWrap="wrap">
             <Text fontSize={15} fontWeight="600" color={colors.gray900}>
               {payment.missionTitle}
@@ -701,7 +713,10 @@ function PaymentCard({
           )}
         </YStack>
 
-        <YStack alignItems="flex-end" gap="$2">
+        <YStack
+          alignItems={isMobile ? "flex-start" : "flex-end"}
+          gap="$2"
+        >
           <Text fontSize={18} fontWeight="700" color={colors.gray900}>
             {formatAmount(payment.freelancerAmount)}
           </Text>

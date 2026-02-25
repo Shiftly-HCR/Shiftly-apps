@@ -10,9 +10,10 @@ import {
   FreelanceProfileSidebar,
   PageLoading,
 } from "@/components";
-import { useFreelanceProfilePage } from "@/hooks";
+import { useFreelanceProfilePage, useResponsive } from "@/hooks";
 
 export default function FreelanceProfilePage() {
+  const { isMobile } = useResponsive();
   const {
     freelanceId,
     profile,
@@ -56,10 +57,23 @@ export default function FreelanceProfilePage() {
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={1400} width="100%" alignSelf="center" padding="$6">
-          <XStack gap="$6" alignItems="flex-start">
+        <YStack
+          maxWidth={1400}
+          width="100%"
+          alignSelf="center"
+          padding={isMobile ? "$4" : "$6"}
+        >
+          <XStack
+            gap="$6"
+            alignItems="flex-start"
+            flexDirection={isMobile ? "column" : "row"}
+          >
             {/* Contenu principal */}
-            <YStack flex={1} gap="$6">
+            <YStack
+              flex={isMobile ? undefined : 1}
+              gap="$6"
+              width={isMobile ? "100%" : undefined}
+            >
               {/* En-tête du profil */}
               <FreelanceProfileHeader profile={profile} />
 
@@ -79,7 +93,11 @@ export default function FreelanceProfilePage() {
             </YStack>
 
             {/* Sidebar droite */}
-            <FreelanceProfileSidebar freelanceId={freelanceId} profile={profile} />
+            <FreelanceProfileSidebar
+              freelanceId={freelanceId}
+              profile={profile}
+              isMobile={isMobile}
+            />
           </XStack>
         </YStack>
       </ScrollView>

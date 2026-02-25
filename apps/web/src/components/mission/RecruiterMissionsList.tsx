@@ -5,6 +5,7 @@ import { CreateMissionCard } from "@shiftly/ui";
 import { PageSection, EmptyState } from "@/components";
 import { RecruiterMissionCard } from "./RecruiterMissionCard";
 import type { Mission } from "@shiftly/data";
+import { useResponsive } from "@/hooks";
 
 interface RecruiterMissionsListProps {
   missions: Mission[];
@@ -32,11 +33,17 @@ export function RecruiterMissionsList({
   activeMissionsCount = 0,
   activeMissionsLimit = null,
 }: RecruiterMissionsListProps) {
+  const { isMobile } = useResponsive();
+
   return (
     <PageSection title="Toutes les missions">
       <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
         {/* Carte de création ou message limite atteinte */}
-        <YStack width="calc(33.333% - 12px)" minWidth={300} gap="$2">
+        <YStack
+          width={isMobile ? "100%" : "calc(33.333% - 12px)"}
+          minWidth={isMobile ? undefined : 300}
+          gap="$2"
+        >
           {!canCreateMissionByQuota && activeMissionsLimit != null ? (
             <>
               <YStack
@@ -70,6 +77,7 @@ export function RecruiterMissionsList({
         {missions.map((mission) => (
           <RecruiterMissionCard
             key={mission.id}
+            isMobile={isMobile}
             mission={mission}
             onPress={() => onMissionClick(mission.id)}
             onEdit={() => onEditMission(mission.id)}

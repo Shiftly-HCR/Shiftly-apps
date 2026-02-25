@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { YStack, XStack, Text } from "tamagui";
 import { Button, BaseCard, colors } from "@shiftly/ui";
 import { FiCheck } from "react-icons/fi";
+import { useResponsive } from "@/hooks";
 
 interface SubscriptionCardProps {
   id: string;
@@ -35,11 +36,14 @@ export function SubscriptionCard({
   billingPeriod = "monthly",
   monthlyPrice,
 }: SubscriptionCardProps) {
+  const { isMobile } = useResponsive();
+
   return (
     <YStack
-      flex={1}
-      minWidth={320}
-      maxWidth={400}
+      flex={isMobile ? undefined : 1}
+      width={isMobile ? "100%" : undefined}
+      minWidth={isMobile ? undefined : 320}
+      maxWidth={isMobile ? undefined : 400}
       position="relative"
     >
       {popular && (

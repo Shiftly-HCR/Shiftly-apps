@@ -3,6 +3,7 @@
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import { LucideIcon } from "lucide-react";
+import { useResponsive } from "@/hooks";
 
 interface MetricCardProps {
   icon: LucideIcon;
@@ -24,10 +25,13 @@ export function MetricCard({
   value,
   subtitle,
 }: MetricCardProps) {
+  const { isMobile } = useResponsive();
+
   return (
     <YStack
-      flex={1}
-      minWidth={280}
+      flex={isMobile ? undefined : 1}
+      width={isMobile ? "100%" : undefined}
+      minWidth={isMobile ? undefined : 280}
       backgroundColor="white"
       borderRadius="$4"
       padding="$5"

@@ -29,6 +29,7 @@ import {
 import {
   useCurrentProfile,
   useUpdatePremiumStatus,
+  useResponsive,
 } from "@/hooks";
 import { getSession } from "@shiftly/data";
 import { useBillingPortal, useCancelSubscription } from "@/hooks/stripe";
@@ -55,6 +56,7 @@ const faqItems = [
 function SubscriptionPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isMobile } = useResponsive();
   const {
     profile,
     isLoading: isLoadingProfile,
@@ -250,7 +252,7 @@ function SubscriptionPageContent() {
             maxWidth={1400}
             width="100%"
             alignSelf="center"
-            padding="$6"
+            padding={isMobile ? "$4" : "$6"}
             gap="$8"
           >
             {/* En-tête */}
@@ -658,7 +660,7 @@ function SubscriptionPageContent() {
           maxWidth={1400}
           width="100%"
           alignSelf="center"
-          padding="$6"
+          padding={isMobile ? "$4" : "$6"}
           gap="$8"
         >
           {/* En-tête */}
@@ -754,6 +756,7 @@ function SubscriptionPageContent() {
           {/* Cartes d'abonnement */}
           <XStack
             flexWrap="wrap"
+            flexDirection={isMobile ? "column" : "row"}
             gap="$6"
             justifyContent="center"
             alignItems="stretch"

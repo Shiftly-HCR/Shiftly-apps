@@ -32,6 +32,7 @@ interface MissionDetailSidebarProps {
   applicationsLimit?: number | null;
   /** Whether the freelance can still apply this month (quota not reached) */
   canApplyByQuota?: boolean;
+  isMobile?: boolean;
 }
 
 export function MissionDetailSidebar({
@@ -49,6 +50,7 @@ export function MissionDetailSidebar({
   applicationsCount = 0,
   applicationsLimit = null,
   canApplyByQuota = true,
+  isMobile = false,
 }: MissionDetailSidebarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,7 +91,11 @@ export function MissionDetailSidebar({
   };
 
   return (
-    <YStack width={320} gap="$4" flexShrink={0}>
+    <YStack
+      width={isMobile ? "100%" : 320}
+      gap="$4"
+      flexShrink={isMobile ? undefined : 0}
+    >
       {/* Carte Rémunération */}
       <YStack
         backgroundColor="white"

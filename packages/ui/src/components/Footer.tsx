@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { XStack, YStack, Text, Image } from "tamagui";
 import { colors } from "../theme";
 
-const MOBILE_BREAKPOINT = 768;
+const MOBILE_BREAKPOINT = 900;
 
 interface FooterProps {
   className?: string;

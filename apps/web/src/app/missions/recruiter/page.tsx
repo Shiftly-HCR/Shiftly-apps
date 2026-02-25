@@ -7,9 +7,10 @@ import {
   RecruiterMissionsList,
   EstablishmentsManager,
 } from "@/components/mission";
-import { useRecruiterMissionsPage } from "@/hooks";
+import { useRecruiterMissionsPage, useResponsive } from "@/hooks";
 
 export default function RecruiterMissionsPage() {
+  const { isMobile } = useResponsive();
   const {
     missions,
     isLoading,
@@ -34,7 +35,7 @@ export default function RecruiterMissionsPage() {
           maxWidth={1400}
           width="100%"
           alignSelf="center"
-          padding="$6"
+          padding={isMobile ? "$4" : "$6"}
           gap="$6"
         >
           <EstablishmentsManager />

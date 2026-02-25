@@ -7,12 +7,13 @@ import {
   EstablishmentCodeInput,
   MyCommercialEstablishments,
 } from "@/components";
-import { useRequireRole } from "@/hooks";
+import { useRequireRole, useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 import { useState } from "react";
 
 export default function CommercialDashboardPage() {
   const { isAuthorized, isLoading } = useRequireRole("commercial");
+  const { isMobile } = useResponsive();
   const [refreshKey, setRefreshKey] = useState(0);
 
   if (isLoading || !isAuthorized) {
@@ -38,7 +39,7 @@ export default function CommercialDashboardPage() {
           maxWidth={1400}
           width="100%"
           alignSelf="center"
-          padding="$6"
+          padding={isMobile ? "$4" : "$6"}
           gap="$6"
         >
           {/* En-tête */}
@@ -55,9 +56,19 @@ export default function CommercialDashboardPage() {
           <CommercialRevenueDashboard />
 
           {/* Layout 2 colonnes */}
-          <XStack gap="$4" alignItems="flex-start" flexWrap="wrap">
+          <XStack
+            gap="$4"
+            alignItems="flex-start"
+            flexWrap="wrap"
+            flexDirection={isMobile ? "column" : "row"}
+          >
             {/* COLONNE GAUCHE - Contenu principal */}
-            <YStack flex={1} gap="$6" minWidth={300}>
+            <YStack
+              flex={isMobile ? undefined : 1}
+              gap="$6"
+              minWidth={isMobile ? undefined : 300}
+              width={isMobile ? "100%" : undefined}
+            >
               {/* Section mes établissements */}
               <YStack
                 backgroundColor="white"
@@ -78,7 +89,11 @@ export default function CommercialDashboardPage() {
             </YStack>
 
             {/* COLONNE DROITE - Sidebar */}
-            <YStack width={320} gap="$4" flexShrink={0}>
+            <YStack
+              width={isMobile ? "100%" : 320}
+              gap="$4"
+              flexShrink={isMobile ? undefined : 0}
+            >
               <EstablishmentCodeInput
                 onAttachmentSuccess={() => {
                   setRefreshKey((prev: number) => prev + 1);
