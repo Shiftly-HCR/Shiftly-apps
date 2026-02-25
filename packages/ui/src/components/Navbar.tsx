@@ -137,7 +137,7 @@ export function Navbar({
           justifyContent="space-between"
           gap="$4"
         >
-          {/* Left: Burger (mobile) + Logo + "Shiftly" (always visible) */}
+          {/* Left: Burger (mobile only) + Logo + "Shiftly" (always visible) */}
           <XStack alignItems="center" gap="$2" flexShrink={0}>
             <XStack
               className="navbar-mobile-only"
@@ -150,17 +150,6 @@ export function Navbar({
               <Menu size={24} color={colors.gray900} />
             </XStack>
             <XStack
-              className="navbar-mobile-only"
-              alignItems="center"
-              cursor="pointer"
-              hoverStyle={{ opacity: 0.8 }}
-              onPress={() => setMenuOpen(true)}
-              padding="$2"
-            >
-              <Menu size={24} color={colors.gray900} />
-            </XStack>
-            <XStack
-              className="navbar-desktop-only"
               alignItems="center"
               gap="$2"
               cursor="pointer"
