@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
 import {
   Button,
@@ -35,6 +36,17 @@ export default function FreelancePage() {
     handleInvite,
   } = useFreelancePage();
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () =>
+      setIsMobile(
+        typeof window !== "undefined" && window.innerWidth < 900
+      );
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   if (isLoading) {
     return <PageLoading />;
   }
@@ -49,25 +61,33 @@ export default function FreelancePage() {
             description="Trouvez le talent parfait pour votre mission parmi nos freelances qualifiés"
           />
 
-          {/* Filtres actifs et vue */}
+          {/* Filtres actifs ; toggle Liste/Carte uniquement sur desktop */}
           <ActiveFilters
             filters={activeFilterTags}
             onRemoveFilter={removeFilter}
             onClearAll={clearAllFilters}
-            viewToggle={{
-              currentMode: viewMode as ViewMode,
-              options: [
-                { mode: "grid", icon: <FiGrid size={16} /> },
-                { mode: "list", icon: <FiList size={16} /> },
-              ],
-              onModeChange: (mode) => setViewMode(mode as "grid" | "list"),
-            }}
+            viewToggle={
+              !isMobile
+                ? {
+                    currentMode: viewMode as ViewMode,
+                    options: [
+                      { mode: "grid", icon: <FiGrid size={16} />, label: "Grille" },
+                      { mode: "list", icon: <FiList size={16} />, label: "Liste" },
+                    ],
+                    onModeChange: (mode) => setViewMode(mode as "grid" | "list"),
+                  }
+                : undefined
+            }
           />
 
           {/* Contenu principal avec filtres */}
-          <XStack gap="$6" alignItems="flex-start">
-            {/* Sidebar des filtres */}
-            <YStack flexShrink={0}>
+          <XStack
+            gap="$6"
+            alignItems="flex-start"
+            flexDirection={isMobile ? "column" : "row"}
+          >
+            {/* Sidebar des filtres (mobile: bouton full-width; desktop: panneau) */}
+            <YStack flexShrink={0} width={isMobile ? "100%" : undefined}>
               <FreelanceFilters
                 filters={filters}
                 onFiltersChange={setFilters}
@@ -75,7 +95,7 @@ export default function FreelancePage() {
             </YStack>
 
             {/* Grille de freelances */}
-            <YStack flex={1} gap="$4">
+            <YStack flex={1} gap="$4" width={isMobile ? "100%" : undefined}>
               {filteredFreelances.length === 0 ? (
                 <EmptyState
                   title="Aucun freelance disponible pour le moment"
@@ -87,9 +107,15 @@ export default function FreelancePage() {
                     <YStack
                       key={freelance.id}
                       width={
-                        viewMode === "grid" ? "calc(33.333% - 12px)" : "100%"
+                        isMobile
+                          ? "100%"
+                          : viewMode === "grid"
+                            ? "calc(33.333% - 12px)"
+                            : "100%"
                       }
-                      minWidth={viewMode === "grid" ? 280 : undefined}
+                      minWidth={
+                        !isMobile && viewMode === "grid" ? 280 : undefined
+                      }
                       position="relative"
                     >
                       <YStack
