@@ -20,9 +20,10 @@ import {
   MissionChatSection,
   MissionPaymentBanner,
 } from "@/components";
-import { useMissionDetailPage } from "@/hooks";
+import { useMissionDetailPage, useResponsive } from "@/hooks";
 
 export default function MissionDetailPage() {
+  const { isMobile } = useResponsive();
   const router = useRouter();
   const {
     missionId,
@@ -86,7 +87,7 @@ export default function MissionDetailPage() {
     <AppLayout>
       <ScrollView backgroundColor="#f5f5f5">
         <YStack
-          padding="$6"
+          padding={isMobile ? "$4" : "$6"}
           maxWidth={1400}
           marginHorizontal="auto"
           width="100%"
@@ -99,9 +100,15 @@ export default function MissionDetailPage() {
             gap="$4"
             alignItems="flex-start"
             flexWrap="wrap"
+            flexDirection={isMobile ? "column" : "row"}
           >
             {/* COLONNE GAUCHE */}
-            <YStack flex={1} gap="$4" minWidth={300}>
+            <YStack
+              flex={isMobile ? undefined : 1}
+              gap="$4"
+              minWidth={isMobile ? undefined : 300}
+              width={isMobile ? "100%" : undefined}
+            >
               {/* Bandeau de paiement pour le recruteur */}
               {isRecruiter && isMissionOwner && (
                 <MissionPaymentBanner
@@ -172,6 +179,7 @@ export default function MissionDetailPage() {
 
             {/* COLONNE DROITE */}
             <MissionDetailSidebar
+              isMobile={isMobile}
               mission={mission}
               profile={profile}
               isRecruiter={isRecruiter}

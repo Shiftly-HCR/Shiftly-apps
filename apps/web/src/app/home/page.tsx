@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { YStack, XStack, ScrollView } from "tamagui";
 import { MissionFilters } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,17 @@ export default function HomePage() {
     handleMissionClick,
   } = useHomePage();
 
-  // Rediriger les recruteurs vers la page freelance
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () =>
+      setIsMobile(
+        typeof window !== "undefined" && window.innerWidth < 900
+      );
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   useEffect(() => {
     if (isAuthResolved && profile?.role === "recruiter") {
       router.replace("/freelance");
@@ -68,14 +78,19 @@ export default function HomePage() {
           />
 
           {/* Contenu principal avec filtres */}
-          <XStack gap="$6" alignItems="flex-start" marginTop="$4">
-            {/* Sidebar des filtres */}
-            <YStack flexShrink={0}>
+          <XStack
+            gap="$6"
+            alignItems="flex-start"
+            marginTop="$4"
+            flexDirection={isMobile ? "column" : "row"}
+          >
+            {/* Sidebar des filtres (mobile: full-width button row; desktop: panel) */}
+            <YStack flexShrink={0} width={isMobile ? "100%" : undefined}>
               <MissionFilters filters={filters} onFiltersChange={setFilters} />
             </YStack>
 
             {/* Grille de missions OU Carte */}
-            <YStack flex={1} gap="$4">
+            <YStack flex={1} gap="$4" width={isMobile ? "100%" : undefined}>
               {filteredMissions.length === 0 ? (
                 <EmptyState
                   title="Aucune mission disponible pour le moment"

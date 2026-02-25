@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { YStack, XStack, ScrollView, Text, Spinner } from "tamagui";
 import { colors, Button } from "@shiftly/ui";
 import { AppLayout, PageHeader } from "@/components";
-import { useCurrentProfile } from "@/hooks";
+import { useCurrentProfile, useResponsive } from "@/hooks";
 import { supabase } from "@shiftly/data";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -38,6 +38,7 @@ interface Dispute {
 export default function AdminDisputesPage() {
   const queryClient = useQueryClient();
   const { profile, isLoading: isLoadingProfile, refresh } = useCurrentProfile();
+  const { isMobile } = useResponsive();
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -334,7 +335,7 @@ export default function AdminDisputesPage() {
       <ScrollView flex={1} backgroundColor="#F9FAFB">
         <YStack
           flex={1}
-          padding="$4"
+          padding={isMobile ? "$4" : "$6"}
           gap="$6"
           maxWidth={1200}
           alignSelf="center"
@@ -372,6 +373,7 @@ export default function AdminDisputesPage() {
                     handleResolveDispute(dispute.id, "resolve", resolution)
                   }
                   onReject={() => handleResolveDispute(dispute.id, "reject")}
+                  isMobile={isMobile}
                 />
               ))}
             </YStack>
@@ -394,6 +396,7 @@ export default function AdminDisputesPage() {
                   formatAmount={formatAmount}
                   formatDate={formatDate}
                   isReadOnly={true}
+                  isMobile={isMobile}
                 />
               ))}
             </YStack>
@@ -431,6 +434,7 @@ function DisputeCard({
   isReadOnly,
   onResolve,
   onReject,
+  isMobile = false,
 }: {
   dispute: Dispute;
   formatAmount: (amount: number | null | undefined) => string;
@@ -439,6 +443,7 @@ function DisputeCard({
   isReadOnly?: boolean;
   onResolve?: (resolution?: string) => void;
   onReject?: () => void;
+  isMobile?: boolean;
 }) {
   const bgColor =
     dispute.status === "resolved"
@@ -462,8 +467,13 @@ function DisputeCard({
       borderWidth={1}
       borderColor={borderColor}
     >
-      <XStack justifyContent="space-between" alignItems="flex-start" gap="$4">
-        <YStack flex={1} gap="$2">
+      <XStack
+        flexDirection={isMobile ? "column" : "row"}
+        justifyContent="space-between"
+        alignItems={isMobile ? "stretch" : "flex-start"}
+        gap="$4"
+      >
+        <YStack flex={isMobile ? undefined : 1} gap="$2">
           <XStack alignItems="center" gap="$2">
             {dispute.is_stripe_dispute && (
               <YStack
@@ -492,7 +502,11 @@ function DisputeCard({
             </Text>
           )}
 
-          <XStack gap="$4" marginTop="$1">
+          <XStack
+            gap="$4"
+            marginTop="$1"
+            flexWrap={isMobile ? "wrap" : "nowrap"}
+          >
             <Text fontSize={12} color={colors.gray700}>
               Signalé par: {dispute.reporter_name || "Inconnu"}
             </Text>

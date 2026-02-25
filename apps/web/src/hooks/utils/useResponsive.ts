@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 
-const MOBILE_BREAKPOINT = 768;
+/** Unified breakpoint for mobile (aligns with Navbar, filters). */
+export const RESPONSIVE_BREAKPOINT = 900;
+
+const MOBILE_BREAKPOINT = RESPONSIVE_BREAKPOINT;
 const TABLET_BREAKPOINT = 1024;
 
 export interface UseResponsiveReturn {
@@ -18,7 +21,7 @@ export interface UseResponsiveReturn {
  * Évite les problèmes d'hydratation en ne détectant qu'après le montage
  */
 export function useResponsive(
-  mobileBreakpoint: number = MOBILE_BREAKPOINT,
+  mobileBreakpoint: number = RESPONSIVE_BREAKPOINT,
   tabletBreakpoint: number = TABLET_BREAKPOINT
 ): UseResponsiveReturn {
   const [isMobile, setIsMobile] = useState(false);

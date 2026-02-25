@@ -2,13 +2,21 @@
 
 import { YStack, Text, ScrollView } from "tamagui";
 import { AppLayout, PageHeader } from "@/components";
+import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 export default function LegalPage() {
+  const { isMobile } = useResponsive();
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={1000} width="100%" alignSelf="center" padding="$6" gap="$6">
+        <YStack
+          maxWidth={1000}
+          width="100%"
+          alignSelf="center"
+          padding={isMobile ? "$4" : "$6"}
+          gap="$6"
+        >
           <PageHeader
             title="Mentions légales"
             description="Informations légales sur Shiftly"

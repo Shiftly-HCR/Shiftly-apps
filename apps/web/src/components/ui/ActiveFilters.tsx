@@ -4,6 +4,7 @@ import { XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import { ViewToggle, type ViewMode } from "./ViewToggle";
 import type { ReactElement } from "react";
+import { useResponsive } from "@/hooks";
 
 interface ActiveFiltersProps {
   filters: string[];
@@ -25,13 +26,15 @@ export function ActiveFilters({
   onClearAll,
   viewToggle,
 }: ActiveFiltersProps) {
+  const { isMobile } = useResponsive();
+
   if (filters.length === 0 && !viewToggle) {
     return null;
   }
 
   return (
     <XStack
-      paddingVertical="$4"
+      paddingVertical={isMobile ? "$3" : "$4"}
       gap="$3"
       flexWrap="wrap"
       alignItems="center"

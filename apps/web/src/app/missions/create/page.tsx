@@ -10,11 +10,12 @@ import {
   MissionFormSteps,
   MissionFormStepIndicator,
 } from "@/components/mission";
-import { useCreateMissionPage } from "@/hooks";
+import { useCreateMissionPage, useResponsive } from "@/hooks";
 import { useSearchParams } from "next/navigation";
 
 function CreateMissionPageContent() {
   const searchParams = useSearchParams();
+  const { isMobile } = useResponsive();
   const establishmentId = searchParams.get("establishment") || undefined;
 
   const {
@@ -81,7 +82,7 @@ function CreateMissionPageContent() {
           maxWidth={800}
           width="100%"
           alignSelf="center"
-          padding="$6"
+          padding={isMobile ? "$4" : "$6"}
           gap="$6"
         >
           {/* Indicateur d'étapes */}

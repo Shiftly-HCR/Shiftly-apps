@@ -13,6 +13,7 @@ import type { Profile, FreelanceProfile } from "@shiftly/data";
 interface FreelanceProfileSidebarProps {
   freelanceId: string;
   profile?: Profile | FreelanceProfile | null;
+  isMobile?: boolean;
 }
 
 /**
@@ -21,6 +22,7 @@ interface FreelanceProfileSidebarProps {
 export function FreelanceProfileSidebar({
   freelanceId,
   profile,
+  isMobile = false,
 }: FreelanceProfileSidebarProps) {
   const router = useRouter();
   const { data: currentProfile } = useCurrentProfile();
@@ -28,8 +30,8 @@ export function FreelanceProfileSidebar({
 
   return (
     <YStack
-      width={300}
-      flexShrink={0}
+      width={isMobile ? "100%" : 300}
+      flexShrink={isMobile ? undefined : 0}
       gap="$3"
       padding="$4"
       backgroundColor={colors.white}

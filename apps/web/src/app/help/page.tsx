@@ -2,14 +2,22 @@
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { AppLayout, PageHeader } from "@/components";
+import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 import { HelpCircle, BookOpen, MessageCircle, Mail } from "lucide-react";
 
 export default function HelpPage() {
+  const { isMobile } = useResponsive();
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={1200} width="100%" alignSelf="center" padding="$6" gap="$6">
+        <YStack
+          maxWidth={1200}
+          width="100%"
+          alignSelf="center"
+          padding={isMobile ? "$4" : "$6"}
+          gap="$6"
+        >
           <PageHeader
             title="Centre d'aide"
             description="Trouvez rapidement les réponses à vos questions"

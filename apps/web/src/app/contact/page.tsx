@@ -2,14 +2,22 @@
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { AppLayout, PageHeader } from "@/components";
+import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 import { Mail, MessageSquare, Clock, MapPin } from "lucide-react";
 
 export default function ContactPage() {
+  const { isMobile } = useResponsive();
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={1200} width="100%" alignSelf="center" padding="$6" gap="$6">
+        <YStack
+          maxWidth={1200}
+          width="100%"
+          alignSelf="center"
+          padding={isMobile ? "$4" : "$6"}
+          gap="$6"
+        >
           <PageHeader
             title="Contactez-nous"
             description="Nous sommes là pour vous aider"

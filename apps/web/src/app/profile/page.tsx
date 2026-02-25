@@ -6,7 +6,7 @@ import { YStack, XStack, Text, Image } from "tamagui";
 import { Button, Input, ImagePicker, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { AppLayout, FreelanceProfileForm, PageLoading } from "@/components";
-import { useProfilePage } from "@/hooks";
+import { useProfilePage, useResponsive } from "@/hooks";
 import {
   FiCreditCard,
   FiChevronRight,
@@ -16,6 +16,7 @@ import {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { isMobile } = useResponsive();
   const {
     profile,
     isLoading,
@@ -51,7 +52,12 @@ export default function ProfilePage() {
 
   return (
     <AppLayout>
-      <YStack flex={1} alignItems="center" padding="$4" paddingVertical="$8">
+      <YStack
+        flex={1}
+        alignItems="center"
+        padding={isMobile ? "$4" : "$6"}
+        paddingVertical="$8"
+      >
         <YStack maxWidth={800} gap="$4" style={{ width: "100%" }}>
           {/* En-tête */}
           <YStack
@@ -65,7 +71,12 @@ export default function ProfilePage() {
             shadowOpacity={1}
             shadowRadius={12}
           >
-            <XStack justifyContent="space-between" alignItems="center">
+            <XStack
+              flexDirection={isMobile ? "column" : "row"}
+              justifyContent="space-between"
+              alignItems={isMobile ? "flex-start" : "center"}
+              gap={isMobile ? "$4" : undefined}
+            >
               <YStack gap="$2">
                 <Text fontSize={24} fontWeight="700" color="#2B2B2B">
                   Mon Profil
@@ -193,7 +204,11 @@ export default function ProfilePage() {
             </Text>
 
             {/* Nom et Prénom */}
-            <XStack gap="$3" style={{ width: "100%" }}>
+            <XStack
+              gap="$3"
+              flexDirection={isMobile ? "column" : "row"}
+              style={{ width: "100%" }}
+            >
               <YStack flex={1}>
                 <Input
                   label="Prénom"

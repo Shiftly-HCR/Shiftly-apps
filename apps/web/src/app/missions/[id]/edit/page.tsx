@@ -21,6 +21,7 @@ import {
   useMission,
   useEstablishments,
   useEstablishment,
+  useResponsive,
 } from "@/hooks";
 import {
   MissionFormSteps,
@@ -31,6 +32,7 @@ type Step = 1 | 2 | 3 | 4 | 5;
 
 export default function EditMissionPage() {
   const router = useRouter();
+  const { isMobile } = useResponsive();
   const { refresh } = useRecruiterMissions();
   const { establishments } = useEstablishments();
   const params = useParams();
@@ -414,7 +416,12 @@ export default function EditMissionPage() {
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={800} width="100%" alignSelf="center" padding="$6">
+        <YStack
+          maxWidth={800}
+          width="100%"
+          alignSelf="center"
+          padding={isMobile ? "$4" : "$6"}
+        >
           {/* En-tête */}
           <YStack gap="$3" marginBottom="$6">
             <Text fontSize={32} fontWeight="700" color={colors.gray900}>

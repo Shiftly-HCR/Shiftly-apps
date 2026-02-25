@@ -3,6 +3,7 @@
 import { YStack, XStack } from "tamagui";
 import { Badge, MissionCard } from "@shiftly/ui";
 import type { Mission } from "@shiftly/data";
+import { useResponsive } from "@/hooks";
 
 interface MissionListViewProps {
   missions: Mission[];
@@ -17,13 +18,15 @@ export function MissionListView({
   formatDate,
   isNewMission,
 }: MissionListViewProps) {
+  const { isMobile } = useResponsive();
+
   return (
     <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
       {missions.map((mission) => (
         <YStack
           key={mission.id}
-          width="calc(33.333% - 12px)"
-          minWidth={300}
+          width={isMobile ? "100%" : "calc(33.333% - 12px)"}
+          minWidth={isMobile ? undefined : 300}
           position="relative"
           cursor="pointer"
           onPress={() => onMissionClick(mission.id)}
