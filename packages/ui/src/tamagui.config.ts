@@ -1,4 +1,5 @@
 import { createTamagui, createTokens } from "tamagui";
+import { createAnimations } from "@tamagui/animations-react-native";
 import { getDefaultTamaguiConfig } from "@tamagui/config-default";
 import { createInterFont } from "@tamagui/font-inter";
 import {
@@ -83,8 +84,40 @@ const tokens = createTokens({
 const configDefault = getDefaultTamaguiConfig();
 const interFont = createInterFont();
 
+// Required for Sheet/Select and other components that use useAnimatedNumber.
+// config-default does not include animations (commented out upstream).
+const animations = createAnimations({
+  quick: {
+    type: "spring",
+    damping: 20,
+    mass: 1.2,
+    stiffness: 250,
+  },
+  bouncy: {
+    type: "spring",
+    damping: 20,
+    mass: 1.2,
+    stiffness: 250,
+  },
+  lazy: {
+    type: "spring",
+    damping: 18,
+    mass: 1.2,
+    stiffness: 120,
+  },
+  medium: {
+    type: "timing",
+    duration: 300,
+  },
+  slow: {
+    type: "timing",
+    duration: 500,
+  },
+});
+
 export const config = createTamagui({
   ...configDefault,
+  animations,
   themeClassNameOnRoot: true,
   defaultTheme: "light",
   fonts: {

@@ -16,12 +16,13 @@ import {
   MissionActivityTab,
   PageLoading,
 } from "@/components";
-import { useMissionCandidatesPage } from "@/hooks";
+import { useMissionCandidatesPage, useResponsive } from "@/hooks";
 
 type TabType = "candidates" | "details" | "activity";
 
 export default function MissionCandidatesPage() {
   const router = useRouter();
+  const { isMobile } = useResponsive();
   const {
     missionId,
     activeTab,
@@ -101,7 +102,7 @@ export default function MissionCandidatesPage() {
           maxWidth={1400}
           width="100%"
           alignSelf="center"
-          padding="$6"
+          padding={isMobile ? "$4" : "$6"}
           gap="$6"
         >
           {/* En-tête de la mission */}

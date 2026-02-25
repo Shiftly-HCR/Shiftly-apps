@@ -22,6 +22,8 @@ interface ConversationViewProps {
   onMarkAsRead: () => void;
   onClose: () => void;
   getOtherParticipantName: (conversation: ConversationWithDetails) => string;
+  /** Show back button (mobile list/detail pattern) */
+  showBackButton?: boolean;
 }
 
 export function ConversationView({
@@ -35,6 +37,7 @@ export function ConversationView({
   onMarkAsRead,
   onClose,
   getOtherParticipantName,
+  showBackButton = false,
 }: ConversationViewProps) {
   const [showDisputeModal, setShowDisputeModal] = useState(false);
 
@@ -91,7 +94,7 @@ export function ConversationView({
         backgroundColor={colors.white}
       >
         <XStack alignItems="center" justifyContent="space-between">
-          <YStack>
+          <YStack flex={1} minWidth={0}>
             <Text fontSize={16} fontWeight="600" color={colors.gray900}>
               {getOtherParticipantName(conversation)}
             </Text>
@@ -101,9 +104,11 @@ export function ConversationView({
               </Text>
             )}
           </YStack>
-          <Button variant="ghost" size="sm" onPress={onClose}>
-            Fermer
-          </Button>
+          {showBackButton && (
+            <Button variant="ghost" size="sm" onPress={onClose} flexShrink={0}>
+              ← Retour
+            </Button>
+          )}
         </XStack>
       </YStack>
 

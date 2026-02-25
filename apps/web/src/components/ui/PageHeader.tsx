@@ -2,6 +2,7 @@
 
 import { YStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
+import { useResponsive } from "@/hooks";
 
 interface PageHeaderProps {
   title: string;
@@ -17,14 +18,16 @@ export function PageHeader({
   description,
   align = "left",
 }: PageHeaderProps) {
+  const { isMobile } = useResponsive();
+
   return (
     <YStack
       gap="$3"
-      marginBottom="$6"
+      marginBottom={isMobile ? "$4" : "$6"}
       alignItems={align === "center" ? "center" : "flex-start"}
     >
       <Text
-        fontSize={32}
+        fontSize={isMobile ? 24 : 32}
         fontWeight="700"
         color={colors.gray900}
         textAlign={align}
@@ -34,7 +37,7 @@ export function PageHeader({
       </Text>
       {description && (
         <Text
-          fontSize={16}
+          fontSize={isMobile ? 14 : 16}
           color={colors.gray700}
           textAlign={align}
           maxWidth={align === "center" ? 600 : undefined}

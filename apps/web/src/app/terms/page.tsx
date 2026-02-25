@@ -2,13 +2,21 @@
 
 import { YStack, Text, ScrollView } from "tamagui";
 import { AppLayout, PageHeader } from "@/components";
+import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 export default function TermsPage() {
+  const { isMobile } = useResponsive();
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack maxWidth={1000} width="100%" alignSelf="center" padding="$6" gap="$6">
+        <YStack
+          maxWidth={1000}
+          width="100%"
+          alignSelf="center"
+          padding={isMobile ? "$4" : "$6"}
+          gap="$6"
+        >
           <PageHeader
             title="Conditions d'utilisation"
             description="Dernière mise à jour : Janvier 2026"

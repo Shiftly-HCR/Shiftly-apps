@@ -15,11 +15,12 @@ import {
   EmptyState,
   HelpCard,
 } from "@/components";
-import { useFreelanceMissionsPage } from "@/hooks";
+import { useFreelanceMissionsPage, useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 export default function FreelanceMissionsPage() {
   const router = useRouter();
+  const { isMobile } = useResponsive();
   const {
     profile,
     missions,
@@ -44,15 +45,25 @@ export default function FreelanceMissionsPage() {
           maxWidth={1400}
           width="100%"
           alignSelf="center"
-          padding="$6"
+          padding={isMobile ? "$4" : "$6"}
           gap="$6"
         >
           {/* En-tête */}
           <PageHeader title={`Bienvenue, ${getFullName()} 👋`} />
 
-          <XStack gap="$6" alignItems="flex-start" flexWrap="wrap">
+          <XStack
+            gap="$6"
+            alignItems="flex-start"
+            flexWrap="wrap"
+            flexDirection={isMobile ? "column" : "row"}
+          >
             {/* Colonne gauche */}
-            <YStack flex={1} minWidth={400} gap="$6">
+            <YStack
+              flex={isMobile ? undefined : 1}
+              minWidth={isMobile ? undefined : 400}
+              width={isMobile ? "100%" : undefined}
+              gap="$6"
+            >
               {/* Statistiques rapides */}
               <PageSection title="Statistiques rapides">
                 <XStack gap="$4" flexWrap="wrap">
@@ -164,7 +175,11 @@ export default function FreelanceMissionsPage() {
             </YStack>
 
             {/* Colonne droite */}
-            <YStack width={400} flexShrink={0} gap="$6">
+            <YStack
+              width={isMobile ? "100%" : 400}
+              flexShrink={isMobile ? undefined : 0}
+              gap="$6"
+            >
               {/* Missions recommandées */}
               <PageSection title="Missions recommandées">
                 {recommendedMissions.length > 0 ? (

@@ -8,7 +8,7 @@ import {
   MissionClusterMarker,
   MissionVisibleList,
 } from "@/components";
-import { useMissionClustering, useVisibleMissions } from "@/hooks";
+import { useMissionClustering, useVisibleMissions, useResponsive } from "@/hooks";
 import type { Mission } from "@shiftly/data";
 import type { MapMarker, MapBounds } from "@/components/ui/Map";
 
@@ -35,8 +35,11 @@ export function MissionMapView({
   isNewMission,
   showVisibleList = true, // Par défaut, afficher la liste
 }: MissionMapViewProps) {
+  const { isMobile } = useResponsive();
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const [bounds, setBounds] = useState<MapBounds | null>(null);
+
+  const mapHeight = isMobile ? 400 : height;
 
   const clusteredMarkers = useMissionClustering({
     missions,
@@ -96,7 +99,7 @@ export function MissionMapView({
         latitude={latitude}
         longitude={longitude}
         zoom={zoom}
-        height={height}
+        height={mapHeight}
         markers={markers}
         onViewStateChange={handleViewStateChange}
         onBoundsChange={showVisibleList ? setBounds : undefined}

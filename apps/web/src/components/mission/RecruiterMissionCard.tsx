@@ -13,6 +13,7 @@ interface RecruiterMissionCardProps {
   onEdit: () => void;
   onManageCandidates: () => void;
   onDelete: () => void;
+  isMobile?: boolean;
 }
 
 export function RecruiterMissionCard({
@@ -21,6 +22,7 @@ export function RecruiterMissionCard({
   onEdit,
   onManageCandidates,
   onDelete,
+  isMobile = false,
 }: RecruiterMissionCardProps) {
   const getStatusLabel = (status?: string) => {
     switch (status) {
@@ -53,7 +55,11 @@ export function RecruiterMissionCard({
   };
 
   return (
-    <YStack width="calc(33.333% - 12px)" minWidth={300} position="relative">
+    <YStack
+      width={isMobile ? "100%" : "calc(33.333% - 12px)"}
+      minWidth={isMobile ? undefined : 300}
+      position="relative"
+    >
       <MissionCard
         title={mission.title}
         date={
