@@ -25,7 +25,17 @@ interface NavbarProps {
   onLogoutClick?: () => void;
 }
 
-const MOBILE_BREAKPOINT = 768;
+// CSS media breakpoint: burger + hide logo/links below this width (no JS needed for first paint)
+const NAVBAR_MOBILE_MAX_WIDTH = 900;
+
+const navbarResponsiveStyles = `
+.navbar-mobile-only { display: none !important; }
+.navbar-desktop-only { display: flex !important; }
+@media (max-width: ${NAVBAR_MOBILE_MAX_WIDTH}px) {
+  .navbar-mobile-only { display: flex !important; }
+  .navbar-desktop-only { display: none !important; }
+}
+`;
 
 export function Navbar({
   onSearch,
@@ -46,25 +56,14 @@ export function Navbar({
   onAdminDashboardClick,
   onLogoutClick,
 }: NavbarProps) {
-  const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Marquer le composant comme monté après l'hydratation
-    setMounted(true);
-
-    const checkScreenSize = () => {
-      if (typeof window !== "undefined") {
-        setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-      }
-    };
-
-    checkScreenSize();
-    if (typeof window !== "undefined") {
-      window.addEventListener("resize", checkScreenSize);
-      return () => window.removeEventListener("resize", checkScreenSize);
-    }
+    const check = () => setIsMobile(typeof window !== "undefined" && window.innerWidth < NAVBAR_MOBILE_MAX_WIDTH);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   const handleHomeClick = () => {
@@ -116,17 +115,19 @@ export function Navbar({
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: navbarResponsiveStyles }} />
       <YStack
         backgroundColor={colors.white}
         borderBottomWidth={1}
         borderBottomColor={colors.gray200}
-        paddingHorizontal={isMobile ? "$3" : "$6"}
+        paddingHorizontal="$3"
         paddingVertical="$3"
         shadowOffset={{ width: 0, height: 2 }}
         shadowOpacity={1}
         shadowRadius={4}
         elevation={2}
         zIndex={1000}
+        className="navbar-root"
       >
         <XStack
           alignItems="center"
@@ -134,23 +135,22 @@ export function Navbar({
           width="100%"
           alignSelf="center"
           justifyContent="space-between"
-          gap={isMobile ? "$2" : "$4"}
+          gap="$4"
         >
-          {/* Logo + Menu Burger (mobile) */}
+          {/* Left: Burger (mobile, CSS) or Logo + "Shiftly" (desktop, CSS) */}
           <XStack alignItems="center" gap="$2" flexShrink={0}>
-            {/* Menu Burger - Visible uniquement sur mobile */}
-            {mounted && isMobile && (
-              <XStack
-                cursor="pointer"
-                hoverStyle={{ opacity: 0.8 }}
-                onPress={() => setMenuOpen(true)}
-                padding="$2"
-              >
-                <Menu size={24} color={colors.gray900} />
-              </XStack>
-            )}
-
             <XStack
+              className="navbar-mobile-only"
+              alignItems="center"
+              cursor="pointer"
+              hoverStyle={{ opacity: 0.8 }}
+              onPress={() => setMenuOpen(true)}
+              padding="$2"
+            >
+              <Menu size={24} color={colors.gray900} />
+            </XStack>
+            <XStack
+              className="navbar-desktop-only"
               alignItems="center"
               gap="$2"
               cursor="pointer"
@@ -159,42 +159,39 @@ export function Navbar({
             >
               <Image
                 source={{ uri: "/logo-shiftly.png" }}
-                width={mounted && isMobile ? 32 : 40}
-                height={mounted && isMobile ? 32 : 40}
+                width={40}
+                height={40}
                 borderRadius={20}
               />
-              {(!mounted || !isMobile) && (
-                <Text fontSize={20} fontWeight="700" color={colors.gray900}>
-                  Shiftly
-                </Text>
-              )}
+              <Text fontSize={20} fontWeight="700" color={colors.gray900}>
+                Shiftly
+              </Text>
             </XStack>
           </XStack>
 
-          {/* Barre de recherche - Au centre (cachée sur mobile) */}
-          {(!mounted || !isMobile) && (
-            <YStack
-              flex={1}
-              maxWidth={600}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <SearchBar
-                value={searchValue}
-                onChangeText={onChangeText ?? onSearch}
-                onSearch={() => onSearch && onSearch(searchValue || "")}
-              />
-            </YStack>
-          )}
+          {/* Barre de recherche - Au centre (cachée sur mobile via CSS) */}
+          <YStack
+            className="navbar-desktop-only"
+            flex={1}
+            maxWidth={600}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <SearchBar
+              value={searchValue}
+              onChangeText={onChangeText ?? onSearch}
+              onSearch={() => onSearch && onSearch(searchValue || "")}
+            />
+          </YStack>
 
-          {/* Menu navigation + Avatar + Logout - Tout à droite */}
+          {/* Menu navigation + Avatar + Logout */}
           <XStack
             alignItems="center"
-            gap={mounted && isMobile ? "$2" : "$5"}
+            gap="$5"
             flexShrink={0}
           >
-            {/* Liens de navigation - Cachés sur mobile */}
-            {(!mounted || !isMobile) && (
+            {/* Liens de navigation - Cachés sur mobile via CSS */}
+            <XStack className="navbar-desktop-only" alignItems="center" gap="$5">
               <>
                 {/* Liens spécifiques aux admins */}
                 {userRole === "admin" && (
@@ -333,7 +330,7 @@ export function Navbar({
                   </>
                 )}
               </>
-            )}
+            </XStack>
 
             {/* Avatar utilisateur */}
             <XStack
@@ -343,7 +340,7 @@ export function Navbar({
             >
               <Avatar
                 circular
-                size={mounted && isMobile ? 32 : 40}
+                size={isMobile ? 32 : 40}
                 backgroundColor={colors.shiftlyViolet}
               >
                 {userAvatar ? (
@@ -356,7 +353,7 @@ export function Navbar({
                   >
                     <Text
                       color={colors.white}
-                      fontSize={mounted && isMobile ? 14 : 16}
+                      fontSize={isMobile ? 14 : 16}
                       fontWeight="600"
                       textAlign="center"
                     >
@@ -377,15 +374,15 @@ export function Navbar({
                 tabIndex={0}
                 padding="$2"
               >
-                <LogOut size={mounted && isMobile ? 18 : 20} color="#EF4444" />
+                <LogOut size={isMobile ? 18 : 20} color="#EF4444" />
               </XStack>
             )}
           </XStack>
         </XStack>
       </YStack>
 
-      {/* Menu Drawer pour mobile - Rendu uniquement après hydratation */}
-      {mounted && menuOpen && (
+      {/* Menu Drawer pour mobile */}
+      {menuOpen && (
         <>
           {/* Overlay */}
           <YStack
@@ -400,19 +397,19 @@ export function Navbar({
             onPress={() => setMenuOpen(false)}
           />
 
-          {/* Menu Drawer */}
+          {/* Menu Drawer - slides in from the left */}
           <YStack
             // @ts-expect-error: 'fixed' is used for mobile drawer, tamagui type may not match CSS
             position="fixed"
             top={0}
-            right={0}
+            left={0}
             bottom={0}
             width="85%"
             maxWidth={400}
             backgroundColor={colors.white}
             zIndex={100000}
             shadowColor="#000000"
-            shadowOffset={{ width: -2, height: 0 }}
+            shadowOffset={{ width: 2, height: 0 }}
             shadowOpacity={0.25}
             shadowRadius={10}
             elevation={10}
@@ -452,7 +449,7 @@ export function Navbar({
                   </YStack>
                 )}
 
-                {/* Informations utilisateur */}
+                {/* Informations utilisateur (cliquable → profil) */}
                 <XStack
                   alignItems="center"
                   gap="$3"
@@ -460,6 +457,9 @@ export function Navbar({
                   borderBottomWidth={1}
                   borderBottomColor={colors.gray200}
                   marginBottom="$2"
+                  cursor="pointer"
+                  hoverStyle={{ backgroundColor: colors.gray050 }}
+                  onPress={() => handleMenuClick(onProfileClick)}
                 >
                   <Avatar
                     circular
