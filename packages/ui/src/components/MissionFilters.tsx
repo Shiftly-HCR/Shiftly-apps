@@ -365,7 +365,7 @@ export function MissionFilters({
         {drawerOpen && (
           <>
             <YStack
-              position="fixed"
+              position="absolute"
               top={0}
               left={0}
               right={0}
@@ -373,9 +373,10 @@ export function MissionFilters({
               backgroundColor="rgba(0, 0, 0, 0.5)"
               zIndex={99999}
               onPress={() => setDrawerOpen(false)}
+              style={{ position: "fixed" }}
             />
             <YStack
-              position="fixed"
+              position="absolute"
               top={0}
               left={0}
               bottom={0}
@@ -388,6 +389,7 @@ export function MissionFilters({
               shadowOpacity={0.25}
               shadowRadius={10}
               elevation={10}
+              style={{ position: "fixed" }}
             >
               <ScrollView flex={1}>
                 <YStack padding="$4" gap="$5">
