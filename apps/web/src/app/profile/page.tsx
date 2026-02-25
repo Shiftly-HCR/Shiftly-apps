@@ -341,7 +341,12 @@ export default function ProfilePage() {
               shadowRadius={12}
               gap="$4"
             >
-              <XStack justifyContent="space-between" alignItems="center">
+              <XStack
+                justifyContent="space-between"
+                alignItems={isMobile ? "flex-start" : "center"}
+                flexDirection={isMobile ? "column" : "row"}
+                gap={isMobile ? "$2" : undefined}
+              >
                 <Text fontSize={18} fontWeight="600" color="#2B2B2B">
                   Paramètres de paiement
                 </Text>
@@ -391,13 +396,15 @@ export default function ProfilePage() {
                 backgroundColor={colors.gray100}
                 padding="$4"
                 borderRadius="$3"
-                alignItems="center"
+                alignItems={isMobile ? "flex-start" : "center"}
                 justifyContent="space-between"
+                flexDirection={isMobile ? "column" : "row"}
+                gap={isMobile ? "$3" : undefined}
                 pressStyle={{ opacity: 0.8 }}
                 cursor="pointer"
                 onPress={() => router.push("/settings/payments")}
               >
-                <XStack alignItems="center" gap="$3">
+                <XStack alignItems="center" gap="$3" width={isMobile ? "100%" : undefined}>
                   <XStack
                     width={40}
                     height={40}

@@ -9,7 +9,7 @@ import {
   Select,
   colors,
 } from "@shiftly/ui";
-import { useFreelanceProfileForm } from "@/hooks";
+import { useFreelanceProfileForm, useResponsive } from "@/hooks";
 import { useFormatDate } from "@/hooks";
 
 interface FreelanceProfileFormProps {
@@ -32,6 +32,7 @@ export function FreelanceProfileForm({
   onSaveAll,
 }: FreelanceProfileFormProps) {
   const { formatDateShort } = useFormatDate();
+  const { isMobile } = useResponsive();
 
   const {
     // Données
@@ -85,8 +86,8 @@ export function FreelanceProfileForm({
     handleEditEducation,
     handleCancelEditEducation,
 
-    // Handler LinkedIn
-    handleSyncLinkedIn,
+    // Handler LinkedIn (feature not ready - button commented out)
+    // handleSyncLinkedIn,
   } = useFreelanceProfileForm({
     onSave,
     externalFirstName,
@@ -121,10 +122,16 @@ export function FreelanceProfileForm({
     >
       {/* Informations générales */}
       <YStack gap="$4">
-        <XStack justifyContent="space-between" alignItems="center">
+        <XStack
+          justifyContent="space-between"
+          alignItems={isMobile ? "flex-start" : "center"}
+          flexDirection={isMobile ? "column" : "row"}
+          gap={isMobile ? "$3" : undefined}
+        >
           <Text fontSize={20} fontWeight="700" color={colors.gray900}>
             Informations générales
           </Text>
+          {/* LinkedIn sync not ready yet
           <Button
             variant="outline"
             size="sm"
@@ -133,6 +140,7 @@ export function FreelanceProfileForm({
           >
             🔗 Sync LinkedIn
           </Button>
+          */}
         </XStack>
 
         <YStack gap="$3">
@@ -140,7 +148,11 @@ export function FreelanceProfileForm({
             <Text fontSize={14} fontWeight="600" color={colors.gray900}>
               Compétences
             </Text>
-            <XStack gap="$2" style={{ width: "88%" }}>
+            <XStack
+              gap="$2"
+              flexDirection={isMobile ? "column" : "row"}
+              style={{ width: isMobile ? "100%" : "88%" }}
+            >
               <Input
                 placeholder="Ajouter une compétence"
                 value={skillInput}
@@ -180,8 +192,12 @@ export function FreelanceProfileForm({
             </XStack>
           </YStack>
 
-          <XStack gap="$3">
-            <YStack flex={1} gap="$2">
+          <XStack
+            gap="$3"
+            flexDirection={isMobile ? "column" : "row"}
+            flexWrap="wrap"
+          >
+            <YStack flex={isMobile ? undefined : 1} gap="$2" width={isMobile ? "100%" : undefined}>
               <Text fontSize={14} fontWeight="600" color={colors.gray900}>
                 TJM (€)
               </Text>
@@ -208,7 +224,7 @@ export function FreelanceProfileForm({
                   </YStack>
                 )}
             </YStack>
-            <YStack flex={1} gap="$2">
+            <YStack flex={isMobile ? undefined : 1} gap="$2" width={isMobile ? "100%" : undefined}>
               <Text fontSize={14} fontWeight="600" color={colors.gray900}>
                 Tarif horaire (€)
               </Text>
@@ -219,7 +235,7 @@ export function FreelanceProfileForm({
                 keyboardType="numeric"
               />
             </YStack>
-            <YStack flex={1} gap="$2">
+            <YStack flex={isMobile ? undefined : 1} gap="$2" width={isMobile ? "100%" : undefined}>
               <Select
                 label="Disponibilité"
                 placeholder="Sélectionner une disponibilité"
@@ -256,8 +272,13 @@ export function FreelanceProfileForm({
             borderColor={colors.gray200}
             gap="$3"
           >
-            <XStack justifyContent="space-between" alignItems="flex-start">
-              <YStack flex={1} gap="$1">
+            <XStack
+              justifyContent="space-between"
+              alignItems="flex-start"
+              flexDirection={isMobile ? "column" : "row"}
+              gap={isMobile ? "$3" : undefined}
+            >
+              <YStack flex={1} gap="$1" width={isMobile ? "100%" : undefined}>
                 <Text fontSize={18} fontWeight="600" color={colors.gray900}>
                   {exp.title}
                 </Text>
@@ -279,7 +300,11 @@ export function FreelanceProfileForm({
                   </Text>
                 )}
               </YStack>
-              <XStack gap="$2">
+              <XStack
+                gap="$2"
+                flexDirection={isMobile ? "column" : "row"}
+                width={isMobile ? "100%" : undefined}
+              >
                 <Button
                   variant="outline"
                   size="sm"
@@ -338,8 +363,11 @@ export function FreelanceProfileForm({
                 setExperienceForm({ ...experienceForm, location: text })
               }
             />
-            <XStack gap="$3">
-              <YStack flex={1}>
+            <XStack
+              gap="$3"
+              flexDirection={isMobile ? "column" : "row"}
+            >
+              <YStack flex={isMobile ? undefined : 1} width={isMobile ? "100%" : undefined}>
                 <DatePicker
                   label="Date de début"
                   value={experienceForm.start_date}
@@ -351,7 +379,7 @@ export function FreelanceProfileForm({
                   }
                 />
               </YStack>
-              <YStack flex={1}>
+              <YStack flex={isMobile ? undefined : 1} width={isMobile ? "100%" : undefined}>
                 <DatePicker
                   label="Date de fin"
                   value={experienceForm.end_date}
@@ -385,7 +413,10 @@ export function FreelanceProfileForm({
               multiline
               numberOfLines={3}
             />
-            <XStack gap="$2">
+            <XStack
+              gap="$2"
+              flexDirection={isMobile ? "column" : "row"}
+            >
               <Button
                 variant="primary"
                 onPress={handleSaveExperience}
@@ -419,8 +450,13 @@ export function FreelanceProfileForm({
             borderColor={colors.gray200}
             gap="$3"
           >
-            <XStack justifyContent="space-between" alignItems="flex-start">
-              <YStack flex={1} gap="$1">
+            <XStack
+              justifyContent="space-between"
+              alignItems="flex-start"
+              flexDirection={isMobile ? "column" : "row"}
+              gap={isMobile ? "$3" : undefined}
+            >
+              <YStack flex={1} gap="$1" width={isMobile ? "100%" : undefined}>
                 <Text fontSize={18} fontWeight="600" color={colors.gray900}>
                   {edu.school}
                 </Text>
@@ -435,7 +471,11 @@ export function FreelanceProfileForm({
                   {edu.end_date && ` - ${formatDateShort(edu.end_date)}`}
                 </Text>
               </YStack>
-              <XStack gap="$2">
+              <XStack
+                gap="$2"
+                flexDirection={isMobile ? "column" : "row"}
+                width={isMobile ? "100%" : undefined}
+              >
                 <Button
                   variant="outline"
                   size="sm"
@@ -494,8 +534,11 @@ export function FreelanceProfileForm({
                 setEducationForm({ ...educationForm, field: text })
               }
             />
-            <XStack gap="$3">
-              <YStack flex={1}>
+            <XStack
+              gap="$3"
+              flexDirection={isMobile ? "column" : "row"}
+            >
+              <YStack flex={isMobile ? undefined : 1} width={isMobile ? "100%" : undefined}>
                 <DatePicker
                   label="Date de début"
                   value={educationForm.start_date}
@@ -507,7 +550,7 @@ export function FreelanceProfileForm({
                   }
                 />
               </YStack>
-              <YStack flex={1}>
+              <YStack flex={isMobile ? undefined : 1} width={isMobile ? "100%" : undefined}>
                 <DatePicker
                   label="Date de fin"
                   value={educationForm.end_date}
@@ -520,7 +563,10 @@ export function FreelanceProfileForm({
                 />
               </YStack>
             </XStack>
-            <XStack gap="$2">
+            <XStack
+              gap="$2"
+              flexDirection={isMobile ? "column" : "row"}
+            >
               <Button
                 variant="primary"
                 onPress={handleSaveEducation}

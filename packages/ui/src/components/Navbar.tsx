@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { XStack, YStack, Text, Avatar, Image, ScrollView } from "tamagui";
 import { LogOut, Menu, X } from "lucide-react";
 import { SearchBar } from "./SearchBar";
@@ -58,12 +58,36 @@ export function Navbar({
 }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [navbarVisible, setNavbarVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const SCROLL_THRESHOLD = 60;
 
   useEffect(() => {
     const check = () => setIsMobile(typeof window !== "undefined" && window.innerWidth < NAVBAR_MOBILE_MAX_WIDTH);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // On mobile: hide navbar when scrolling down, show when scrolling up
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onScroll = () => {
+      const current = window.scrollY ?? window.pageYOffset;
+      if (window.innerWidth >= NAVBAR_MOBILE_MAX_WIDTH) {
+        setNavbarVisible(true);
+        lastScrollY.current = current;
+        return;
+      }
+      if (current < lastScrollY.current) {
+        setNavbarVisible(true);
+      } else if (current > SCROLL_THRESHOLD) {
+        setNavbarVisible(false);
+      }
+      lastScrollY.current = current;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const handleHomeClick = () => {
@@ -113,22 +137,31 @@ export function Navbar({
     </Text>
   );
 
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: navbarResponsiveStyles }} />
-      <YStack
-        backgroundColor={colors.white}
-        borderBottomWidth={1}
-        borderBottomColor={colors.gray200}
-        paddingHorizontal="$3"
-        paddingVertical="$3"
-        shadowOffset={{ width: 0, height: 2 }}
-        shadowOpacity={1}
-        shadowRadius={4}
-        elevation={2}
-        zIndex={1000}
-        className="navbar-root"
-      >
+  const navbarContent = (
+    <YStack
+      backgroundColor={colors.white}
+      borderBottomWidth={1}
+      borderBottomColor={colors.gray200}
+      paddingHorizontal="$3"
+      paddingVertical="$3"
+      shadowOffset={{ width: 0, height: 2 }}
+      shadowOpacity={1}
+      shadowRadius={4}
+      elevation={2}
+      zIndex={1000}
+      className="navbar-root"
+      {...(isMobile && {
+        position: "absolute" as const,
+        top: 0,
+        left: 0,
+        right: 0,
+        style: {
+          position: "fixed",
+          transform: navbarVisible ? "translateY(0)" : "translateY(-100%)",
+          transition: "transform 0.25s ease-out",
+        },
+      })}
+    >
         <XStack
           alignItems="center"
           maxWidth={1400}
@@ -379,7 +412,13 @@ export function Navbar({
           </XStack>
         </XStack>
       </YStack>
+  );
 
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: navbarResponsiveStyles }} />
+      {isMobile && <YStack height={56} width="100%" flexShrink={0} />}
+      {navbarContent}
       {/* Menu Drawer pour mobile */}
       {menuOpen && (
         <>
