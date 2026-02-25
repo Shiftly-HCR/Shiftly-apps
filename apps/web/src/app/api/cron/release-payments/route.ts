@@ -107,25 +107,22 @@ async function attemptTransferWithRetry(params: {
 
 /**
  * POST /api/cron/release-payments
- * 
- * Endpoint appelé par pg_cron pour libérer automatiquement les fonds
- * 
- * Sécurité: Vérifie CRON_SECRET dans le header Authorization
- * 
- * Logique:
- * 1. Appelle la fonction SQL release_due_payments() qui retourne les paiements éligibles (avec verrouillage)
- * 2. Pour chaque paiement:
- *    - Vérifie released_at IS NULL (idempotence)
- *    - Récupère le Charge ID
- *    - Effectue les transferts Stripe
- *    - Met à jour released_at (source de vérité)
+ *
+ * Endpoint appelé par Vercel Cron pour libérer automatiquement les fonds.
+ * Schedule: 0 6 * * * (tous les jours à 6h UTC).
+ *
+ * Sécurité: Vérifie Authorization: Bearer <CRON_SECRET> (env CRON_SECRET sur Vercel).
+ * Retourne 401 si header absent ou secret incorrect.
+ *
+ * Idempotence: release_due_payments() filtre sur released_at IS NULL et utilise
+ * FOR UPDATE SKIP LOCKED; chaque paiement est re-vérifié (released_at) avant transfert.
  */
 export async function POST(req: NextRequest) {
   console.log("📥 POST /api/cron/release-payments");
 
-  // Vérifier le secret CRON
   const authHeader = req.headers.get("authorization");
-  const providedSecret = authHeader?.replace("Bearer ", "");
+  const providedSecret =
+    authHeader?.replace(/^Bearer\s+/i, "").trim() ?? "";
 
   if (!CRON_SECRET || providedSecret !== CRON_SECRET) {
     console.warn("⚠️ [Cron] Tentative d'accès non autorisée");

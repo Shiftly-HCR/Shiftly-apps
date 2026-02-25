@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm turbo run build --filter=@shiftly/web",
-  "installCommand": "corepack enable && corepack prepare pnpm@10.18.3 --activate && pnpm install"
+  "installCommand": "corepack enable && corepack prepare pnpm@10.18.3 --activate && pnpm install",
+  "crons": [
+    {
+      "path": "/api/cron/release-payments",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }
