@@ -137,7 +137,7 @@ export function Navbar({
           justifyContent="space-between"
           gap="$4"
         >
-          {/* Left: Burger (mobile, CSS) or Logo + "Shiftly" (desktop, CSS) */}
+          {/* Left: Burger (mobile) + Logo + "Shiftly" (always visible) */}
           <XStack alignItems="center" gap="$2" flexShrink={0}>
             <XStack
               className="navbar-mobile-only"
@@ -150,7 +150,6 @@ export function Navbar({
               <Menu size={24} color={colors.gray900} />
             </XStack>
             <XStack
-              className="navbar-desktop-only"
               alignItems="center"
               gap="$2"
               cursor="pointer"
