@@ -5,7 +5,7 @@
 --   - Table mission_disputes pour les litiges (internes + Stripe)
 --   - Colonnes sur mission_payments: has_dispute, problem_declared_at, release_at, released_at
 --   - Fonction release_due_payments() avec verrouillage FOR UPDATE SKIP LOCKED
---   - Configuration pg_cron pour libération automatique
+--   - Libération automatique déclenchée par Vercel Cron (POST /api/cron/release-payments)
 -- =============================================
 
 -- =============================================
@@ -143,69 +143,7 @@ COMMENT ON FUNCTION public.release_due_payments() IS
   'Retourne les paiements éligibles pour libération automatique (end_date <= today, pas de litige, pas encore libéré). Utilise FOR UPDATE SKIP LOCKED pour éviter les doubles traitements.';
 
 -- =============================================
--- 5. CONFIGURATION pg_cron (si disponible)
--- =============================================
-
--- Activer l'extension pg_cron (nécessite les droits superuser)
--- Note: Cette extension doit être activée manuellement par un admin Supabase
--- CREATE EXTENSION IF NOT EXISTS pg_cron;
-
--- Fonction pour appeler l'API Next.js via HTTP
--- Note: Nécessite l'extension pg_net ou net de Supabase
-CREATE OR REPLACE FUNCTION public.call_release_payments_api()
-RETURNS void AS $$
-DECLARE
-  api_url TEXT;
-  api_secret TEXT;
-  response_status INTEGER;
-BEGIN
-  -- Récupérer les variables d'environnement Supabase
-  -- Note: Ces valeurs doivent être configurées dans Supabase Dashboard > Settings > Database > Custom Config
-  api_url := current_setting('app.release_payments_api_url', true);
-  api_secret := current_setting('app.cron_secret', true);
-
-  -- Si les variables ne sont pas configurées, utiliser des valeurs par défaut
-  IF api_url IS NULL THEN
-    api_url := 'https://your-domain.com/api/cron/release-payments';
-  END IF;
-
-  IF api_secret IS NULL THEN
-    RAISE WARNING 'CRON_SECRET non configuré. Le CRON ne pourra pas appeler l''API.';
-    RETURN;
-  END IF;
-
-  -- Appeler l'endpoint Next.js via pg_net (extension Supabase)
-  -- Note: Si pg_net n'est pas disponible, utiliser un service externe (GitHub Actions, etc.)
-  BEGIN
-    PERFORM net.http_post(
-      url := api_url,
-      headers := jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Authorization', 'Bearer ' || api_secret
-      ),
-      body := '{}'::jsonb
-    );
-  EXCEPTION WHEN OTHERS THEN
-    RAISE WARNING 'Erreur lors de l''appel API: %', SQLERRM;
-  END;
-END;
-$$ LANGUAGE plpgsql;
-
-COMMENT ON FUNCTION public.call_release_payments_api() IS 
-  'Appelle l''endpoint Next.js /api/cron/release-payments pour libérer les fonds. Nécessite pg_net et les variables app.release_payments_api_url et app.cron_secret.';
-
--- Programmer le CRON (nécessite pg_cron activé)
--- Note: Décommenter et adapter après activation de pg_cron
-/*
-SELECT cron.schedule(
-  'release-payments-daily',
-  '0 6 * * *',  -- Tous les jours à 6h00 UTC
-  $$ SELECT public.call_release_payments_api(); $$
-);
-*/
-
--- =============================================
--- 6. TRIGGER: Mettre à jour release_at automatiquement
+-- 5. TRIGGER: Mettre à jour release_at automatiquement
 -- =============================================
 
 -- Fonction trigger pour mettre à jour release_at quand end_date change
@@ -235,7 +173,7 @@ COMMENT ON FUNCTION public.update_payment_release_at() IS
   'Met à jour automatiquement release_at des paiements quand end_date de la mission change';
 
 -- =============================================
--- 7. VUE: Paiements en attente de libération
+-- 6. VUE: Paiements en attente de libération
 -- =============================================
 
 DROP VIEW IF EXISTS public.payments_pending_release;

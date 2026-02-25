@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Shiftly web app",
   description: "Recrutement HCR",
+  icons: {
+    icon: "/logo.ico",
+  },
 };
 
 export default function RootLayout({

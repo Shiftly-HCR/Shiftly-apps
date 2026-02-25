@@ -24,22 +24,25 @@ export const FUND_DISTRIBUTION = {
 } as const;
 
 function getPriceId(planId: SubscriptionPlanId): string | undefined {
-  switch (planId) {
-    case "establishment":
-      return process.env.STRIPE_PRICE_ESTABLISHMENT;
-    case "establishment-annual":
-      return process.env.STRIPE_PRICE_ESTABLISHMENT_ANNUAL;
-    case "freelance-student":
-      return process.env.STRIPE_PRICE_FREELANCE_STUDENT;
-    case "freelance-student-annual":
-      return process.env.STRIPE_PRICE_FREELANCE_STUDENT_ANNUAL;
-    case "freelance-classic":
-      return process.env.STRIPE_PRICE_FREELANCE_CLASSIC;
-    case "freelance-classic-annual":
-      return process.env.STRIPE_PRICE_FREELANCE_CLASSIC_ANNUAL;
-    default:
-      return undefined;
-  }
+  const raw = (() => {
+    switch (planId) {
+      case "establishment":
+        return process.env.STRIPE_PRICE_ESTABLISHMENT;
+      case "establishment-annual":
+        return process.env.STRIPE_PRICE_ESTABLISHMENT_ANNUAL;
+      case "freelance-student":
+        return process.env.STRIPE_PRICE_FREELANCE_STUDENT;
+      case "freelance-student-annual":
+        return process.env.STRIPE_PRICE_FREELANCE_STUDENT_ANNUAL;
+      case "freelance-classic":
+        return process.env.STRIPE_PRICE_FREELANCE_CLASSIC;
+      case "freelance-classic-annual":
+        return process.env.STRIPE_PRICE_FREELANCE_CLASSIC_ANNUAL;
+      default:
+        return undefined;
+    }
+  })();
+  return raw?.trim() || undefined;
 }
 
 export function getStripeClient(): Stripe {
