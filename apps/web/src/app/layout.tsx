@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "Shiftly web app",
   description: "Recrutement HCR",
   icons: {
-    icon: "/logo.ico",
+    icon: "/logo.png",
   },
 };
 
