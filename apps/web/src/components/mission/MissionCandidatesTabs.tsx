@@ -103,7 +103,7 @@ export function MissionCandidatesTabs({
   );
 
   return isMobile ? (
-    <ScrollView horizontal style={{ overflowX: "auto" }}>
+    <ScrollView horizontal>
       {tabs}
     </ScrollView>
   ) : (
