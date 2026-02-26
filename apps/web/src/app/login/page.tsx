@@ -84,7 +84,7 @@ export default function LoginPage() {
               color="#2B2B2B"
               textAlign="center"
             >
-              Connexion Recruteur
+              Connexion
             </Text>
             <Text
               fontSize={14}
@@ -92,7 +92,7 @@ export default function LoginPage() {
               textAlign="center"
               lineHeight={20}
             >
-              Accédez à votre espace pour gérer vos missions
+              Accédez à votre espace personnel
             </Text>
           </YStack>
 
