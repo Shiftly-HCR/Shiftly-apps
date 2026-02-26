@@ -209,31 +209,15 @@ export default function AdminDisputesPage() {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
 
-      // TODO: Créer endpoint /api/admin/disputes/[id]/resolve
-      // Pour l'instant, on met à jour directement via Supabase
-      const { error: updateError } = await supabase
-        .from("mission_disputes")
-        .update({
-          status: action === "resolve" ? "resolved" : "rejected",
-          resolution: resolution || null,
-          resolved_by: profile?.id,
-          resolved_at: new Date().toISOString(),
-        })
-        .eq("id", disputeId);
+      const response = await fetch(`/api/admin/disputes/${disputeId}/resolve`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ action, resolution }),
+      });
 
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
-
-      // Si résolu, mettre has_dispute = false pour permettre la libération
-      if (action === "resolve") {
-        const dispute = disputes.find((d) => d.id === disputeId);
-        if (dispute) {
-          await supabase
-            .from("mission_payments")
-            .update({ has_dispute: false })
-            .eq("id", dispute.mission_payment_id);
-        }
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Erreur lors de la résolution");
       }
 
       await fetchDisputes();

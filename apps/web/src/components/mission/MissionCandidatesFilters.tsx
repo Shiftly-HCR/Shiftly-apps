@@ -4,6 +4,7 @@ import { YStack, XStack, Text } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { SimpleCheckbox } from "@/components/ui/SimpleCheckbox";
 import { type ApplicationStatus } from "@shiftly/data";
+import { useResponsive } from "@/hooks";
 
 interface MissionCandidatesFiltersProps {
   selectedCount: number;
@@ -24,6 +25,7 @@ export function MissionCandidatesFilters({
   statusFilter,
   onStatusFilterChange,
 }: MissionCandidatesFiltersProps) {
+  const { isMobile } = useResponsive();
   const isAllSelected = totalCount > 0 && selectedCount === totalCount;
 
   return (
@@ -31,8 +33,9 @@ export function MissionCandidatesFilters({
       {/* Filtres et actions en masse */}
       <XStack
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={isMobile ? "flex-start" : "center"}
         flexWrap="wrap"
+        flexDirection={isMobile ? "column" : "row"}
         gap="$3"
       >
         <XStack gap="$2" alignItems="center">

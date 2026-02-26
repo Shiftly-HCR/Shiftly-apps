@@ -1,7 +1,8 @@
 "use client";
 
-import { XStack, Text } from "tamagui";
+import { XStack, Text, ScrollView } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
+import { useResponsive } from "@/hooks";
 
 type TabType = "candidates" | "details" | "activity";
 
@@ -16,11 +17,15 @@ export function MissionCandidatesTabs({
   onTabChange,
   candidatesCount,
 }: MissionCandidatesTabsProps) {
-  return (
+  const { isMobile } = useResponsive();
+
+  const tabs = (
     <XStack
       gap="$2"
       borderBottomWidth={1}
       borderBottomColor={colors.gray200}
+      flexShrink={0}
+      minWidth={isMobile ? 320 : undefined}
     >
       <Button
         variant={activeTab === "candidates" ? "primary" : "outline"}
@@ -92,9 +97,17 @@ export function MissionCandidatesTabs({
           activeTab === "activity" ? colors.shiftlyViolet : "transparent"
         }
       >
-        Journal d'activité
+        {isMobile ? "Activité" : "Journal d'activité"}
       </Button>
     </XStack>
+  );
+
+  return isMobile ? (
+    <ScrollView horizontal>
+      {tabs}
+    </ScrollView>
+  ) : (
+    tabs
   );
 }
 
