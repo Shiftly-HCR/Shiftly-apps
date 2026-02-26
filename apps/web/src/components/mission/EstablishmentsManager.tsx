@@ -3,7 +3,7 @@
 import { YStack, XStack, Text, ScrollView } from "tamagui";
 import { Button, Input, colors } from "@shiftly/ui";
 import { PageSection, EmptyState, PageLoading } from "@/components";
-import { useEstablishmentsManager } from "@/hooks";
+import { useEstablishmentsManager, useResponsive } from "@/hooks";
 import {
   Building2,
   Plus,
@@ -17,6 +17,7 @@ import { SecretCodeDisplay } from "./SecretCodeDisplay";
 
 export function EstablishmentsManager() {
   const router = useRouter();
+  const { isMobile } = useResponsive();
   const {
     establishments,
     isLoading,
@@ -92,8 +93,11 @@ export function EstablishmentsManager() {
               }
             />
 
-            <XStack gap="$3">
-              <YStack flex={2}>
+            <XStack
+              gap="$3"
+              flexDirection={isMobile ? "column" : "row"}
+            >
+              <YStack flex={isMobile ? undefined : 2} width={isMobile ? "100%" : undefined}>
                 <Input
                   label="Ville"
                   placeholder="Paris"
@@ -103,7 +107,7 @@ export function EstablishmentsManager() {
                   }
                 />
               </YStack>
-              <YStack flex={1}>
+              <YStack flex={isMobile ? undefined : 1} width={isMobile ? "100%" : undefined}>
                 <Input
                   label="Code postal"
                   placeholder="75001"
@@ -115,8 +119,12 @@ export function EstablishmentsManager() {
               </YStack>
             </XStack>
 
-            <XStack gap="$3" marginTop="$2">
-              <YStack flex={1}>
+            <XStack
+              gap="$3"
+              marginTop="$2"
+              flexDirection={isMobile ? "column" : "row"}
+            >
+              <YStack flex={1} minWidth={isMobile ? "100%" : 100}>
                 <Button
                   variant="outline"
                   size="md"
@@ -126,7 +134,7 @@ export function EstablishmentsManager() {
                   Annuler
                 </Button>
               </YStack>
-              <YStack flex={1}>
+              <YStack flex={1} minWidth={isMobile ? "100%" : 100}>
                 <Button
                   variant="primary"
                   size="md"
@@ -151,6 +159,8 @@ export function EstablishmentsManager() {
             size="md"
             onPress={handleCreate}
             icon={<Plus size={16} />}
+            width={isMobile ? "100%" : undefined}
+            alignSelf={isMobile ? "stretch" : undefined}
           >
             Créer un établissement
           </Button>
@@ -163,26 +173,48 @@ export function EstablishmentsManager() {
             description="Créez votre premier établissement pour pouvoir y associer des missions"
           />
         ) : (
-          <XStack flexWrap="wrap" gap="$4">
+          <XStack
+            flexWrap="wrap"
+            gap={isMobile ? "$5" : "$4"}
+            flexDirection={isMobile ? "column" : "row"}
+          >
             {establishments.map((establishment) => (
               <YStack
                 key={establishment.id}
-                padding="$4"
+                padding={isMobile ? "$5" : "$4"}
                 backgroundColor={colors.white}
-                borderRadius="$4"
+                borderRadius={isMobile ? 16 : "$4"}
                 borderWidth={1}
                 borderColor={colors.gray200}
-                width="calc(33.333% - 12px)"
-                minWidth={280}
-                gap="$3"
+                width={isMobile ? "100%" : "calc(33.333% - 12px)"}
+                minWidth={isMobile ? undefined : 280}
+                gap={isMobile ? "$4" : "$3"}
+                shadowColor={isMobile ? "rgba(0,0,0,0.06)" : undefined}
+                shadowOffset={isMobile ? { width: 0, height: 2 } : undefined}
+                shadowOpacity={isMobile ? 1 : undefined}
+                shadowRadius={isMobile ? 8 : undefined}
+                elevation={isMobile ? 2 : undefined}
               >
-                <XStack alignItems="center" gap="$2">
-                  <Building2 size={20} color={colors.shiftlyViolet} />
+                <XStack alignItems="center" gap="$3">
+                  <YStack
+                    width={isMobile ? 44 : 36}
+                    height={isMobile ? 44 : 36}
+                    borderRadius={12}
+                    backgroundColor={colors.shiftlyViolet + "15"}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Building2
+                      size={isMobile ? 22 : 20}
+                      color={colors.shiftlyViolet}
+                    />
+                  </YStack>
                   <Text
-                    fontSize={18}
+                    fontSize={isMobile ? 20 : 18}
                     fontWeight="600"
                     color={colors.gray900}
                     flex={1}
+                    numberOfLines={2}
                   >
                     {establishment.name}
                   </Text>
@@ -190,9 +222,17 @@ export function EstablishmentsManager() {
 
                 {establishment.address && (
                   <XStack alignItems="flex-start" gap="$2">
-                    <MapPin size={16} color={colors.gray500} />
-                    <YStack flex={1}>
-                      <Text fontSize={14} color={colors.gray700}>
+                    <MapPin
+                      size={18}
+                      color={colors.gray500}
+                      style={{ marginTop: 2 }}
+                    />
+                    <YStack flex={1} minWidth={0}>
+                      <Text
+                        fontSize={isMobile ? 15 : 14}
+                        color={colors.gray700}
+                        lineHeight={20}
+                      >
                         {establishment.address}
                       </Text>
                       {(establishment.city || establishment.postal_code) && (
@@ -213,36 +253,49 @@ export function EstablishmentsManager() {
                   />
                 )}
 
-                <XStack gap="$2" marginTop="$2" flexWrap="wrap">
-                  <YStack flex={1} minWidth={100}>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onPress={() => handleCreateMission(establishment.id)}
-                      icon={<Briefcase size={14} />}
-                    >
-                      Créer mission
-                    </Button>
-                  </YStack>
-                  <YStack flex={1} minWidth={100}>
+                <XStack
+                  gap="$2"
+                  marginTop="$2"
+                  flexWrap="wrap"
+                  flexDirection={isMobile ? "column" : "row"}
+                >
+                  <Button
+                    variant="primary"
+                    size={isMobile ? "md" : "sm"}
+                    onPress={() => handleCreateMission(establishment.id)}
+                    icon={<Briefcase size={14} />}
+                    width={isMobile ? "100%" : undefined}
+                    flex={isMobile ? undefined : 1}
+                    minWidth={isMobile ? undefined : 100}
+                  >
+                    Créer mission
+                  </Button>
+                  <XStack
+                    gap="$2"
+                    flex={1}
+                    width={isMobile ? "100%" : undefined}
+                    minWidth={isMobile ? undefined : 100}
+                  >
                     <Button
                       variant="outline"
-                      size="sm"
+                      size={isMobile ? "md" : "sm"}
                       onPress={() => handleEdit(establishment)}
                       icon={<Edit2 size={14} />}
+                      flex={1}
                     >
                       Modifier
                     </Button>
-                  </YStack>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onPress={() => handleDelete(establishment.id)}
-                    icon={<Trash2 size={14} />}
-                    borderColor="#EF4444"
-                  >
-                    Supprimer
-                  </Button>
+                    <Button
+                      variant="outline"
+                      size={isMobile ? "md" : "sm"}
+                      onPress={() => handleDelete(establishment.id)}
+                      icon={<Trash2 size={14} />}
+                      borderColor="#EF4444"
+                      flex={1}
+                    >
+                      Supprimer
+                    </Button>
+                  </XStack>
                 </XStack>
               </YStack>
             ))}
