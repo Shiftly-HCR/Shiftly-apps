@@ -3,6 +3,7 @@
 import { YStack, XStack, Text } from "tamagui";
 import { type Mission } from "@shiftly/data";
 import { colors } from "@shiftly/ui";
+import { useResponsive } from "@/hooks";
 
 interface MissionCandidatesHeaderProps {
   mission: Mission;
@@ -11,11 +12,13 @@ interface MissionCandidatesHeaderProps {
 export function MissionCandidatesHeader({
   mission,
 }: MissionCandidatesHeaderProps) {
+  const { isMobile } = useResponsive();
+
   return (
     <YStack
       backgroundColor={colors.white}
       borderRadius={12}
-      padding="$5"
+      padding={isMobile ? "$4" : "$5"}
       borderWidth={1}
       borderColor={colors.gray200}
       gap="$4"
@@ -24,9 +27,10 @@ export function MissionCandidatesHeader({
         justifyContent="space-between"
         alignItems="flex-start"
         flexWrap="wrap"
+        flexDirection={isMobile ? "column" : "row"}
         gap="$4"
       >
-        <YStack flex={1} gap="$2">
+        <YStack flex={1} gap="$2" width={isMobile ? "100%" : undefined}>
           <Text fontSize={28} fontWeight="700" color={colors.gray900}>
             {mission.title}
           </Text>

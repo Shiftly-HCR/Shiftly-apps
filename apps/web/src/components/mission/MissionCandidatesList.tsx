@@ -4,6 +4,7 @@ import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
 import { MissionCandidatesRow } from "./MissionCandidatesRow";
 import { type MissionApplicationWithProfile, type ApplicationStatus } from "@shiftly/data";
+import { useResponsive } from "@/hooks";
 
 interface MissionCandidatesListProps {
   applications: MissionApplicationWithProfile[];
@@ -30,6 +31,8 @@ export function MissionCandidatesList({
   missionId,
   recruiterId,
 }: MissionCandidatesListProps) {
+  const { isMobile } = useResponsive();
+
   if (applications.length === 0) {
     return (
       <YStack
@@ -56,45 +59,47 @@ export function MissionCandidatesList({
       borderColor={colors.gray200}
       overflow="hidden"
     >
-      {/* En-tête du tableau */}
-      <XStack
-        padding="$4"
-        borderBottomWidth={1}
-        borderBottomColor={colors.gray200}
-        backgroundColor={colors.gray050}
-      >
-        <XStack width="40px" alignItems="center" justifyContent="center">
-          {/* Checkbox pour sélection */}
+      {/* Table header - hidden on mobile (card layout has no columns) */}
+      {!isMobile && (
+        <XStack
+          padding="$4"
+          borderBottomWidth={1}
+          borderBottomColor={colors.gray200}
+          backgroundColor={colors.gray050}
+        >
+          <XStack width="40px" alignItems="center" justifyContent="center">
+            {/* Checkbox pour sélection */}
+          </XStack>
+          <XStack flex={1}>
+            <Text fontSize={14} fontWeight="600" color={colors.gray700}>
+              NOM
+            </Text>
+          </XStack>
+          <XStack width={120} alignItems="center">
+            <Text fontSize={14} fontWeight="600" color={colors.gray700}>
+              STATUT
+            </Text>
+          </XStack>
+          <XStack width={80} alignItems="center">
+            <Text fontSize={14} fontWeight="600" color={colors.gray700}>
+              NOTE
+            </Text>
+          </XStack>
+          <XStack width={100} alignItems="center">
+            <Text fontSize={14} fontWeight="600" color={colors.gray700}>
+              TJM
+            </Text>
+          </XStack>
+          <XStack width={120} alignItems="center">
+            <Text fontSize={14} fontWeight="600" color={colors.gray700}>
+              ACTIONS
+            </Text>
+          </XStack>
         </XStack>
-        <XStack flex={1}>
-          <Text fontSize={14} fontWeight="600" color={colors.gray700}>
-            NOM
-          </Text>
-        </XStack>
-        <XStack width={120} alignItems="center">
-          <Text fontSize={14} fontWeight="600" color={colors.gray700}>
-            STATUT
-          </Text>
-        </XStack>
-        <XStack width={80} alignItems="center">
-          <Text fontSize={14} fontWeight="600" color={colors.gray700}>
-            NOTE
-          </Text>
-        </XStack>
-        <XStack width={100} alignItems="center">
-          <Text fontSize={14} fontWeight="600" color={colors.gray700}>
-            TJM
-          </Text>
-        </XStack>
-        <XStack width={120} alignItems="center">
-          <Text fontSize={14} fontWeight="600" color={colors.gray700}>
-            ACTIONS
-          </Text>
-        </XStack>
-      </XStack>
+      )}
 
-      {/* Liste des candidats */}
-      <YStack>
+      {/* Liste des candidats - cards on mobile, rows on desktop */}
+      <YStack gap={isMobile ? "$3" : undefined} padding={isMobile ? "$3" : undefined}>
         {applications.map((application) => (
           <MissionCandidatesRow
             key={application.id}
@@ -110,6 +115,7 @@ export function MissionCandidatesList({
             formatDate={formatDate}
             missionId={missionId}
             recruiterId={recruiterId}
+            isMobile={isMobile}
           />
         ))}
       </YStack>
