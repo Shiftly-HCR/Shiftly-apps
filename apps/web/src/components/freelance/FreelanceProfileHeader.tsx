@@ -13,7 +13,9 @@ interface FreelanceProfileHeaderProps {
  * Composant pour afficher l'en-tête du profil freelance
  * Affiche la photo, le nom, la note, le headline et les badges
  */
-export function FreelanceProfileHeader({ profile }: FreelanceProfileHeaderProps) {
+export function FreelanceProfileHeader({
+  profile,
+}: FreelanceProfileHeaderProps) {
   const getFullName = () => {
     const firstName = profile.first_name || "";
     const lastName = profile.last_name || "";
@@ -58,7 +60,7 @@ export function FreelanceProfileHeader({ profile }: FreelanceProfileHeaderProps)
           <Text fontSize={32} fontWeight="700" color={colors.gray900}>
             {fullName}
           </Text>
-          {"note" in profile && profile.note && (
+          {/* {"note" in profile && profile.note && (
             <XStack alignItems="center" gap="$1">
               <Text fontSize={16} color={colors.shiftlyGold}>
                 ⭐
@@ -67,7 +69,7 @@ export function FreelanceProfileHeader({ profile }: FreelanceProfileHeaderProps)
                 {profile.note.toFixed(1)} (12 avis)
               </Text>
             </XStack>
-          )}
+          )} */}
         </XStack>
 
         <Text fontSize={18} color={colors.gray700} fontWeight="500">
@@ -77,12 +79,7 @@ export function FreelanceProfileHeader({ profile }: FreelanceProfileHeaderProps)
         </Text>
 
         {/* Badges */}
-        <XStack
-          gap="$2"
-          alignItems="center"
-          flexWrap="wrap"
-          marginTop="$2"
-        >
+        <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
           <XStack
             paddingHorizontal="$3"
             paddingVertical="$1.5"
@@ -106,11 +103,7 @@ export function FreelanceProfileHeader({ profile }: FreelanceProfileHeaderProps)
             borderWidth={1}
             borderColor={colors.shiftlyViolet}
           >
-            <Text
-              fontSize={13}
-              color={colors.shiftlyViolet}
-              fontWeight="600"
-            >
+            <Text fontSize={13} color={colors.shiftlyViolet} fontWeight="600">
               Top Freelance
             </Text>
           </XStack>
@@ -119,4 +112,3 @@ export function FreelanceProfileHeader({ profile }: FreelanceProfileHeaderProps)
     </XStack>
   );
 }
-
