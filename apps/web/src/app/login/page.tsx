@@ -162,8 +162,8 @@ export default function LoginPage() {
             </Button>
           </YStack>
 
-          {/* Lien d'inscription */}
-          <XStack gap="$1" marginTop="$2">
+          {/* Lien d'inscription - masqué temporairement (inscriptions fermées) */}
+          {/* <XStack gap="$1" marginTop="$2">
             <Text fontSize={14} color="#6B7280">
               Vous n'avez pas de compte ?
             </Text>
@@ -177,7 +177,7 @@ export default function LoginPage() {
             >
               Inscrivez-vous
             </Text>
-          </XStack>
+          </XStack> */}
         </YStack>
       </YStack>
     </YStack>
