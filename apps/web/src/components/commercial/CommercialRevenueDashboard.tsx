@@ -20,7 +20,11 @@ export function CommercialRevenueDashboard() {
   if (isLoading) {
     return (
       <YStack padding="$6" alignItems="center" justifyContent="center">
-        <Loader2 size={32} color={colors.shiftlyViolet} className="animate-spin" />
+        <Loader2
+          size={32}
+          color={colors.shiftlyViolet}
+          className="animate-spin"
+        />
         <Text marginTop="$2" color={colors.gray500}>
           Chargement des statistiques...
         </Text>
@@ -89,7 +93,7 @@ export function CommercialRevenueDashboard() {
   return (
     <YStack gap="$6">
       {/* Métriques en cartes */}
-      <XStack gap="$4" flexWrap="wrap">
+      {/* <XStack gap="$4" flexWrap="wrap">
         <MetricCard
           icon={Euro}
           iconColor={colors.shiftlyViolet}
@@ -122,7 +126,7 @@ export function CommercialRevenueDashboard() {
           value={`${pendingCommissionEuros.toLocaleString("fr-FR")}€`}
           subtitle="À recevoir"
         />
-      </XStack>
+      </XStack> */}
 
       {/* Informations supplémentaires */}
       {stats && (
@@ -161,17 +165,6 @@ export function CommercialRevenueDashboard() {
           </YStack>
         </XStack>
       )}
-
-      {/* Graphique pie chart - seulement s'il y a des données */}
-      {monthlyRevenueData.length > 0 && (
-        <RevenuePieChart data={monthlyRevenueData} />
-      )}
-
-      {/* Échelle de progression avec primes */}
-      <ProgressionScale
-        currentRevenue={currentRevenue}
-        bonusTiers={bonusTiers}
-      />
     </YStack>
   );
 }

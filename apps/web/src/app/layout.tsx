@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Shiftly web app",
-  description: "Recrutement HCR",
+  title: "Shiftly",
+  description:
+    "Shiftly est une plateforme de mise en relation entre freelances du secteur Hôtellerie-Restauration (HCR) et les établissements cherchant du renfort ponctuel.",
   icons: {
     icon: "/logo.ico",
   },

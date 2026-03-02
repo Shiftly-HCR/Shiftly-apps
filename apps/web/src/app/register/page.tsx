@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { YStack, XStack, Text } from "tamagui";
 import { Button, Input, RadioGroup, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
@@ -111,7 +109,9 @@ export default function RegisterPage() {
               ]}
               value={userType}
               onChange={(value) =>
-                setUserType(value as "freelance" | "recruiter" | "commercial")
+                setUserType(
+                  value as "freelance" | "recruiter" | "commercial",
+                )
               }
               required
               helperText="Sélectionnez votre type de compte"
