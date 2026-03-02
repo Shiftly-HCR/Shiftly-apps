@@ -30,8 +30,7 @@ export function useAuthRedirect() {
 
     if (isProfileMissing || !profile) {
       hasRedirected.current = true;
-      // Registration disabled temporarily; redirect to login
-      router.replace("/login");
+      router.replace("/register");
       return;
     }
 
