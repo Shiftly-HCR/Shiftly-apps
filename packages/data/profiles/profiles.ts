@@ -29,6 +29,7 @@ export interface Profile {
   badges?: string;
   note?: number;
   phone?: string;
+  siret?: string;
   email?: string;
   is_premium?: boolean;
   subscription_plan_id?: string;
@@ -64,6 +65,7 @@ export interface UpdateProfileParams {
   lastName?: string;
   email?: string;
   phone?: string;
+  siret?: string;
   bio?: string;
   photo_url?: string;
   daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
@@ -191,6 +193,7 @@ export async function updateProfile(
     if (params.lastName !== undefined) updateData.last_name = params.lastName;
     if (params.email !== undefined) updateData.email = params.email;
     if (params.phone !== undefined) updateData.phone = params.phone;
+    if (params.siret !== undefined) updateData.siret = params.siret;
     if (params.bio !== undefined) updateData.bio = params.bio;
     if (params.photo_url !== undefined) updateData.photo_url = params.photo_url;
     if (params.daily_rate !== undefined)

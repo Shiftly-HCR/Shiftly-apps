@@ -35,6 +35,8 @@ export default function ProfilePage() {
     setEmail,
     phone,
     setPhone,
+    siret,
+    setSiret,
     bio,
     setBio,
     photoUrl,
@@ -244,6 +246,15 @@ export default function ProfilePage() {
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
+            />
+
+            {/* SIRET */}
+            <Input
+              label="SIRET"
+              placeholder="12345678901234"
+              value={siret}
+              onChangeText={setSiret}
+              keyboardType="number-pad"
             />
 
             {/* Bio */}

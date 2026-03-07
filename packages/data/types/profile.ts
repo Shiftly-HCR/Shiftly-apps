@@ -68,6 +68,7 @@ export interface FreelanceProfile {
   last_name?: string;
   email?: string;
   phone?: string;
+  siret?: string;
   bio?: string;
   photo_url?: string;
   headline?: string;
@@ -90,6 +91,7 @@ export interface UpdateFreelanceProfileParams {
   lastName?: string;
   email?: string;
   phone?: string;
+  siret?: string;
   bio?: string;
   headline?: string;
   location?: string;
