@@ -17,6 +17,7 @@ LEFT JOIN public.establishments e ON e.owner_id = p.id
 LEFT JOIN public.missions m ON m.recruiter_id = p.id
 WHERE p.role = 'recruiter'
 GROUP BY p.id, p.first_name, p.last_name, p.email, p.is_premium;
+ALTER VIEW public.admin_dashboard_recruiters_v SET (security_invoker = on);
 
 COMMENT ON VIEW public.admin_dashboard_recruiters_v IS
   'Vue agrégée pour le dashboard admin: recruiters + compteurs establishments/missions';
@@ -54,6 +55,7 @@ GROUP BY
   cp.first_name,
   cp.last_name,
   cp.email;
+ALTER VIEW public.admin_dashboard_establishments_v SET (security_invoker = on);
 
 COMMENT ON VIEW public.admin_dashboard_establishments_v IS
   'Vue agrégée pour le dashboard admin: establishments + recruiter/commercial + missions_count';
