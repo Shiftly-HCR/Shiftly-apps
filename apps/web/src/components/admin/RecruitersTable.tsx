@@ -9,6 +9,12 @@ interface RecruitersTableProps {
   recruiters: RecruiterDashboardRow[];
 }
 
+const RECRUITER_COLUMN_WIDTH = "30%";
+const EMAIL_COLUMN_WIDTH = "32%";
+const SUBSCRIPTION_COLUMN_WIDTH = "20%";
+const ESTABLISHMENTS_COLUMN_WIDTH = "10%";
+const MISSIONS_COLUMN_WIDTH = "8%";
+
 function getRecruiterIdentity(recruiter: RecruiterDashboardRow): string {
   const fullName = `${recruiter.first_name || ""} ${recruiter.last_name || ""}`.trim();
   if (fullName) return fullName;
@@ -31,8 +37,8 @@ function getSubscriptionLabel(isPremium: boolean | null): {
 
   return {
     label: "Non abonné",
-    backgroundColor: colors.gray100,
-    color: colors.gray700,
+    backgroundColor: colors.red100,
+    color: colors.red800,
   };
 }
 
@@ -114,27 +120,27 @@ export function RecruitersTable({ recruiters }: RecruitersTableProps) {
         borderBottomWidth={1}
         borderBottomColor={colors.gray200}
       >
-        <XStack flex={2}>
+        <XStack width={RECRUITER_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Recruiter
           </Text>
         </XStack>
-        <XStack flex={2}>
+        <XStack width={EMAIL_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Email
           </Text>
         </XStack>
-        <XStack flex={1} justifyContent="center">
+        <XStack width={SUBSCRIPTION_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Abonnement
           </Text>
         </XStack>
-        <XStack width={130} justifyContent="center">
+        <XStack width={ESTABLISHMENTS_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Etablissements
           </Text>
         </XStack>
-        <XStack width={100} justifyContent="center">
+        <XStack width={MISSIONS_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Missions
           </Text>
@@ -149,21 +155,20 @@ export function RecruitersTable({ recruiters }: RecruitersTableProps) {
           <XStack
             key={recruiter.recruiter_id}
             padding="$4"
-            alignItems="center"
             borderBottomWidth={isLast ? 0 : 1}
             borderBottomColor={colors.gray100}
           >
-            <XStack flex={2}>
-              <Text fontSize={14} color={colors.gray900}>
+            <XStack width={RECRUITER_COLUMN_WIDTH} paddingRight="$3">
+              <Text fontSize={14} color={colors.gray900} numberOfLines={1}>
                 {getRecruiterIdentity(recruiter)}
               </Text>
             </XStack>
-            <XStack flex={2}>
-              <Text fontSize={14} color={colors.gray700}>
+            <XStack width={EMAIL_COLUMN_WIDTH} paddingRight="$3">
+              <Text fontSize={14} color={colors.gray700} numberOfLines={1}>
                 {recruiter.email || "Email non renseigné"}
               </Text>
             </XStack>
-            <XStack flex={1} justifyContent="center">
+            <XStack width={SUBSCRIPTION_COLUMN_WIDTH}>
               <XStack
                 paddingHorizontal="$2"
                 paddingVertical="$1"
@@ -175,12 +180,12 @@ export function RecruitersTable({ recruiters }: RecruitersTableProps) {
                 </Text>
               </XStack>
             </XStack>
-            <XStack width={130} justifyContent="center">
+            <XStack width={ESTABLISHMENTS_COLUMN_WIDTH}>
               <Text fontSize={14} color={colors.gray900}>
                 {recruiter.establishments_count}
               </Text>
             </XStack>
-            <XStack width={100} justifyContent="center">
+            <XStack width={MISSIONS_COLUMN_WIDTH}>
               <Text fontSize={14} color={colors.gray900}>
                 {recruiter.missions_count}
               </Text>

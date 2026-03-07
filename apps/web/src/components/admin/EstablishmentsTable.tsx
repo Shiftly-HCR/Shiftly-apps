@@ -9,6 +9,12 @@ interface EstablishmentsTableProps {
   establishments: EstablishmentDashboardRow[];
 }
 
+const ESTABLISHMENT_COLUMN_WIDTH = "35%";
+const CITY_COLUMN_WIDTH = "12%";
+const RECRUITER_COLUMN_WIDTH = "26%";
+const COMMERCIAL_COLUMN_WIDTH = "19%";
+const MISSIONS_COLUMN_WIDTH = "8%";
+
 function formatName(
   firstName: string | null,
   lastName: string | null,
@@ -110,27 +116,27 @@ export function EstablishmentsTable({
         borderBottomWidth={1}
         borderBottomColor={colors.gray200}
       >
-        <XStack flex={2}>
+        <XStack width={ESTABLISHMENT_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Etablissement
           </Text>
         </XStack>
-        <XStack width={130}>
+        <XStack width={CITY_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Ville
           </Text>
         </XStack>
-        <XStack flex={2}>
+        <XStack width={RECRUITER_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Recruiter lie
           </Text>
         </XStack>
-        <XStack width={120}>
+        <XStack width={COMMERCIAL_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Commercial
           </Text>
         </XStack>
-        <XStack width={110} justifyContent="center">
+        <XStack width={MISSIONS_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
             Missions
           </Text>
@@ -158,31 +164,30 @@ export function EstablishmentsTable({
           <XStack
             key={establishment.establishment_id}
             padding="$4"
-            alignItems="center"
             borderBottomWidth={isLast ? 0 : 1}
             borderBottomColor={colors.gray100}
           >
-            <XStack flex={2}>
-              <Text fontSize={14} color={colors.gray900}>
+            <XStack width={ESTABLISHMENT_COLUMN_WIDTH} paddingRight="$3">
+              <Text fontSize={14} color={colors.gray900} numberOfLines={1}>
                 {establishment.name}
               </Text>
             </XStack>
-            <XStack width={130}>
+            <XStack width={CITY_COLUMN_WIDTH} paddingRight="$2">
               <Text fontSize={14} color={colors.gray700}>
                 {establishment.city || "Non renseignee"}
               </Text>
             </XStack>
-            <XStack flex={2}>
-              <Text fontSize={14} color={colors.gray700}>
+            <XStack width={RECRUITER_COLUMN_WIDTH} paddingRight="$3">
+              <Text fontSize={14} color={colors.gray700} numberOfLines={1}>
                 {recruiterName}
               </Text>
             </XStack>
-            <XStack width={120}>
-              <Text fontSize={14} color={colors.gray700}>
+            <XStack width={COMMERCIAL_COLUMN_WIDTH} paddingRight="$3">
+              <Text fontSize={14} color={colors.gray700} numberOfLines={1}>
                 {commercialName}
               </Text>
             </XStack>
-            <XStack width={110} justifyContent="center">
+            <XStack width={MISSIONS_COLUMN_WIDTH}>
               <Text fontSize={14} color={colors.gray900}>
                 {establishment.missions_count}
               </Text>
