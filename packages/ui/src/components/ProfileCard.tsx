@@ -1,6 +1,6 @@
 import { Card, XStack, YStack, H4, Paragraph, Avatar } from "tamagui";
 import { Avatar as AvatarComponent } from "./Avatar";
-import { Star, MapPin } from "@tamagui/lucide-icons";
+import { Star, MapPin } from "lucide-react";
 
 interface ProfileCardProps {
   name: string;
@@ -34,7 +34,7 @@ export function ProfileCard({
           </Paragraph>
 
           <XStack alignItems="center" gap="$2">
-            <MapPin size="$1" color="$gray10" />
+            <MapPin size={14} color="#6B7280" />
             <Paragraph size="$3" color="$gray10">
               {location}
             </Paragraph>
@@ -42,7 +42,7 @@ export function ProfileCard({
 
           {rating && (
             <XStack alignItems="center" gap="$1">
-              <Star size="$1" color="$violet10" fill="$violet10" />
+              <Star size={14} color="#782478" fill="#782478" />
               <Paragraph size="$3" color="$gray10">
                 {rating}/5
               </Paragraph>

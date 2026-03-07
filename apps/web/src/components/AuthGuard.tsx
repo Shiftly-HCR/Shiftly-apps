@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/profile/useCurrentUser";
-import { useProfilePage } from "@/hooks/pages/profile/useProfilePage";
 import { useCurrentProfile } from "@/hooks/queries";
 import { YStack, Text, Spinner } from "tamagui";
 import { colors } from "@shiftly/ui";
@@ -11,11 +10,21 @@ import { colors } from "@shiftly/ui";
 /**
  * Routes publiques accessibles sans authentification
  */
-const PUBLIC_ROUTES = [
+const AUTH_ROUTES = [
   "/login",
   "/register",
   "/forgot-password",
   "/reset-password",
+];
+
+const PUBLIC_ROUTES = [
+  "/cgv",
+  "/terms",
+  "/legal",
+  "/privacy",
+  "/contact",
+  "/faq",
+  "/help",
 ];
 
 /**
@@ -28,12 +37,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const hasRedirected = useRef(false);
   const { user, isLoading: isLoadingUser } = useCurrentUser();
-  // useProfilePage utilise useCurrentProfile en interne, ce qui garantit que le profil est chargé
-  const { isLoading: isLoadingProfile } = useProfilePage();
-  // Utiliser useCurrentProfile directement pour avoir accès à isAuthResolved
-  const { isAuthResolved } = useCurrentProfile();
+  const { isLoading: isLoadingProfile, isAuthResolved } = useCurrentProfile();
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isAuthRoute = AUTH_ROUTES.includes(pathname);
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname) || isAuthRoute;
   const isLoading = isLoadingUser || isLoadingProfile;
   // Attendre que l'authentification soit résolue avant de rediriger
   const isReady = isAuthResolved && !isLoading;
@@ -59,15 +66,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Si l'utilisateur est connecté et qu'on est sur une route publique, rediriger vers home
-    if (isPublicRoute) {
+    // Si l'utilisateur est connecté et qu'on est sur une route d'auth, rediriger vers home
+    if (isAuthRoute) {
       hasRedirected.current = true;
       router.replace("/home");
       return;
     }
 
     // Utilisateur connecté et route protégée : autoriser l'accès
-  }, [user, isReady, isPublicRoute, pathname, router]);
+  }, [user, isReady, isAuthRoute, isPublicRoute, pathname, router]);
 
   // Afficher un loader pendant le chargement ou tant que l'authentification n'est pas résolue
   if (!isReady) {
@@ -87,12 +94,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Si l'utilisateur n'est pas connecté et qu'on est sur une route publique, afficher le contenu
-  if (!user && isPublicRoute) {
+  // Les routes publiques sont accessibles à tous (connecté ou non)
+  if (isPublicRoute) {
     return <>{children}</>;
   }
 
-  // Si l'utilisateur est connecté et qu'on n'est pas sur une route publique, afficher le contenu
+  // Les routes protégées nécessitent un utilisateur connecté
   if (user && !isPublicRoute) {
     return <>{children}</>;
   }

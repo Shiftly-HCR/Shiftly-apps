@@ -1,3 +1,5 @@
+"use client";
+
 import { Button as TButton, styled, Text, XStack } from "tamagui";
 import React, { useState } from "react";
 

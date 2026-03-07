@@ -1,5 +1,5 @@
 import { XStack, YStack } from "tamagui";
-import { Home, Briefcase, MessageCircle, User } from "@tamagui/lucide-icons";
+import { Home, Briefcase, MessageCircle, User } from "lucide-react";
 import { Button } from "./Button";
 
 interface BottomNavigationProps {
@@ -44,7 +44,7 @@ export function BottomNavigation({
             borderWidth={0}
           >
             <YStack alignItems="center" gap="$1">
-              <Icon size="$1.5" color={isActive ? "$violet10" : "$gray10"} />
+              <Icon size={18} color={isActive ? "#782478" : "#6B7280"} />
               <YStack
                 width={6}
                 height={6}

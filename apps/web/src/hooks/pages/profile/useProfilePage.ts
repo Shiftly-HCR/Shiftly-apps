@@ -24,6 +24,7 @@ export function useProfilePage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [siret, setSiret] = useState("");
   const [bio, setBio] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -35,6 +36,7 @@ export function useProfilePage() {
       setLastName(profile.last_name || "");
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
+      setSiret(profile.siret || "");
       setBio(profile.bio || "");
       setPhotoUrl(profile.photo_url || null);
     }
@@ -45,12 +47,20 @@ export function useProfilePage() {
     setSuccess("");
     setIsSaving(true);
 
+    const trimmedSiret = siret.trim();
+    if (trimmedSiret && !/^\d{14}$/.test(trimmedSiret)) {
+      setError("Le SIRET doit contenir exactement 14 chiffres.");
+      setIsSaving(false);
+      return;
+    }
+
     // Mettre à jour les informations du profil
     const result = await updateProfile({
       firstName,
       lastName,
       email,
       phone,
+      siret: trimmedSiret || undefined,
       bio,
     });
 
@@ -112,6 +122,7 @@ export function useProfilePage() {
       setLastName(profile.last_name || "");
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
+      setSiret(profile.siret || "");
       setBio(profile.bio || "");
     }
     setIsEditing(false);
@@ -136,6 +147,8 @@ export function useProfilePage() {
     setEmail,
     phone,
     setPhone,
+    siret,
+    setSiret,
     bio,
     setBio,
     photoUrl,

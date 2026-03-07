@@ -13,6 +13,7 @@ interface FooterProps {
   onHelpClick?: () => void;
   onContactClick?: () => void;
   onFaqClick?: () => void;
+  onCgvClick?: () => void;
   onTermsClick?: () => void;
   onPrivacyClick?: () => void;
   onLegalClick?: () => void;
@@ -27,6 +28,7 @@ export function Footer({
   onHelpClick,
   onContactClick,
   onFaqClick,
+  onCgvClick,
   onTermsClick,
   onPrivacyClick,
   onLegalClick,
@@ -217,6 +219,15 @@ export function Footer({
           >
             <Text fontSize={14} fontWeight="600" color={colors.gray900} marginBottom="$1">
               Légal
+            </Text>
+            <Text
+              fontSize={14}
+              color={colors.gray700}
+              cursor="pointer"
+              hoverStyle={{ color: colors.shiftlyViolet }}
+              onPress={() => handleNavigation(onCgvClick, "/cgv")}
+            >
+              Conditions générales de vente (CGV)
             </Text>
             <Text
               fontSize={14}

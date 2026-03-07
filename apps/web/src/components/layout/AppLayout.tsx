@@ -83,6 +83,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         onHelpClick={() => handleNavigation("/help")}
         onContactClick={() => handleNavigation("/contact")}
         onFaqClick={() => handleNavigation("/faq")}
+        onCgvClick={() => handleNavigation("/cgv")}
         onTermsClick={() => handleNavigation("/terms")}
         onPrivacyClick={() => handleNavigation("/privacy")}
         onLegalClick={() => handleNavigation("/legal")}
