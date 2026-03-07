@@ -102,7 +102,7 @@ export default function FreelancePage() {
                   description="Revenez plus tard pour découvrir de nouveaux talents"
                 />
               ) : (
-                <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
+                <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start" alignItems="stretch">
                   {filteredFreelances.map((freelance) => (
                     <YStack
                       key={freelance.id}
@@ -119,6 +119,7 @@ export default function FreelancePage() {
                       position="relative"
                     >
                       <YStack
+                        flex={1}
                         backgroundColor={colors.white}
                         borderRadius={12}
                         padding="$4"
@@ -179,7 +180,12 @@ export default function FreelancePage() {
                             >
                               {getFullName(freelance)}
                             </Text>
-                            <Text fontSize={14} color={colors.gray700}>
+                            <Text
+                              fontSize={14}
+                              color={colors.gray700}
+                              numberOfLines={2}
+                              ellipsizeMode="tail"
+                            >
                               {freelance.headline ||
                                 freelance.bio ||
                                 "Freelance"}
@@ -218,7 +224,7 @@ export default function FreelancePage() {
                         )}
 
                         {/* Boutons d'action */}
-                        <XStack gap="$2" marginTop="$2">
+                        <XStack gap="$2" marginTop="auto" paddingTop="$2">
                           <Button
                             variant="secondary"
                             size="sm"

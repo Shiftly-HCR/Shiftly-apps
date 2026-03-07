@@ -256,6 +256,20 @@ export function Navbar({
                         Litiges
                       </Text>
                     )}
+                    {onFreelanceClick && (
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color={colors.gray900}
+                        cursor="pointer"
+                        hoverStyle={{
+                          color: colors.shiftlyViolet,
+                        }}
+                        onPress={onFreelanceClick}
+                      >
+                        Freelance
+                      </Text>
+                    )}
                     {onMessagingClick && (
                       <Text
                         fontSize={14}
@@ -548,6 +562,12 @@ export function Navbar({
                         <MenuLink
                           label="Litiges"
                           onPress={onAdminDisputesClick}
+                        />
+                      )}
+                      {onFreelanceClick && (
+                        <MenuLink
+                          label="Freelance"
+                          onPress={onFreelanceClick}
                         />
                       )}
                       {onMessagingClick && (
