@@ -25,5 +25,8 @@ export * from "./payments";
 // Dispute components
 export * from "./dispute";
 
+// Admin components
+export * from "./admin";
+
 // Auth components
 export { AuthGuard } from "./AuthGuard";

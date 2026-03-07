@@ -1,0 +1,193 @@
+"use client";
+
+import { XStack, YStack, Text } from "tamagui";
+import { colors } from "@shiftly/ui";
+import { useResponsive } from "@/hooks";
+import type { RecruiterDashboardRow } from "@/types/adminDashboard";
+
+interface RecruitersTableProps {
+  recruiters: RecruiterDashboardRow[];
+}
+
+function getRecruiterIdentity(recruiter: RecruiterDashboardRow): string {
+  const fullName = `${recruiter.first_name || ""} ${recruiter.last_name || ""}`.trim();
+  if (fullName) return fullName;
+  if (recruiter.email) return recruiter.email;
+  return "Inconnu";
+}
+
+function getSubscriptionLabel(isPremium: boolean | null): {
+  label: string;
+  backgroundColor: string;
+  color: string;
+} {
+  if (isPremium) {
+    return {
+      label: "Abonné",
+      backgroundColor: colors.green100,
+      color: colors.green800,
+    };
+  }
+
+  return {
+    label: "Non abonné",
+    backgroundColor: colors.gray100,
+    color: colors.gray700,
+  };
+}
+
+export function RecruitersTable({ recruiters }: RecruitersTableProps) {
+  const { isMobile } = useResponsive();
+
+  if (recruiters.length === 0) {
+    return (
+      <YStack
+        padding="$5"
+        backgroundColor={colors.white}
+        borderWidth={1}
+        borderColor={colors.gray200}
+        borderRadius={12}
+      >
+        <Text fontSize={14} color={colors.gray700}>
+          Aucun recruiter à afficher.
+        </Text>
+      </YStack>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <YStack gap="$3">
+        {recruiters.map((recruiter) => {
+          const subscription = getSubscriptionLabel(recruiter.is_premium);
+          return (
+            <YStack
+              key={recruiter.recruiter_id}
+              backgroundColor={colors.white}
+              borderWidth={1}
+              borderColor={colors.gray200}
+              borderRadius={12}
+              padding="$4"
+              gap="$2"
+            >
+              <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+                {getRecruiterIdentity(recruiter)}
+              </Text>
+              <Text fontSize={13} color={colors.gray700}>
+                {recruiter.email || "Email non renseigné"}
+              </Text>
+              <XStack
+                alignSelf="flex-start"
+                paddingHorizontal="$2"
+                paddingVertical="$1"
+                borderRadius={999}
+                backgroundColor={subscription.backgroundColor}
+              >
+                <Text fontSize={12} fontWeight="600" color={subscription.color}>
+                  {subscription.label}
+                </Text>
+              </XStack>
+              <Text fontSize={13} color={colors.gray700}>
+                Etablissements: {recruiter.establishments_count}
+              </Text>
+              <Text fontSize={13} color={colors.gray700}>
+                Missions: {recruiter.missions_count}
+              </Text>
+            </YStack>
+          );
+        })}
+      </YStack>
+    );
+  }
+
+  return (
+    <YStack
+      backgroundColor={colors.white}
+      borderWidth={1}
+      borderColor={colors.gray200}
+      borderRadius={12}
+      overflow="hidden"
+    >
+      <XStack
+        padding="$4"
+        backgroundColor={colors.gray050}
+        borderBottomWidth={1}
+        borderBottomColor={colors.gray200}
+      >
+        <XStack flex={2}>
+          <Text fontSize={13} fontWeight="700" color={colors.gray700}>
+            Recruiter
+          </Text>
+        </XStack>
+        <XStack flex={2}>
+          <Text fontSize={13} fontWeight="700" color={colors.gray700}>
+            Email
+          </Text>
+        </XStack>
+        <XStack flex={1} justifyContent="center">
+          <Text fontSize={13} fontWeight="700" color={colors.gray700}>
+            Abonnement
+          </Text>
+        </XStack>
+        <XStack width={130} justifyContent="center">
+          <Text fontSize={13} fontWeight="700" color={colors.gray700}>
+            Etablissements
+          </Text>
+        </XStack>
+        <XStack width={100} justifyContent="center">
+          <Text fontSize={13} fontWeight="700" color={colors.gray700}>
+            Missions
+          </Text>
+        </XStack>
+      </XStack>
+
+      {recruiters.map((recruiter, index) => {
+        const subscription = getSubscriptionLabel(recruiter.is_premium);
+        const isLast = index === recruiters.length - 1;
+
+        return (
+          <XStack
+            key={recruiter.recruiter_id}
+            padding="$4"
+            alignItems="center"
+            borderBottomWidth={isLast ? 0 : 1}
+            borderBottomColor={colors.gray100}
+          >
+            <XStack flex={2}>
+              <Text fontSize={14} color={colors.gray900}>
+                {getRecruiterIdentity(recruiter)}
+              </Text>
+            </XStack>
+            <XStack flex={2}>
+              <Text fontSize={14} color={colors.gray700}>
+                {recruiter.email || "Email non renseigné"}
+              </Text>
+            </XStack>
+            <XStack flex={1} justifyContent="center">
+              <XStack
+                paddingHorizontal="$2"
+                paddingVertical="$1"
+                borderRadius={999}
+                backgroundColor={subscription.backgroundColor}
+              >
+                <Text fontSize={12} fontWeight="600" color={subscription.color}>
+                  {subscription.label}
+                </Text>
+              </XStack>
+            </XStack>
+            <XStack width={130} justifyContent="center">
+              <Text fontSize={14} color={colors.gray900}>
+                {recruiter.establishments_count}
+              </Text>
+            </XStack>
+            <XStack width={100} justifyContent="center">
+              <Text fontSize={14} color={colors.gray900}>
+                {recruiter.missions_count}
+              </Text>
+            </XStack>
+          </XStack>
+        );
+      })}
+    </YStack>
+  );
+}
