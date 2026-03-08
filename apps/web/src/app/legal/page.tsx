@@ -1,14 +1,14 @@
 "use client";
 
 import { YStack, Text, ScrollView } from "tamagui";
-import { AppLayout, PageHeader } from "@/components";
+import { PublicLayout, PageHeader } from "@/components";
 import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
 export default function LegalPage() {
   const { isMobile } = useResponsive();
   return (
-    <AppLayout>
+    <PublicLayout>
       <ScrollView flex={1}>
         <YStack
           maxWidth={1000}
@@ -184,6 +184,6 @@ export default function LegalPage() {
           </YStack>
         </YStack>
       </ScrollView>
-    </AppLayout>
+    </PublicLayout>
   );
 }

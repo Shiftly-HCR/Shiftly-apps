@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { AppLayout, PageHeader } from "@/components";
+import { PublicLayout, PageHeader } from "@/components";
 import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 import { Mail, MessageSquare, Clock, MapPin } from "lucide-react";
@@ -9,7 +9,7 @@ import { Mail, MessageSquare, Clock, MapPin } from "lucide-react";
 export default function ContactPage() {
   const { isMobile } = useResponsive();
   return (
-    <AppLayout>
+    <PublicLayout>
       <ScrollView flex={1}>
         <YStack
           maxWidth={1200}
@@ -180,6 +180,6 @@ export default function ContactPage() {
           </YStack>
         </YStack>
       </ScrollView>
-    </AppLayout>
+    </PublicLayout>
   );
 }

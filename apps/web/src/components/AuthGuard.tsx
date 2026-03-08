@@ -18,6 +18,7 @@ const AUTH_ROUTES = [
 ];
 
 const PUBLIC_ROUTES = [
+  "/",
   "/cgv",
   "/terms",
   "/legal",
