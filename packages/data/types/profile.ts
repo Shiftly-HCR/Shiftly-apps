@@ -69,6 +69,7 @@ export interface FreelanceProfile {
   email?: string;
   phone?: string;
   siret?: string;
+  city_of_residence?: string;
   bio?: string;
   photo_url?: string;
   headline?: string;
@@ -120,6 +121,7 @@ export interface UpdateFreelanceProfileParams {
   email?: string;
   phone?: string;
   siret?: string;
+  city_of_residence?: string;
   bio?: string;
   headline?: string;
   location?: string;

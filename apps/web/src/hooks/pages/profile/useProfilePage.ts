@@ -25,6 +25,7 @@ export function useProfilePage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [siret, setSiret] = useState("");
+  const [cityOfResidence, setCityOfResidence] = useState("");
   const [bio, setBio] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -37,6 +38,7 @@ export function useProfilePage() {
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
       setSiret(profile.siret || "");
+      setCityOfResidence(profile.city_of_residence || "");
       setBio(profile.bio || "");
       setPhotoUrl(profile.photo_url || null);
     }
@@ -61,6 +63,7 @@ export function useProfilePage() {
       email,
       phone,
       siret: trimmedSiret || undefined,
+      city_of_residence: cityOfResidence.trim() || undefined,
       bio,
     });
 
@@ -123,6 +126,7 @@ export function useProfilePage() {
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
       setSiret(profile.siret || "");
+      setCityOfResidence(profile.city_of_residence || "");
       setBio(profile.bio || "");
     }
     setIsEditing(false);
@@ -149,6 +153,8 @@ export function useProfilePage() {
     setPhone,
     siret,
     setSiret,
+    cityOfResidence,
+    setCityOfResidence,
     bio,
     setBio,
     photoUrl,

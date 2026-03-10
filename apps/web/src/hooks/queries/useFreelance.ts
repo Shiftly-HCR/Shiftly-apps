@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getPublishedFreelances,
   getFreelanceProfileById,
+  getFreelanceCompletionStatusByUserId,
   getFreelanceExperiencesById,
   getFreelanceEducationsById,
   updateFreelanceProfile,
@@ -39,6 +40,21 @@ export function useFreelanceProfile(userId: string | null) {
   return useQuery({
     queryKey: ["freelance", "profile", userId],
     queryFn: () => (userId ? getFreelanceProfileById(userId) : null),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook léger pour récupérer les compteurs de complétion d'un freelance
+ */
+export function useFreelanceCompletionStatus(userId: string | null) {
+  return useQuery({
+    queryKey: ["freelance", "completion", userId],
+    queryFn: () =>
+      userId
+        ? getFreelanceCompletionStatusByUserId(userId)
+        : { experience_count: 0, education_count: 0 },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });

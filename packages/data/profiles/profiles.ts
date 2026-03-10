@@ -30,7 +30,9 @@ export interface Profile {
   note?: number;
   phone?: string;
   siret?: string;
+  city_of_residence?: string;
   email?: string;
+  summary?: string;
   is_premium?: boolean;
   subscription_plan_id?: string;
   // Champs Stripe Billing
@@ -66,6 +68,7 @@ export interface UpdateProfileParams {
   email?: string;
   phone?: string;
   siret?: string;
+  city_of_residence?: string;
   bio?: string;
   photo_url?: string;
   daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
@@ -194,6 +197,8 @@ export async function updateProfile(
     if (params.email !== undefined) updateData.email = params.email;
     if (params.phone !== undefined) updateData.phone = params.phone;
     if (params.siret !== undefined) updateData.siret = params.siret;
+    if (params.city_of_residence !== undefined)
+      updateData.city_of_residence = params.city_of_residence;
     if (params.bio !== undefined) updateData.bio = params.bio;
     if (params.photo_url !== undefined) updateData.photo_url = params.photo_url;
     if (params.daily_rate !== undefined)

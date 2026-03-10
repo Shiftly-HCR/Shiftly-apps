@@ -148,6 +148,8 @@ export async function updateFreelanceProfile(
     if (params.lastName !== undefined) updateData.last_name = params.lastName;
     if (params.email !== undefined) updateData.email = params.email;
     if (params.phone !== undefined) updateData.phone = params.phone;
+    if (params.city_of_residence !== undefined)
+      updateData.city_of_residence = params.city_of_residence;
     if (params.bio !== undefined) updateData.bio = params.bio;
     if (params.headline !== undefined) updateData.headline = params.headline;
     if (params.location !== undefined) updateData.location = params.location;
@@ -186,6 +188,42 @@ export async function updateFreelanceProfile(
       success: false,
       error: "Une erreur est survenue lors de la mise à jour du profil",
     };
+  }
+}
+
+export async function getFreelanceCompletionStatusByUserId(
+  userId: string
+): Promise<{ experience_count: number; education_count: number } | null> {
+  try {
+    const [{ count: experienceCount, error: expError }, { count: educationCount, error: eduError }] =
+      await Promise.all([
+        supabase
+          .from("freelance_experiences")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
+        supabase
+          .from("freelance_educations")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
+      ]);
+
+    if (expError) {
+      console.error("Erreur lors du comptage des expériences:", expError);
+      return null;
+    }
+
+    if (eduError) {
+      console.error("Erreur lors du comptage des formations:", eduError);
+      return null;
+    }
+
+    return {
+      experience_count: experienceCount || 0,
+      education_count: educationCount || 0,
+    };
+  } catch (err) {
+    console.error("Erreur lors de la récupération du statut de complétion:", err);
+    return null;
   }
 }
 

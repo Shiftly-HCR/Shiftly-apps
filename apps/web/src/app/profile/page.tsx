@@ -37,6 +37,8 @@ export default function ProfilePage() {
     setPhone,
     siret,
     setSiret,
+    cityOfResidence,
+    setCityOfResidence,
     bio,
     setBio,
     photoUrl,
@@ -246,6 +248,13 @@ export default function ProfilePage() {
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
+            />
+
+            <Input
+              label="Ville de résidence"
+              placeholder="Paris"
+              value={cityOfResidence}
+              onChangeText={setCityOfResidence}
             />
 
             {/* SIRET */}
