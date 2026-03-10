@@ -36,7 +36,6 @@ export default function FreelancePage() {
     getFullName,
     getTags,
     handleViewProfile,
-    handleInvite,
   } = useFreelancePage();
 
   const [isMobile, setIsMobile] = useState(false);
@@ -144,6 +143,9 @@ export default function FreelancePage() {
                       >
                         <YStack
                           flex={1}
+                          minHeight={
+                            !isMobile && viewMode === "grid" ? 230 : undefined
+                          }
                           backgroundColor={colors.white}
                           borderRadius={12}
                           padding="$4"
@@ -160,92 +162,107 @@ export default function FreelancePage() {
                           }}
                           onPress={() => handleViewProfile(freelance.id)}
                         >
-                          {/* Avatar et infos principales */}
-                          <XStack gap="$3" alignItems="center">
-                            <YStack position="relative">
-                              <YStack
-                                width={60}
-                                height={60}
-                                borderRadius={30}
-                                backgroundColor={colors.shiftlyViolet}
-                                alignItems="center"
-                                justifyContent="center"
-                                overflow="hidden"
-                              >
-                                {freelance.photo_url ? (
-                                  <img
-                                    src={freelance.photo_url}
-                                    alt={getFullName(freelance)}
-                                    style={{
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                    }}
-                                  />
-                                ) : (
-                                  <Text
-                                    color={colors.white}
-                                    fontSize={24}
-                                    fontWeight="600"
-                                  >
-                                    {getFullName(freelance)
-                                      .charAt(0)
-                                      .toUpperCase()}
-                                  </Text>
-                                )}
+                          <YStack flex={1} gap="$3">
+                            {/* Avatar et infos principales */}
+                            <XStack gap="$3" alignItems="center">
+                              <YStack position="relative">
+                                <YStack
+                                  width={60}
+                                  height={60}
+                                  borderRadius={30}
+                                  backgroundColor={colors.shiftlyViolet}
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  overflow="hidden"
+                                >
+                                  {freelance.photo_url ? (
+                                    <img
+                                      src={freelance.photo_url}
+                                      alt={getFullName(freelance)}
+                                      style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        objectFit: "cover",
+                                      }}
+                                    />
+                                  ) : (
+                                    <Text
+                                      color={colors.white}
+                                      fontSize={24}
+                                      fontWeight="600"
+                                    >
+                                      {getFullName(freelance)
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </Text>
+                                  )}
+                                </YStack>
                               </YStack>
-                            </YStack>
 
-                            <YStack flex={1} gap="$1">
-                              <Text
-                                fontSize={18}
-                                fontWeight="700"
-                                color={colors.gray900}
-                              >
-                                {getFullName(freelance)}
-                              </Text>
-                              <Text
-                                fontSize={14}
-                                color={colors.gray700}
-                                numberOfLines={2}
-                                ellipsizeMode="tail"
-                              >
-                                {freelance.headline ||
-                                  freelance.bio ||
-                                  "Freelance"}
-                              </Text>
-                              {freelance.daily_rate && (
+                              <YStack flex={1} gap="$1">
+                                <Text
+                                  fontSize={18}
+                                  fontWeight="700"
+                                  color={colors.gray900}
+                                >
+                                  {getFullName(freelance)}
+                                </Text>
                                 <Text
                                   fontSize={14}
                                   color={colors.gray700}
-                                  fontWeight="500"
+                                  numberOfLines={2}
+                                  ellipsizeMode="tail"
                                 >
-                                  {freelance.daily_rate} € / jour
+                                  {freelance.headline ||
+                                    freelance.bio ||
+                                    "Freelance"}
                                 </Text>
-                              )}
-                            </YStack>
-                          </XStack>
-
-                          {/* Tags/Badges */}
-                          {getTags(freelance).length > 0 && (
-                            <XStack gap="$2" flexWrap="wrap">
-                              {getTags(freelance).map((tag, index) => (
-                                <XStack
-                                  key={index}
-                                  paddingHorizontal="$2"
-                                  paddingVertical="$1"
-                                  borderRadius="$2"
-                                  backgroundColor={colors.gray100}
-                                  borderWidth={1}
-                                  borderColor={colors.gray200}
-                                >
-                                  <Text fontSize={12} color={colors.gray700}>
-                                    {tag}
+                                {freelance.daily_rate && (
+                                  <Text
+                                    fontSize={14}
+                                    color={colors.gray700}
+                                    fontWeight="500"
+                                  >
+                                    {freelance.daily_rate} € / jour
                                   </Text>
-                                </XStack>
-                              ))}
+                                )}
+                              </YStack>
                             </XStack>
-                          )}
+
+                            {/* Compétences (badges sur 1 seule ligne, overflow masqué) */}
+                            {getTags(freelance).length > 0 && (
+                              <XStack
+                                gap="$2"
+                                flexWrap="nowrap"
+                                overflow="hidden"
+                                minHeight={30}
+                                alignItems="center"
+                              >
+                                {getTags(freelance).map((tag, index) => (
+                                  <XStack
+                                    key={index}
+                                    paddingHorizontal="$2"
+                                    paddingVertical="$1"
+                                    borderRadius="$2"
+                                    backgroundColor={colors.gray100}
+                                    borderWidth={1}
+                                    borderColor={colors.gray200}
+                                    maxWidth={170}
+                                    flexShrink={0}
+                                  >
+                                    <Text
+                                      fontSize={12}
+                                      color={colors.gray700}
+                                      numberOfLines={1}
+                                      ellipsizeMode="tail"
+                                    >
+                                      {tag}
+                                    </Text>
+                                  </XStack>
+                                ))}
+                              </XStack>
+                            )}
+                          </YStack>
 
                           {/* Boutons d'action */}
                           <XStack gap="$2" marginTop="auto" paddingTop="$2">
@@ -259,17 +276,6 @@ export default function FreelancePage() {
                               flex={1}
                             >
                               Voir profil
-                            </Button>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onPress={(e: any) => {
-                                e.stopPropagation();
-                                handleInvite(freelance.id);
-                              }}
-                              flex={1}
-                            >
-                              Inviter
                             </Button>
                           </XStack>
                         </YStack>
