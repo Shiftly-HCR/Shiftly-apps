@@ -485,7 +485,7 @@ export async function deleteFreelanceEducation(
  */
 export async function getPublishedFreelances(): Promise<FreelanceProfile[]> {
   try {
-    const { data, error } = await supabase
+    const { data: profiles, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("role", "freelance")
@@ -496,7 +496,66 @@ export async function getPublishedFreelances(): Promise<FreelanceProfile[]> {
       return [];
     }
 
-    return (data || []) as FreelanceProfile[];
+    const profileList = (profiles || []) as FreelanceProfile[];
+    if (profileList.length === 0) {
+      return [];
+    }
+
+    const profileIds = profileList.map((profile) => profile.id);
+
+    const [{ data: experiences, error: experiencesError }, { data: educations, error: educationsError }] =
+      await Promise.all([
+        supabase
+          .from("freelance_experiences")
+          .select("user_id")
+          .in("user_id", profileIds),
+        supabase
+          .from("freelance_educations")
+          .select("user_id")
+          .in("user_id", profileIds),
+      ]);
+
+    if (experiencesError) {
+      console.error(
+        "Erreur lors de la récupération des expériences freelances:",
+        experiencesError
+      );
+    }
+
+    if (educationsError) {
+      console.error(
+        "Erreur lors de la récupération des formations freelances:",
+        educationsError
+      );
+    }
+
+    const experienceCountByUser = (experiences || []).reduce<Record<string, number>>(
+      (acc, row) => {
+        const userId = row.user_id;
+        if (userId) {
+          acc[userId] = (acc[userId] || 0) + 1;
+        }
+        return acc;
+      },
+      {}
+    );
+
+    const educationCountByUser = (educations || []).reduce<Record<string, number>>(
+      (acc, row) => {
+        const userId = row.user_id;
+        if (userId) {
+          acc[userId] = (acc[userId] || 0) + 1;
+        }
+        return acc;
+      },
+      {}
+    );
+
+    return profileList.map((profile) => ({
+      ...profile,
+      experience_count: experienceCountByUser[profile.id] || 0,
+      education_count: educationCountByUser[profile.id] || 0,
+    }));
   } catch (err) {
     console.error("Erreur lors de la récupération des freelances:", err);
     return [];

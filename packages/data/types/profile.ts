@@ -82,6 +82,8 @@ export interface FreelanceProfile {
   hourly_rate?: number; // Tarif horaire en euros
   availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
   badges?: string | string[]; // Badges/certifications (DB: _text)
+  experience_count?: number; // Nombre d'experiences renseignees
+  education_count?: number; // Nombre de formations renseignees
   created_at?: string;
   updated_at?: string;
 }

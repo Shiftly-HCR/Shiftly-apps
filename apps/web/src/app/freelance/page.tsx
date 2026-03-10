@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
 import {
   Button,
   FreelanceFilters,
-  type FreelanceFiltersState,
   colors,
 } from "@shiftly/ui";
 import { FiGrid, FiList } from "react-icons/fi";
@@ -20,7 +19,10 @@ import { useFreelancePage } from "@/hooks";
 import type { ViewMode } from "@/components/ui/ViewToggle";
 
 export default function FreelancePage() {
+  const ITEMS_PER_PAGE = 50;
+
   const {
+    freelances,
     isLoading,
     viewMode,
     setViewMode,
@@ -47,6 +49,26 @@ export default function FreelancePage() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredFreelances.length / ITEMS_PER_PAGE)
+  );
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedFreelances = useMemo(() => {
+    const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredFreelances.slice(start, end);
+  }, [filteredFreelances, safeCurrentPage]);
+
   if (isLoading) {
     return <PageLoading />;
   }
@@ -60,6 +82,21 @@ export default function FreelancePage() {
             title="Découvrez nos freelances"
             description="Trouvez le talent parfait pour votre mission parmi nos freelances qualifiés"
           />
+
+          <XStack
+            justifyContent="space-between"
+            alignItems={isMobile ? "flex-start" : "center"}
+            flexDirection={isMobile ? "column" : "row"}
+            gap="$2"
+            marginBottom="$4"
+          >
+            <Text fontSize={14} color={colors.gray700}>
+              {freelances.length} freelances au total
+            </Text>
+            <Text fontSize={14} color={colors.gray700}>
+              {paginatedFreelances.length} affichés sur cette page
+            </Text>
+          </XStack>
 
           {/* Filtres actifs ; toggle Liste/Carte uniquement sur desktop */}
           <ActiveFilters
@@ -102,156 +139,193 @@ export default function FreelancePage() {
                   description="Revenez plus tard pour découvrir de nouveaux talents"
                 />
               ) : (
-                <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start" alignItems="stretch">
-                  {filteredFreelances.map((freelance) => (
-                    <YStack
-                      key={freelance.id}
-                      width={
-                        isMobile
-                          ? "100%"
-                          : viewMode === "grid"
-                            ? "calc(33.333% - 12px)"
-                            : "100%"
-                      }
-                      minWidth={
-                        !isMobile && viewMode === "grid" ? 280 : undefined
-                      }
-                      position="relative"
-                    >
+                <YStack gap="$4">
+                  <XStack
+                    flexWrap="wrap"
+                    gap="$4"
+                    justifyContent="flex-start"
+                    alignItems="stretch"
+                  >
+                    {paginatedFreelances.map((freelance) => (
                       <YStack
-                        flex={1}
-                        backgroundColor={colors.white}
-                        borderRadius={12}
-                        padding="$4"
-                        gap="$3"
-                        borderWidth={1}
-                        borderColor={colors.gray200}
-                        cursor="pointer"
-                        hoverStyle={{
-                          borderColor: colors.shiftlyViolet,
-                          shadowColor: "#000",
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.1,
-                          shadowRadius: 8,
-                        }}
-                        onPress={() => handleViewProfile(freelance.id)}
+                        key={freelance.id}
+                        width={
+                          isMobile
+                            ? "100%"
+                            : viewMode === "grid"
+                              ? "calc(33.333% - 12px)"
+                              : "100%"
+                        }
+                        minWidth={
+                          !isMobile && viewMode === "grid" ? 280 : undefined
+                        }
+                        position="relative"
                       >
-                        {/* Avatar et infos principales */}
-                        <XStack gap="$3" alignItems="center">
-                          <YStack position="relative">
-                            <YStack
-                              width={60}
-                              height={60}
-                              borderRadius={30}
-                              backgroundColor={colors.shiftlyViolet}
-                              alignItems="center"
-                              justifyContent="center"
-                              overflow="hidden"
-                            >
-                              {freelance.photo_url ? (
-                                <img
-                                  src={freelance.photo_url}
-                                  alt={getFullName(freelance)}
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                              ) : (
-                                <Text
-                                  color={colors.white}
-                                  fontSize={24}
-                                  fontWeight="600"
-                                >
-                                  {getFullName(freelance)
-                                    .charAt(0)
-                                    .toUpperCase()}
-                                </Text>
-                              )}
+                        <YStack
+                          flex={1}
+                          backgroundColor={colors.white}
+                          borderRadius={12}
+                          padding="$4"
+                          gap="$3"
+                          borderWidth={1}
+                          borderColor={colors.gray200}
+                          cursor="pointer"
+                          hoverStyle={{
+                            borderColor: colors.shiftlyViolet,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 8,
+                          }}
+                          onPress={() => handleViewProfile(freelance.id)}
+                        >
+                          {/* Avatar et infos principales */}
+                          <XStack gap="$3" alignItems="center">
+                            <YStack position="relative">
+                              <YStack
+                                width={60}
+                                height={60}
+                                borderRadius={30}
+                                backgroundColor={colors.shiftlyViolet}
+                                alignItems="center"
+                                justifyContent="center"
+                                overflow="hidden"
+                              >
+                                {freelance.photo_url ? (
+                                  <img
+                                    src={freelance.photo_url}
+                                    alt={getFullName(freelance)}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                ) : (
+                                  <Text
+                                    color={colors.white}
+                                    fontSize={24}
+                                    fontWeight="600"
+                                  >
+                                    {getFullName(freelance)
+                                      .charAt(0)
+                                      .toUpperCase()}
+                                  </Text>
+                                )}
+                              </YStack>
                             </YStack>
-                          </YStack>
 
-                          <YStack flex={1} gap="$1">
-                            <Text
-                              fontSize={18}
-                              fontWeight="700"
-                              color={colors.gray900}
-                            >
-                              {getFullName(freelance)}
-                            </Text>
-                            <Text
-                              fontSize={14}
-                              color={colors.gray700}
-                              numberOfLines={2}
-                              ellipsizeMode="tail"
-                            >
-                              {freelance.headline ||
-                                freelance.bio ||
-                                "Freelance"}
-                            </Text>
-                            {freelance.daily_rate && (
+                            <YStack flex={1} gap="$1">
+                              <Text
+                                fontSize={18}
+                                fontWeight="700"
+                                color={colors.gray900}
+                              >
+                                {getFullName(freelance)}
+                              </Text>
                               <Text
                                 fontSize={14}
                                 color={colors.gray700}
-                                fontWeight="500"
+                                numberOfLines={2}
+                                ellipsizeMode="tail"
                               >
-                                {freelance.daily_rate} € / jour
+                                {freelance.headline ||
+                                  freelance.bio ||
+                                  "Freelance"}
                               </Text>
-                            )}
-                          </YStack>
-                        </XStack>
-
-                        {/* Tags/Badges */}
-                        {getTags(freelance).length > 0 && (
-                          <XStack gap="$2" flexWrap="wrap">
-                            {getTags(freelance).map((tag, index) => (
-                              <XStack
-                                key={index}
-                                paddingHorizontal="$2"
-                                paddingVertical="$1"
-                                borderRadius="$2"
-                                backgroundColor={colors.gray100}
-                                borderWidth={1}
-                                borderColor={colors.gray200}
-                              >
-                                <Text fontSize={12} color={colors.gray700}>
-                                  {tag}
+                              {freelance.daily_rate && (
+                                <Text
+                                  fontSize={14}
+                                  color={colors.gray700}
+                                  fontWeight="500"
+                                >
+                                  {freelance.daily_rate} € / jour
                                 </Text>
-                              </XStack>
-                            ))}
+                              )}
+                            </YStack>
                           </XStack>
-                        )}
 
-                        {/* Boutons d'action */}
-                        <XStack gap="$2" marginTop="auto" paddingTop="$2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onPress={(e: any) => {
-                              e.stopPropagation();
-                              handleViewProfile(freelance.id);
-                            }}
-                            flex={1}
-                          >
-                            Voir profil
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onPress={(e: any) => {
-                              e.stopPropagation();
-                              handleInvite(freelance.id);
-                            }}
-                            flex={1}
-                          >
-                            Inviter
-                          </Button>
-                        </XStack>
+                          {/* Tags/Badges */}
+                          {getTags(freelance).length > 0 && (
+                            <XStack gap="$2" flexWrap="wrap">
+                              {getTags(freelance).map((tag, index) => (
+                                <XStack
+                                  key={index}
+                                  paddingHorizontal="$2"
+                                  paddingVertical="$1"
+                                  borderRadius="$2"
+                                  backgroundColor={colors.gray100}
+                                  borderWidth={1}
+                                  borderColor={colors.gray200}
+                                >
+                                  <Text fontSize={12} color={colors.gray700}>
+                                    {tag}
+                                  </Text>
+                                </XStack>
+                              ))}
+                            </XStack>
+                          )}
+
+                          {/* Boutons d'action */}
+                          <XStack gap="$2" marginTop="auto" paddingTop="$2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onPress={(e: any) => {
+                                e.stopPropagation();
+                                handleViewProfile(freelance.id);
+                              }}
+                              flex={1}
+                            >
+                              Voir profil
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onPress={(e: any) => {
+                                e.stopPropagation();
+                                handleInvite(freelance.id);
+                              }}
+                              flex={1}
+                            >
+                              Inviter
+                            </Button>
+                          </XStack>
+                        </YStack>
                       </YStack>
-                    </YStack>
-                  ))}
-                </XStack>
+                    ))}
+                  </XStack>
+
+                  <XStack
+                    justifyContent="center"
+                    alignItems="center"
+                    gap="$3"
+                    marginTop="$2"
+                    flexWrap="wrap"
+                  >
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={safeCurrentPage <= 1}
+                    >
+                      Précédent
+                    </Button>
+                    <Text fontSize={14} color={colors.gray700}>
+                      Page {safeCurrentPage} sur {totalPages}
+                    </Text>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onPress={() =>
+                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                      }
+                      disabled={safeCurrentPage >= totalPages}
+                    >
+                      Suivant
+                    </Button>
+                  </XStack>
+                </YStack>
               )}
             </YStack>
           </XStack>
