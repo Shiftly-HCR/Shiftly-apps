@@ -12,6 +12,8 @@ import {
   upsertFreelanceEducation,
   deleteFreelanceEducation,
   type FreelanceProfile,
+  type PublishedFreelanceSearchParams,
+  type PublishedFreelanceSearchResult,
   type FreelanceExperience,
   type FreelanceEducation,
 } from "@shiftly/data";
@@ -19,11 +21,14 @@ import {
 /**
  * Hook pour récupérer tous les freelances publiés
  */
-export function usePublishedFreelances() {
+export function usePublishedFreelances(
+  params: PublishedFreelanceSearchParams
+) {
   return useQuery({
-    queryKey: ["freelance", "published"],
-    queryFn: getPublishedFreelances,
+    queryKey: ["freelance", "published", params],
+    queryFn: () => getPublishedFreelances(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
+    placeholderData: (previousData) => previousData as PublishedFreelanceSearchResult,
   });
 }
 

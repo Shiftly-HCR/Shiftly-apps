@@ -48,6 +48,7 @@ const locationOptions = [
 ];
 
 const availabilityOptions = [
+  { label: "Toutes", value: "all" },
   { label: "Immédiatement", value: "immediate" },
   { label: "Cette semaine", value: "this_week" },
   { label: "Ce mois", value: "this_month" },
@@ -95,10 +96,12 @@ function FreelanceFiltersFormContent({
 
       <Select
         label="Disponibilité"
-        placeholder="Immédiatement"
+        placeholder="Toutes"
         options={availabilityOptions}
-        value={filters.availability || "immediate"}
-        onValueChange={(value) => onFilterChange("availability", value)}
+        value={filters.availability || "all"}
+        onValueChange={(value) =>
+          onFilterChange("availability", value === "all" ? undefined : value)
+        }
       />
 
       {/* TJM (taux journalier) */}

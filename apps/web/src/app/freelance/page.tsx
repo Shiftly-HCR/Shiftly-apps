@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
 import {
   Button,
@@ -19,13 +19,14 @@ import { useFreelancePage } from "@/hooks";
 import type { ViewMode } from "@/components/ui/ViewToggle";
 
 export default function FreelancePage() {
-  const ITEMS_PER_PAGE = 50;
-
   const {
-    freelances,
     isLoading,
     viewMode,
     setViewMode,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalFreelances,
     filters,
     setFilters,
     filteredFreelances,
@@ -49,26 +50,6 @@ export default function FreelancePage() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredFreelances.length / ITEMS_PER_PAGE)
-  );
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  const paginatedFreelances = useMemo(() => {
-    const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return filteredFreelances.slice(start, end);
-  }, [filteredFreelances, safeCurrentPage]);
-
   if (isLoading) {
     return <PageLoading />;
   }
@@ -91,10 +72,10 @@ export default function FreelancePage() {
             marginBottom="$4"
           >
             <Text fontSize={14} color={colors.gray700}>
-              {freelances.length} freelances au total
+              {totalFreelances} freelances au total
             </Text>
             <Text fontSize={14} color={colors.gray700}>
-              {paginatedFreelances.length} affichés sur cette page
+              {filteredFreelances.length} affichés sur cette page
             </Text>
           </XStack>
 
@@ -146,7 +127,7 @@ export default function FreelancePage() {
                     justifyContent="flex-start"
                     alignItems="stretch"
                   >
-                    {paginatedFreelances.map((freelance) => (
+                    {filteredFreelances.map((freelance) => (
                       <YStack
                         key={freelance.id}
                         width={
@@ -307,12 +288,12 @@ export default function FreelancePage() {
                       variant="secondary"
                       size="sm"
                       onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      disabled={safeCurrentPage <= 1}
+                      disabled={currentPage <= 1}
                     >
                       Précédent
                     </Button>
                     <Text fontSize={14} color={colors.gray700}>
-                      Page {safeCurrentPage} sur {totalPages}
+                      Page {currentPage} sur {totalPages}
                     </Text>
                     <Button
                       variant="secondary"
@@ -320,7 +301,7 @@ export default function FreelancePage() {
                       onPress={() =>
                         setCurrentPage((prev) => Math.min(totalPages, prev + 1))
                       }
-                      disabled={safeCurrentPage >= totalPages}
+                      disabled={currentPage >= totalPages}
                     >
                       Suivant
                     </Button>

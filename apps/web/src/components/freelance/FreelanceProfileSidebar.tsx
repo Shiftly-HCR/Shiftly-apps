@@ -80,17 +80,6 @@ export function FreelanceProfileSidebar({
       )}
 
       <Button
-        variant="primary"
-        size="md"
-        onPress={() =>
-          router.push(`/missions/create?freelance=${freelanceId}`)
-        }
-        width="100%"
-      >
-        Inviter sur une mission
-      </Button>
-
-      <Button
         variant="secondary"
         size="md"
         onPress={() => {
@@ -159,4 +148,3 @@ export function FreelanceProfileSidebar({
     </YStack>
   );
 }
-

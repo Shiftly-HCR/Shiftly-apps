@@ -3,6 +3,9 @@ import type {
   FreelanceProfile,
   FreelanceExperience,
   FreelanceEducation,
+  PublishedFreelance,
+  PublishedFreelanceSearchParams,
+  PublishedFreelanceSearchResult,
   UpdateFreelanceProfileParams,
   LinkedInProfileData,
 } from "../types/profile";
@@ -483,82 +486,45 @@ export async function deleteFreelanceEducation(
 /**
  * Récupère tous les profils freelance publiés (pour les recruteurs)
  */
-export async function getPublishedFreelances(): Promise<FreelanceProfile[]> {
+export async function getPublishedFreelances(
+  params: PublishedFreelanceSearchParams = {}
+): Promise<PublishedFreelanceSearchResult> {
+  const page = Math.max(1, params.page ?? 1);
+  const pageSize = Math.max(1, params.pageSize ?? 50);
+
   try {
-    const { data: profiles, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("role", "freelance")
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("search_published_freelances", {
+      p_query: params.query || null,
+      p_position: params.position || null,
+      p_location: params.location || null,
+      p_availability:
+        params.availability && params.availability !== "all"
+          ? params.availability
+          : null,
+      p_badge: params.badge || null,
+      p_daily_rate_min: params.dailyRateMin ?? null,
+      p_daily_rate_max: params.dailyRateMax ?? null,
+      p_page: page,
+      p_page_size: pageSize,
+    });
 
     if (error) {
       console.error("Erreur lors de la récupération des freelances:", error);
-      return [];
+      return { items: [], totalCount: 0, page, pageSize };
     }
 
-    const profileList = (profiles || []) as FreelanceProfile[];
-    if (profileList.length === 0) {
-      return [];
-    }
+    const rows = (data || []) as Array<PublishedFreelance & { total_count: number }>;
+    const totalCount = rows[0]?.total_count ?? 0;
 
-    const profileIds = profileList.map((profile) => profile.id);
-
-    const [{ data: experiences, error: experiencesError }, { data: educations, error: educationsError }] =
-      await Promise.all([
-        supabase
-          .from("freelance_experiences")
-          .select("user_id")
-          .in("user_id", profileIds),
-        supabase
-          .from("freelance_educations")
-          .select("user_id")
-          .in("user_id", profileIds),
-      ]);
-
-    if (experiencesError) {
-      console.error(
-        "Erreur lors de la récupération des expériences freelances:",
-        experiencesError
-      );
-    }
-
-    if (educationsError) {
-      console.error(
-        "Erreur lors de la récupération des formations freelances:",
-        educationsError
-      );
-    }
-
-    const experienceCountByUser = (experiences || []).reduce<Record<string, number>>(
-      (acc, row) => {
-        const userId = row.user_id;
-        if (userId) {
-          acc[userId] = (acc[userId] || 0) + 1;
-        }
-        return acc;
-      },
-      {}
-    );
-
-    const educationCountByUser = (educations || []).reduce<Record<string, number>>(
-      (acc, row) => {
-        const userId = row.user_id;
-        if (userId) {
-          acc[userId] = (acc[userId] || 0) + 1;
-        }
-        return acc;
-      },
-      {}
-    );
-
-    return profileList.map((profile) => ({
-      ...profile,
-      experience_count: experienceCountByUser[profile.id] || 0,
-      education_count: educationCountByUser[profile.id] || 0,
-    }));
+    return {
+      items: rows.map(({ total_count, ...row }) => row),
+      totalCount,
+      page,
+      pageSize,
+    };
   } catch (err) {
     console.error("Erreur lors de la récupération des freelances:", err);
-    return [];
+    return { items: [], totalCount: 0, page, pageSize };
   }
 }
 
