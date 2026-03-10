@@ -17,6 +17,8 @@ interface FreelanceProfileFormProps {
   lastName?: string;
   email?: string;
   phone?: string;
+  siret?: string;
+  cityOfResidence?: string;
   bio?: string;
   onSave?: () => void;
   onSaveAll?: () => Promise<void>;
@@ -27,6 +29,8 @@ export function FreelanceProfileForm({
   lastName: externalLastName,
   email: externalEmail,
   phone: externalPhone,
+  siret: externalSiret,
+  cityOfResidence: externalCityOfResidence,
   bio: externalBio,
   onSave,
   onSaveAll,
@@ -67,6 +71,8 @@ export function FreelanceProfileForm({
     isSaving,
     error,
     success,
+    fieldErrors,
+    clearFieldError,
 
     // Handlers profil
     handleSaveProfile,
@@ -94,6 +100,8 @@ export function FreelanceProfileForm({
     externalLastName,
     externalEmail,
     externalPhone,
+    externalSiret,
+    externalCityOfResidence,
     externalBio,
   });
 
@@ -204,8 +212,12 @@ export function FreelanceProfileForm({
               <Input
                 placeholder="300"
                 value={dailyRate}
-                onChangeText={setDailyRate}
+                onChangeText={(value) => {
+                  setDailyRate(value);
+                  clearFieldError("dailyRate");
+                }}
                 keyboardType="numeric"
+                error={fieldErrors.dailyRate}
               />
               {dailyRate &&
                 !isNaN(parseFloat(dailyRate)) &&
@@ -231,8 +243,12 @@ export function FreelanceProfileForm({
               <Input
                 placeholder="20"
                 value={hourlyRate}
-                onChangeText={setHourlyRate}
+                onChangeText={(value) => {
+                  setHourlyRate(value);
+                  clearFieldError("hourlyRate");
+                }}
                 keyboardType="numeric"
+                error={fieldErrors.hourlyRate}
               />
             </YStack>
             <YStack flex={isMobile ? undefined : 1} gap="$2" width={isMobile ? "100%" : undefined}>
@@ -343,17 +359,21 @@ export function FreelanceProfileForm({
               label="Titre du poste"
               placeholder="Serveur, Barman..."
               value={experienceForm.title}
-              onChangeText={(text) =>
-                setExperienceForm({ ...experienceForm, title: text })
-              }
+              onChangeText={(text) => {
+                setExperienceForm({ ...experienceForm, title: text });
+                clearFieldError("experienceTitle");
+              }}
+              error={fieldErrors.experienceTitle}
             />
             <Input
               label="Entreprise"
               placeholder="Nom de l'entreprise"
               value={experienceForm.company}
-              onChangeText={(text) =>
-                setExperienceForm({ ...experienceForm, company: text })
-              }
+              onChangeText={(text) => {
+                setExperienceForm({ ...experienceForm, company: text });
+                clearFieldError("experienceCompany");
+              }}
+              error={fieldErrors.experienceCompany}
             />
             <Input
               label="Lieu"
@@ -514,9 +534,11 @@ export function FreelanceProfileForm({
               label="Établissement"
               placeholder="Nom de l'école/université"
               value={educationForm.school}
-              onChangeText={(text) =>
-                setEducationForm({ ...educationForm, school: text })
-              }
+              onChangeText={(text) => {
+                setEducationForm({ ...educationForm, school: text });
+                clearFieldError("educationSchool");
+              }}
+              error={fieldErrors.educationSchool}
             />
             <Input
               label="Diplôme"
