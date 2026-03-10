@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as TButton, styled, Text, XStack } from "tamagui";
-import React, { useState } from "react";
+import React from "react";
 
 const StyledButton = styled(TButton, {
   name: "Button",
@@ -14,6 +14,7 @@ const StyledButton = styled(TButton, {
   justifyContent: "center",
   cursor: "pointer",
   minHeight: 44,
+  outlineWidth: 0,
   pressStyle: {
     scale: 0.98,
   },
@@ -22,8 +23,7 @@ const StyledButton = styled(TButton, {
   },
   focusStyle: {
     scale: 1.02,
-    borderWidth: 2,
-    borderColor: "$outlineColor",
+    outlineWidth: 0,
   },
   variants: {
     variant: {
@@ -37,8 +37,6 @@ const StyledButton = styled(TButton, {
         focusStyle: {
           backgroundColor: "$primary",
           scale: 1.02,
-          borderWidth: 2,
-          borderColor: "$outlineColor",
         },
         pressStyle: {
           backgroundColor: "$primary",
@@ -50,14 +48,11 @@ const StyledButton = styled(TButton, {
         borderColor: "$primary",
         hoverStyle: {
           backgroundColor: "$gold",
-          color: "#000000",
           scale: 1.02,
         },
         focusStyle: {
-          backgroundColor: "$primary",
+          backgroundColor: "$primaryLight",
           scale: 1.02,
-          borderWidth: 2,
-          borderColor: "$outlineColor",
         },
         pressStyle: {
           backgroundColor: "$gold",
@@ -74,8 +69,6 @@ const StyledButton = styled(TButton, {
         focusStyle: {
           backgroundColor: "$primaryLight",
           scale: 1.02,
-          borderWidth: 2,
-          borderColor: "$outlineColor",
         },
         pressStyle: {
           backgroundColor: "$primaryLight",
@@ -95,7 +88,6 @@ const StyledButton = styled(TButton, {
         focusStyle: {
           backgroundColor: "transparent",
           scale: 1.02,
-          borderWidth: 2,
           borderColor: "$primary",
         },
         pressStyle: {
@@ -138,12 +130,7 @@ export const Button = ({
   size = "md",
   ...props
 }: ButtonProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   const getTextColor = () => {
-    if (isHovered && variant === "secondary") {
-      return "#000000";
-    }
     switch (variant) {
       case "primary":
         return "white";
@@ -221,8 +208,6 @@ export const Button = ({
     <StyledButton
       variant={variant}
       size={size}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
       {isComplexChildren ? (

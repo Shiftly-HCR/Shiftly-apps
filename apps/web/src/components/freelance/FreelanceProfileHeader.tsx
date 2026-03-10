@@ -2,7 +2,7 @@
 
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
-import { FiCheck } from "react-icons/fi";
+import { FiCheck, FiMapPin } from "react-icons/fi";
 import type { Profile, FreelanceProfile } from "@shiftly/data";
 
 interface FreelanceProfileHeaderProps {
@@ -77,6 +77,14 @@ export function FreelanceProfileHeader({
             ? profile.headline
             : "Freelance"}
         </Text>
+        {"city_of_residence" in profile && profile.city_of_residence && (
+          <XStack gap="$2" alignItems="center">
+            <FiMapPin size={15} color={colors.gray600} />
+            <Text fontSize={14} color={colors.gray700}>
+              {profile.city_of_residence}
+            </Text>
+          </XStack>
+        )}
 
         {/* Badges */}
         <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">

@@ -5,6 +5,9 @@
 CREATE EXTENSION IF NOT EXISTS unaccent;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS city_of_residence TEXT;
+
 CREATE OR REPLACE FUNCTION public.normalize_search_text(input_text TEXT)
 RETURNS TEXT
 LANGUAGE SQL
@@ -38,6 +41,7 @@ RETURNS TABLE (
   note NUMERIC,
   headline TEXT,
   location TEXT,
+  city_of_residence TEXT,
   summary TEXT,
   skills TEXT[],
   is_premium BOOLEAN,
@@ -81,6 +85,7 @@ AS $$
       p.note,
       p.headline,
       p.location,
+      p.city_of_residence,
       p.summary,
       p.skills,
       p.is_premium,
@@ -116,12 +121,14 @@ AS $$
           b.bio,
           b.summary,
           b.location,
+          b.city_of_residence,
           array_to_string(b.skills, ' '),
           b.experience_search_text,
           b.education_search_text
         )
       ) AS search_blob,
       public.normalize_search_text(b.location) AS location_norm,
+      public.normalize_search_text(b.city_of_residence) AS city_of_residence_norm,
       public.normalize_search_text(b.availability) AS availability_norm,
       (
         (
@@ -152,7 +159,11 @@ AS $$
         )
       )
       AND (p.position_norm = '' OR n.search_blob LIKE '%' || p.position_norm || '%')
-      AND (p.location_norm = '' OR n.location_norm LIKE '%' || p.location_norm || '%')
+      AND (
+        p.location_norm = ''
+        OR n.location_norm LIKE '%' || p.location_norm || '%'
+        OR n.city_of_residence_norm LIKE '%' || p.location_norm || '%'
+      )
       AND (p.availability_norm = '' OR n.availability_norm LIKE '%' || p.availability_norm || '%')
       AND (
         p.badge_norm = '' OR EXISTS (
@@ -187,6 +198,7 @@ AS $$
     r.note,
     r.headline,
     r.location,
+    r.city_of_residence,
     r.summary,
     r.skills,
     r.is_premium,
@@ -227,6 +239,8 @@ CREATE INDEX IF NOT EXISTS idx_profiles_summary_trgm
   ON public.profiles USING GIN (summary gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_profiles_location_trgm
   ON public.profiles USING GIN (location gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_profiles_city_of_residence_trgm
+  ON public.profiles USING GIN (city_of_residence gin_trgm_ops);
 
 CREATE INDEX IF NOT EXISTS idx_freelance_experiences_title_trgm
   ON public.freelance_experiences USING GIN (title gin_trgm_ops);

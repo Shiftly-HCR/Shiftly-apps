@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
-import {
-  Button,
-  FreelanceFilters,
-  colors,
-} from "@shiftly/ui";
-import { FiGrid, FiList } from "react-icons/fi";
+import { Button, FreelanceFilters, colors } from "@shiftly/ui";
+import { FiGrid, FiList, FiMapPin } from "react-icons/fi";
 import {
   AppLayout,
   PageLoading,
@@ -41,9 +37,7 @@ export default function FreelancePage() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const check = () =>
-      setIsMobile(
-        typeof window !== "undefined" && window.innerWidth < 900
-      );
+      setIsMobile(typeof window !== "undefined" && window.innerWidth < 900);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -88,10 +82,19 @@ export default function FreelancePage() {
                 ? {
                     currentMode: viewMode as ViewMode,
                     options: [
-                      { mode: "grid", icon: <FiGrid size={16} />, label: "Grille" },
-                      { mode: "list", icon: <FiList size={16} />, label: "Liste" },
+                      {
+                        mode: "grid",
+                        icon: <FiGrid size={16} />,
+                        label: "Grille",
+                      },
+                      {
+                        mode: "list",
+                        icon: <FiList size={16} />,
+                        label: "Liste",
+                      },
                     ],
-                    onModeChange: (mode) => setViewMode(mode as "grid" | "list"),
+                    onModeChange: (mode) =>
+                      setViewMode(mode as "grid" | "list"),
                   }
                 : undefined
             }
@@ -226,6 +229,22 @@ export default function FreelancePage() {
                                     {freelance.daily_rate} € / jour
                                   </Text>
                                 )}
+                                {freelance.city_of_residence && (
+                                  <XStack gap="$1.5" alignItems="center">
+                                    <FiMapPin
+                                      size={13}
+                                      color={colors.gray600}
+                                    />
+                                    <Text
+                                      fontSize={13}
+                                      color={colors.gray600}
+                                      numberOfLines={1}
+                                      ellipsizeMode="tail"
+                                    >
+                                      {freelance.city_of_residence}
+                                    </Text>
+                                  </XStack>
+                                )}
                               </YStack>
                             </XStack>
 
@@ -293,7 +312,9 @@ export default function FreelancePage() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      onPress={() =>
+                        setCurrentPage((prev) => Math.max(1, prev - 1))
+                      }
                       disabled={currentPage <= 1}
                     >
                       Précédent

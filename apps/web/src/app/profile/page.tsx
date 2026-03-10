@@ -26,6 +26,8 @@ export default function ProfilePage() {
     isSaving,
     error,
     success,
+    fieldErrors,
+    clearFieldError,
     // Champs du formulaire
     firstName,
     setFirstName,
@@ -37,6 +39,8 @@ export default function ProfilePage() {
     setPhone,
     siret,
     setSiret,
+    cityOfResidence,
+    setCityOfResidence,
     bio,
     setBio,
     photoUrl,
@@ -216,7 +220,11 @@ export default function ProfilePage() {
                   label="Prénom"
                   placeholder="Votre prénom"
                   value={firstName}
-                  onChangeText={setFirstName}
+                  onChangeText={(value) => {
+                    setFirstName(value);
+                    clearFieldError("firstName");
+                  }}
+                  error={fieldErrors.firstName}
                 />
               </YStack>
               <YStack flex={1}>
@@ -224,7 +232,11 @@ export default function ProfilePage() {
                   label="Nom"
                   placeholder="Votre nom"
                   value={lastName}
-                  onChangeText={setLastName}
+                  onChangeText={(value) => {
+                    setLastName(value);
+                    clearFieldError("lastName");
+                  }}
+                  error={fieldErrors.lastName}
                 />
               </YStack>
             </XStack>
@@ -234,9 +246,13 @@ export default function ProfilePage() {
               label="Adresse e-mail"
               placeholder="exemple@email.com"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(value) => {
+                setEmail(value);
+                clearFieldError("email");
+              }}
               keyboardType="email-address"
               autoComplete="email"
+              error={fieldErrors.email}
             />
 
             {/* Téléphone */}
@@ -244,8 +260,23 @@ export default function ProfilePage() {
               label="Téléphone"
               placeholder="0612345678"
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={(value) => {
+                setPhone(value);
+                clearFieldError("phone");
+              }}
               keyboardType="phone-pad"
+              error={fieldErrors.phone}
+            />
+
+            <Input
+              label="Ville de résidence"
+              placeholder="Paris"
+              value={cityOfResidence}
+              onChangeText={(value) => {
+                setCityOfResidence(value);
+                clearFieldError("cityOfResidence");
+              }}
+              error={fieldErrors.cityOfResidence}
             />
 
             {/* SIRET */}
@@ -253,8 +284,12 @@ export default function ProfilePage() {
               label="SIRET"
               placeholder="12345678901234"
               value={siret}
-              onChangeText={setSiret}
+              onChangeText={(value) => {
+                setSiret(value);
+                clearFieldError("siret");
+              }}
               keyboardType="number-pad"
+              error={fieldErrors.siret}
             />
 
             {/* Bio */}
@@ -267,9 +302,13 @@ export default function ProfilePage() {
                   bio && bio.trim() ? undefined : "Parlez-nous de vous..."
                 }
                 value={bio || ""}
-                onChangeText={setBio}
+                onChangeText={(value) => {
+                  setBio(value);
+                  clearFieldError("bio");
+                }}
                 multiline
                 numberOfLines={4}
+                error={fieldErrors.bio}
               />
             </YStack>
           </YStack>
@@ -281,6 +320,8 @@ export default function ProfilePage() {
               lastName={lastName}
               email={email}
               phone={phone}
+              siret={siret}
+              cityOfResidence={cityOfResidence}
               bio={bio}
               onSave={async () => {
                 await refresh();

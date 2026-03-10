@@ -72,7 +72,7 @@ function getProfileCompletenessScore(freelance: PublishedFreelance): number {
  * Gère le chargement, le filtrage et la navigation
  */
 export function useFreelancePage() {
-  const ITEMS_PER_PAGE = 50;
+  const ITEMS_PER_PAGE = 30;
   const router = useRouter();
   const { searchQuery } = useSearchQuery();
   const [currentPage, setCurrentPage] = useState(1);
