@@ -1,12 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { YStack, XStack, Text } from "tamagui";
 import { Button, Input, RadioGroup, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useRegisterPage } from "@/hooks";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     firstName,
     setFirstName,
@@ -151,26 +155,73 @@ export default function RegisterPage() {
             />
 
             {/* Mot de passe */}
-            <Input
-              label="Mot de passe"
-              placeholder="Minimum 8 caractères"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoComplete="new-password"
-              required
-            />
+            <YStack gap="$2" width="100%" position="relative">
+              <Text fontSize={14} fontWeight="600" color="#2B2B2B">
+                Mot de passe <Text color={colors.shiftlyViolet}>*</Text>
+              </Text>
+              <Input
+                placeholder="Minimum 8 caractères"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                paddingRight={48}
+              />
+              <XStack
+                position="absolute"
+                right={12}
+                bottom={13}
+                onPress={() => setShowPassword((prev) => !prev)}
+                cursor="pointer"
+                alignItems="center"
+                justifyContent="center"
+                width={24}
+                height={24}
+              >
+                {showPassword ? (
+                  <FiEyeOff size={18} color="#6B7280" />
+                ) : (
+                  <FiEye size={18} color="#6B7280" />
+                )}
+              </XStack>
+            </YStack>
 
             {/* Confirmation mot de passe */}
-            <Input
-              label="Confirmer le mot de passe"
-              placeholder="Répétez votre mot de passe"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              autoComplete="new-password"
-              required
-            />
+            <YStack gap="$2" width="100%" position="relative">
+              <Text fontSize={14} fontWeight="600" color="#2B2B2B">
+                Confirmer le mot de passe{" "}
+                <Text color={colors.shiftlyViolet}>*</Text>
+              </Text>
+              <Input
+                placeholder="Répétez votre mot de passe"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                paddingRight={48}
+              />
+              <XStack
+                position="absolute"
+                right={12}
+                bottom={13}
+                onPress={() => setShowConfirmPassword((prev) => !prev)}
+                cursor="pointer"
+                alignItems="center"
+                justifyContent="center"
+                width={24}
+                height={24}
+              >
+                {showConfirmPassword ? (
+                  <FiEyeOff size={18} color="#6B7280" />
+                ) : (
+                  <FiEye size={18} color="#6B7280" />
+                )}
+              </XStack>
+            </YStack>
 
             {/* Bouton d'inscription */}
             <Button

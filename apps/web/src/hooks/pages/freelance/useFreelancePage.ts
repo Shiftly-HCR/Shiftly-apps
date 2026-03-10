@@ -39,6 +39,32 @@ export const badgeOptions = [
   { label: "Shiftly+", value: "shiftly_plus" },
 ];
 
+function isFilled(value?: string | null): boolean {
+  return Boolean(value && value.trim().length > 0);
+}
+
+function getProfileCompletenessScore(freelance: FreelanceProfile): number {
+  const hasPhoto = isFilled(freelance.photo_url);
+  const hasBioDescription = isFilled(freelance.bio) || isFilled(freelance.summary);
+  const experienceCount = freelance.experience_count || 0;
+  const educationCount = freelance.education_count || 0;
+  const hasExperience = experienceCount > 0;
+  const hasEducation = educationCount > 0;
+
+  // 4 critères principaux demandés: photo, bio/description, expérience, formation
+  let score = 0;
+  if (hasPhoto) score += 1;
+  if (hasBioDescription) score += 1;
+  if (hasExperience) score += 1;
+  if (hasEducation) score += 1;
+
+  // Bonus léger pour départager les profils à critères égaux
+  score += Math.min(experienceCount, 10) * 0.01;
+  score += Math.min(educationCount, 10) * 0.01;
+
+  return score;
+}
+
 
 /**
  * Hook pour gérer la logique de la page de liste des freelances
@@ -58,7 +84,7 @@ export function useFreelancePage() {
 
   // Filtrer les freelances selon les critères (filtres + recherche texte ?q=)
   const filteredFreelances = useMemo(() => {
-    return freelances.filter((freelance) => {
+    const filtered = freelances.filter((freelance) => {
       // Search query: each token must match at least one of first_name, last_name, headline, bio, summary, location, skills
       const query = searchQuery.trim().toLowerCase();
       if (query) {
@@ -137,6 +163,16 @@ export function useFreelancePage() {
       }
 
       return true;
+    });
+
+    return [...filtered].sort((a, b) => {
+      const scoreDiff =
+        getProfileCompletenessScore(b) - getProfileCompletenessScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      const bUpdatedAt = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+      const aUpdatedAt = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+      return bUpdatedAt - aUpdatedAt;
     });
   }, [freelances, filters, searchQuery]);
 
@@ -256,4 +292,3 @@ export function useFreelancePage() {
     handleInvite,
   };
 }
-

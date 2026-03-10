@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { YStack, XStack, Text, Image, Spinner } from "tamagui";
 import { Button, Input, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useLoginPage } from "@/hooks";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const {
     email,
     setEmail,
@@ -144,9 +147,28 @@ export default function LoginPage() {
                 placeholder="Entrez votre mot de passe"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
+                paddingRight={48}
               />
+              <XStack
+                position="absolute"
+                right={12}
+                bottom={13}
+                onPress={() => setShowPassword((prev) => !prev)}
+                cursor="pointer"
+                alignItems="center"
+                justifyContent="center"
+                width={24}
+                height={24}
+              >
+                {showPassword ? (
+                  <FiEyeOff size={18} color="#6B7280" />
+                ) : (
+                  <FiEye size={18} color="#6B7280" />
+                )}
+              </XStack>
             </YStack>
 
             {/* Bouton de connexion */}
