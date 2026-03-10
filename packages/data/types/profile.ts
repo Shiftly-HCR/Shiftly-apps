@@ -88,6 +88,32 @@ export interface FreelanceProfile {
   updated_at?: string;
 }
 
+export interface PublishedFreelance extends FreelanceProfile {
+  experience_count: number;
+  education_count: number;
+  completeness_score?: number;
+  search_blob?: string;
+}
+
+export interface PublishedFreelanceSearchParams {
+  query?: string;
+  position?: string;
+  location?: string;
+  availability?: string;
+  badge?: string;
+  dailyRateMin?: number;
+  dailyRateMax?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PublishedFreelanceSearchResult {
+  items: PublishedFreelance[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface UpdateFreelanceProfileParams {
   firstName?: string;
   lastName?: string;

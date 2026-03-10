@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { FreelanceProfile } from "@shiftly/data";
+import type { PublishedFreelance } from "@shiftly/data";
 import { usePublishedFreelances } from "@/hooks/queries";
 import { useSearchQuery } from "@/hooks/search";
 import type { FreelanceFiltersState } from "@shiftly/ui";
@@ -28,6 +28,7 @@ export const locationOptions = [
 ];
 
 export const availabilityOptions = [
+  { label: "Toutes", value: "all" },
   { label: "Immédiatement", value: "immediate" },
   { label: "Cette semaine", value: "this_week" },
   { label: "Ce mois", value: "this_month" },
@@ -43,7 +44,7 @@ function isFilled(value?: string | null): boolean {
   return Boolean(value && value.trim().length > 0);
 }
 
-function getProfileCompletenessScore(freelance: FreelanceProfile): number {
+function getProfileCompletenessScore(freelance: PublishedFreelance): number {
   const hasPhoto = isFilled(freelance.photo_url);
   const hasBioDescription = isFilled(freelance.bio) || isFilled(freelance.summary);
   const experienceCount = freelance.experience_count || 0;
@@ -71,101 +72,59 @@ function getProfileCompletenessScore(freelance: FreelanceProfile): number {
  * Gère le chargement, le filtrage et la navigation
  */
 export function useFreelancePage() {
+  const ITEMS_PER_PAGE = 50;
   const router = useRouter();
   const { searchQuery } = useSearchQuery();
-  const { data: freelances = [], isLoading, error } = usePublishedFreelances();
+  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<FreelanceFiltersState>({});
+  const normalizedQuery = searchQuery.trim();
+
+  const searchParams = useMemo(
+    () => ({
+      query: normalizedQuery || undefined,
+      position: filters.position,
+      location: filters.location,
+      availability: filters.availability,
+      badge: filters.badge,
+      dailyRateMin: filters.dailyRateMin,
+      dailyRateMax: filters.dailyRateMax,
+      page: currentPage,
+      pageSize: ITEMS_PER_PAGE,
+    }),
+    [currentPage, filters, normalizedQuery]
+  );
+
+  const { data, isLoading, error } = usePublishedFreelances(searchParams);
+  const freelances = data?.items || [];
+  const totalFreelances = data?.totalCount || 0;
+  const totalPages = Math.max(1, Math.ceil(totalFreelances / ITEMS_PER_PAGE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    normalizedQuery,
+    filters.position,
+    filters.location,
+    filters.availability,
+    filters.badge,
+    filters.dailyRateMin,
+    filters.dailyRateMax,
+  ]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   // Gérer les erreurs silencieusement (on peut afficher un message si nécessaire)
   if (error) {
     console.error("Erreur lors du chargement des freelances:", error);
   }
 
-  // Filtrer les freelances selon les critères (filtres + recherche texte ?q=)
   const filteredFreelances = useMemo(() => {
-    const filtered = freelances.filter((freelance) => {
-      // Search query: each token must match at least one of first_name, last_name, headline, bio, summary, location, skills
-      const query = searchQuery.trim().toLowerCase();
-      if (query) {
-        const tokens = query.split(/\s+/).filter(Boolean);
-        const searchable =
-          [
-            freelance.first_name,
-            freelance.last_name,
-            freelance.headline,
-            freelance.bio,
-            freelance.summary,
-            freelance.location,
-            freelance.skills?.join(" "),
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-        const allTokensMatch = tokens.every((token) => searchable.includes(token));
-        if (!allTokensMatch) return false;
-      }
-
-      // Filtre par position (headline ou skills)
-      if (filters.position && filters.position !== "all") {
-        const headline = freelance.headline?.toLowerCase() || "";
-        const skills = freelance.skills?.join(" ").toLowerCase() || "";
-        if (
-          !headline.includes(filters.position.toLowerCase()) &&
-          !skills.includes(filters.position.toLowerCase())
-        ) {
-          return false;
-        }
-      }
-
-      // Filtre par localisation
-      if (filters.location && filters.location !== "all") {
-        const location = freelance.location?.toLowerCase() || "";
-        if (!location.includes(filters.location.toLowerCase())) {
-          return false;
-        }
-      }
-
-      // TODO: Feature not ready yet
-      // Filtre par note
-      // if (filters.rating && freelance.note) {
-      //   if (freelance.note < filters.rating) {
-      //     return false;
-      //   }
-      // }
-
-      // Filtre par TJM (taux journalier)
-      if (filters.dailyRateMin != null && freelance.daily_rate != null) {
-        if (freelance.daily_rate < filters.dailyRateMin) return false;
-      }
-      if (filters.dailyRateMax != null && freelance.daily_rate != null) {
-        if (freelance.daily_rate > filters.dailyRateMax) return false;
-      }
-
-      // Filtre par disponibilité
-      if (filters.availability && filters.availability !== "all") {
-        const avail = freelance.availability?.toLowerCase() || "";
-        const filterAvail = filters.availability.toLowerCase();
-        if (!avail.includes(filterAvail) && avail !== filterAvail) {
-          return false;
-        }
-      }
-
-      // Filtre par badge
-      if (filters.badge && filters.badge !== "all") {
-        const badges = freelance.badges;
-        if (!badges) return false;
-        const badgeList = Array.isArray(badges) ? badges : [badges];
-        const hasBadge = badgeList.some(
-          (b) => b?.toLowerCase() === filters.badge?.toLowerCase()
-        );
-        if (!hasBadge) return false;
-      }
-
-      return true;
-    });
-
-    return [...filtered].sort((a, b) => {
+    return [...freelances].sort((a, b) => {
       const scoreDiff =
         getProfileCompletenessScore(b) - getProfileCompletenessScore(a);
       if (scoreDiff !== 0) return scoreDiff;
@@ -174,7 +133,7 @@ export function useFreelancePage() {
       const aUpdatedAt = a.updated_at ? new Date(a.updated_at).getTime() : 0;
       return bUpdatedAt - aUpdatedAt;
     });
-  }, [freelances, filters, searchQuery]);
+  }, [freelances]);
 
   // Générer les tags de filtres actifs pour l'affichage
   const activeFilterTags = useMemo(() => {
@@ -251,14 +210,14 @@ export function useFreelancePage() {
   };
 
   // Obtenir le nom complet d'un freelance
-  const getFullName = (freelance: FreelanceProfile) => {
+  const getFullName = (freelance: PublishedFreelance) => {
     const firstName = freelance.first_name || "";
     const lastName = freelance.last_name || "";
     return `${firstName} ${lastName}`.trim() || "Freelance";
   };
 
   // Obtenir les compétences/tags d'un freelance
-  const getTags = (freelance: FreelanceProfile): string[] => {
+  const getTags = (freelance: PublishedFreelance): string[] => {
     if (freelance.skills && Array.isArray(freelance.skills)) {
       return freelance.skills.slice(0, 3);
     }
@@ -280,6 +239,11 @@ export function useFreelancePage() {
     isLoading,
     viewMode,
     setViewMode,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalFreelances,
+    itemsPerPage: ITEMS_PER_PAGE,
     filters,
     setFilters,
     filteredFreelances,
