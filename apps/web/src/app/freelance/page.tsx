@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { YStack, XStack, ScrollView, Text } from "tamagui";
 import {
   Button,
@@ -19,10 +19,7 @@ import { useFreelancePage } from "@/hooks";
 import type { ViewMode } from "@/components/ui/ViewToggle";
 
 export default function FreelancePage() {
-  const ITEMS_PER_PAGE = 50;
-
   const {
-    freelances,
     isLoading,
     viewMode,
     setViewMode,
@@ -51,26 +48,6 @@ export default function FreelancePage() {
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
-
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredFreelances.length / ITEMS_PER_PAGE)
-  );
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  const paginatedFreelances = useMemo(() => {
-    const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return filteredFreelances.slice(start, end);
-  }, [filteredFreelances, safeCurrentPage]);
 
   if (isLoading) {
     return <PageLoading />;
