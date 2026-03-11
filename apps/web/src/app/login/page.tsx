@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { YStack, XStack, Text, Image, Spinner } from "tamagui";
+import { YStack, XStack, Text, Spinner } from "tamagui";
 import { Button, Input, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useLoginPage } from "@/hooks";
@@ -16,8 +16,11 @@ export default function LoginPage() {
     password,
     setPassword,
     error,
+    info,
     isLoading,
+    isResendingConfirmationEmail,
     handleLogin,
+    handleResendConfirmationEmail,
   } = useLoginPage();
 
   return (
@@ -115,6 +118,19 @@ export default function LoginPage() {
                 </Text>
               </YStack>
             )}
+            {info && (
+              <YStack
+                padding="$3"
+                backgroundColor="#ECFDF5"
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor="#10B981"
+              >
+                <Text fontSize={14} color="#059669" fontWeight="500">
+                  {info}
+                </Text>
+              </YStack>
+            )}
 
             {/* Email */}
             <Input
@@ -200,6 +216,27 @@ export default function LoginPage() {
               Inscrivez-vous
             </Text>
           </XStack>
+
+          <Text
+            fontSize={13}
+            color={colors.gray500}
+            cursor={isLoading || isResendingConfirmationEmail ? "default" : "pointer"}
+            hoverStyle={
+              isLoading || isResendingConfirmationEmail
+                ? undefined
+                : { textDecorationLine: "underline", color: colors.gray700 }
+            }
+            opacity={isLoading || isResendingConfirmationEmail ? 0.6 : 1}
+            onPress={
+              isLoading || isResendingConfirmationEmail
+                ? undefined
+                : handleResendConfirmationEmail
+            }
+          >
+            {isResendingConfirmationEmail
+              ? "Envoi..."
+              : "Renvoyer l'email de confirmation"}
+          </Text>
         </YStack>
       </YStack>
     </YStack>
