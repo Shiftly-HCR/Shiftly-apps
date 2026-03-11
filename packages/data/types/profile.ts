@@ -67,6 +67,7 @@ export interface FreelanceProfile {
   first_name?: string;
   last_name?: string;
   email?: string;
+  email_verified?: boolean;
   phone?: string;
   siret?: string;
   city_of_residence?: string;
@@ -78,6 +79,7 @@ export interface FreelanceProfile {
   // Champs supplémentaires pour freelance
   summary?: string;
   skills?: string[];
+  is_premium?: boolean;
   note?: number;
   daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
   hourly_rate?: number; // Tarif horaire en euros

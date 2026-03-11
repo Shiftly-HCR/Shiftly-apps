@@ -125,6 +125,9 @@ export function useFreelancePage() {
 
   const filteredFreelances = useMemo(() => {
     return [...freelances].sort((a, b) => {
+      const premiumDiff = Number(Boolean(b.is_premium)) - Number(Boolean(a.is_premium));
+      if (premiumDiff !== 0) return premiumDiff;
+
       const scoreDiff =
         getProfileCompletenessScore(b) - getProfileCompletenessScore(a);
       if (scoreDiff !== 0) return scoreDiff;
