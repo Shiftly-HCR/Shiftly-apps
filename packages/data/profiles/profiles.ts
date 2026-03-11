@@ -26,12 +26,13 @@ export interface Profile {
   last_name?: string;
   photo_url?: string;
   bio?: string;
-  badges?: string;
+  badges?: string | string[];
   note?: number;
   phone?: string;
   siret?: string;
   city_of_residence?: string;
   email?: string;
+  email_verified?: boolean;
   summary?: string;
   is_premium?: boolean;
   subscription_plan_id?: string;
@@ -132,17 +133,36 @@ export async function createProfile({
 export async function getProfileById(userId: string): Promise<Profile | null> {
   try {
     const { data, error } = await supabase
+      .rpc("get_profile_with_email_verification", { p_user_id: userId })
+      .single();
+
+    if (!error && data) {
+      return data as Profile;
+    }
+
+    // Fallback de compatibilite si la RPC n'est pas encore deployee localement.
+    if (error) {
+      console.warn(
+        "RPC get_profile_with_email_verification indisponible, fallback sur profiles:",
+        error.message
+      );
+    }
+
+    const { data: fallbackData, error: fallbackError } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
 
-    if (error) {
-      console.error("Erreur lors de la récupération du profil:", error);
+    if (fallbackError) {
+      console.error(
+        "Erreur lors de la récupération du profil (fallback):",
+        fallbackError
+      );
       return null;
     }
 
-    return data;
+    return fallbackData as Profile;
   } catch (err) {
     console.error("Erreur lors de la récupération du profil:", err);
     return null;

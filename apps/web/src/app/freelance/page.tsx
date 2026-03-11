@@ -144,6 +144,27 @@ export default function FreelancePage() {
                         }
                         position="relative"
                       >
+                        {freelance.is_premium && (
+                          <XStack
+                            position="absolute"
+                            top={8}
+                            right={8}
+                            width={30}
+                            height={30}
+                            alignItems="center"
+                            justifyContent="center"
+                            zIndex={2}
+                          >
+                            <img
+                              src="/assets/img/certif.png"
+                              alt="Profil certifié"
+                              width={25}
+                              height={25}
+                              style={{ display: "block" }}
+                            />
+                          </XStack>
+                        )}
+
                         <YStack
                           flex={1}
                           minHeight={

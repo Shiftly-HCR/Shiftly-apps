@@ -16,6 +16,10 @@ AS $$
   SELECT trim(regexp_replace(unaccent(lower(coalesce(input_text, ''))), '\\s+', ' ', 'g'));
 $$;
 
+DROP FUNCTION IF EXISTS public.search_published_freelances(
+  TEXT, TEXT, TEXT, TEXT, TEXT, NUMERIC, NUMERIC, INTEGER, INTEGER
+);
+
 CREATE OR REPLACE FUNCTION public.search_published_freelances(
   p_query TEXT DEFAULT NULL,
   p_position TEXT DEFAULT NULL,
@@ -35,6 +39,7 @@ RETURNS TABLE (
   first_name TEXT,
   last_name TEXT,
   email TEXT,
+  email_verified BOOLEAN,
   photo_url TEXT,
   bio TEXT,
   badges TEXT[],
@@ -79,6 +84,12 @@ AS $$
       p.first_name,
       p.last_name,
       p.email,
+      EXISTS (
+        SELECT 1
+        FROM auth.users au
+        WHERE au.id = p.id
+          AND au.email_confirmed_at IS NOT NULL
+      ) AS email_verified,
       p.photo_url,
       p.bio,
       p.badges,
@@ -179,7 +190,10 @@ AS $$
     SELECT
       f.*,
       ROW_NUMBER() OVER (
-        ORDER BY f.completeness_score DESC, f.updated_at DESC NULLS LAST
+        ORDER BY
+          f.is_premium DESC NULLS LAST,
+          f.completeness_score DESC,
+          f.updated_at DESC NULLS LAST
       ) AS row_num,
       COUNT(*) OVER() AS total_count
     FROM filtered f
@@ -192,6 +206,7 @@ AS $$
     r.first_name,
     r.last_name,
     r.email,
+    r.email_verified,
     r.photo_url,
     r.bio,
     r.badges,
@@ -270,3 +285,89 @@ ALTER FUNCTION public.search_published_freelances(
 GRANT EXECUTE ON FUNCTION public.search_published_freelances(
   TEXT, TEXT, TEXT, TEXT, TEXT, NUMERIC, NUMERIC, INTEGER, INTEGER
 ) TO authenticated, anon;
+
+DROP FUNCTION IF EXISTS public.get_profile_with_email_verification(UUID);
+
+CREATE OR REPLACE FUNCTION public.get_profile_with_email_verification(
+  p_user_id UUID
+)
+RETURNS TABLE (
+  id UUID,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  role TEXT,
+  first_name TEXT,
+  last_name TEXT,
+  photo_url TEXT,
+  bio TEXT,
+  badges TEXT[],
+  note NUMERIC,
+  phone TEXT,
+  siret TEXT,
+  city_of_residence TEXT,
+  email TEXT,
+  email_verified BOOLEAN,
+  summary TEXT,
+  is_premium BOOLEAN,
+  subscription_plan_id TEXT,
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
+  subscription_status TEXT,
+  current_period_end TIMESTAMPTZ,
+  cancel_at_period_end BOOLEAN,
+  subscription_price_id TEXT,
+  stripe_account_id TEXT,
+  connect_onboarding_status TEXT,
+  connect_payouts_enabled BOOLEAN,
+  connect_charges_enabled BOOLEAN,
+  connect_requirements_due JSONB,
+  daily_rate NUMERIC,
+  hourly_rate NUMERIC,
+  availability TEXT
+)
+LANGUAGE SQL
+STABLE
+AS $$
+  SELECT
+    p.id,
+    p.created_at,
+    p.updated_at,
+    p.role,
+    p.first_name,
+    p.last_name,
+    p.photo_url,
+    p.bio,
+    p.badges,
+    p.note,
+    p.phone,
+    p.siret,
+    p.city_of_residence,
+    p.email,
+    (au.email_confirmed_at IS NOT NULL) AS email_verified,
+    p.summary,
+    p.is_premium,
+    p.subscription_plan_id,
+    p.stripe_customer_id,
+    p.stripe_subscription_id,
+    p.subscription_status::TEXT,
+    p.current_period_end,
+    p.cancel_at_period_end,
+    p.subscription_price_id,
+    p.stripe_account_id,
+    p.connect_onboarding_status::TEXT,
+    p.connect_payouts_enabled,
+    p.connect_charges_enabled,
+    p.connect_requirements_due,
+    p.daily_rate,
+    p.hourly_rate,
+    p.availability
+  FROM public.profiles p
+  LEFT JOIN auth.users au ON au.id = p.id
+  WHERE p.id = p_user_id;
+$$;
+
+ALTER FUNCTION public.get_profile_with_email_verification(UUID) SECURITY DEFINER;
+ALTER FUNCTION public.get_profile_with_email_verification(UUID) SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.get_profile_with_email_verification(UUID)
+TO authenticated, anon;
