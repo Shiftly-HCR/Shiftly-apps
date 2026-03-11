@@ -7,7 +7,9 @@ export {
   signInWithGoogle,
   signInWithFacebook,
   resetPassword,
+  resendConfirmationEmail,
   type SignUpParams,
   type SignInParams,
+  type ResendConfirmationEmailParams,
   type AuthResponse,
 } from "./auth";

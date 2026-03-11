@@ -30,6 +30,12 @@ function getPriceId(planId: SubscriptionPlanId): string | undefined {
         return process.env.STRIPE_PRICE_ESTABLISHMENT;
       case "establishment-annual":
         return process.env.STRIPE_PRICE_ESTABLISHMENT_ANNUAL;
+      case "freelance-weekly":
+        return process.env.STRIPE_PRICE_FREELANCE_WEEKLY;
+      case "freelance-monthly":
+        return process.env.STRIPE_PRICE_FREELANCE_MONTHLY;
+      case "freelance-annual":
+        return process.env.STRIPE_PRICE_FREELANCE_ANNUAL;
       case "freelance-student":
         return process.env.STRIPE_PRICE_FREELANCE_STUDENT;
       case "freelance-student-annual":
@@ -89,8 +95,15 @@ export async function createCheckoutSession(
   const priceId = getPriceId(params.planId);
 
   // Déterminer l'intervalle de facturation selon le plan
-  const billingInterval: "month" | "year" =
-    plan.billingPeriod === "annual" ? "year" : "month";
+  const billingInterval: "week" | "month" | "year" = (() => {
+    if (plan.billingPeriod === "weekly") {
+      return "week";
+    }
+    if (plan.billingPeriod === "annual") {
+      return "year";
+    }
+    return "month";
+  })();
 
   const lineItem: Stripe.Checkout.SessionCreateParams.LineItem =
     priceId !== undefined
