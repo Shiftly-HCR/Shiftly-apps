@@ -1,7 +1,13 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCurrentUser, signIn, signOut, signUp } from "@shiftly/data";
+import {
+  getCurrentUser,
+  resendConfirmationEmail,
+  signIn,
+  signOut,
+  signUp,
+} from "@shiftly/data";
 import type { User } from "@supabase/supabase-js";
 
 type SessionLike = { access_token?: string } | null;
@@ -92,5 +98,14 @@ export function useSignUp() {
         queryClient.setQueryData(["auth", "user"], result.user);
       }
     },
+  });
+}
+
+/**
+ * Hook pour renvoyer l'email de confirmation
+ */
+export function useResendConfirmationEmail() {
+  return useMutation({
+    mutationFn: resendConfirmationEmail,
   });
 }

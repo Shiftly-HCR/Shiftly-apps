@@ -14,6 +14,10 @@ export interface SignInParams {
   password: string;
 }
 
+export interface ResendConfirmationEmailParams {
+  email: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   error?: string;
@@ -284,6 +288,45 @@ export async function resetPassword(email: string): Promise<AuthResponse> {
       success: false,
       error:
         "Une erreur est survenue lors de la réinitialisation du mot de passe",
+    };
+  }
+}
+
+/**
+ * Renvoie l'email de confirmation d'inscription
+ */
+export async function resendConfirmationEmail({
+  email,
+}: ResendConfirmationEmailParams): Promise<AuthResponse> {
+  try {
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/home`
+        : undefined;
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error:
+        "Une erreur est survenue lors de l'envoi de l'email de confirmation",
     };
   }
 }
