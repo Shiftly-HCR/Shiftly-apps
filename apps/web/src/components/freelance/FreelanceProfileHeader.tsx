@@ -87,35 +87,42 @@ export function FreelanceProfileHeader({
         )}
 
         {/* Badges */}
-        <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
-          <XStack
-            paddingHorizontal="$3"
-            paddingVertical="$1.5"
-            backgroundColor={colors.white}
-            borderRadius="$3"
-            borderWidth={1}
-            borderColor={colors.gray200}
-            gap="$2"
-            alignItems="center"
-          >
-            <FiCheck size={16} color={colors.shiftlyViolet} />
-            <Text fontSize={13} color={colors.gray700} fontWeight="500">
-              Profil vérifié
-            </Text>
+        {(profile.email_verified || profile.is_premium) && (
+          <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
+            {profile.email_verified && (
+              <XStack
+                paddingHorizontal="$3"
+                paddingVertical="$1.5"
+                backgroundColor={colors.white}
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor={colors.gray200}
+                gap="$2"
+                alignItems="center"
+              >
+                <FiCheck size={16} color={colors.shiftlyViolet} />
+                <Text fontSize={13} color={colors.gray700} fontWeight="500">
+                  Profil vérifié
+                </Text>
+              </XStack>
+            )}
+
+            {profile.is_premium && (
+              <XStack
+                paddingHorizontal="$3"
+                paddingVertical="$1.5"
+                backgroundColor={colors.shiftlyViolet + "20"}
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor={colors.shiftlyViolet}
+              >
+                <Text fontSize={13} color={colors.shiftlyViolet} fontWeight="600">
+                  Certifié
+                </Text>
+              </XStack>
+            )}
           </XStack>
-          <XStack
-            paddingHorizontal="$3"
-            paddingVertical="$1.5"
-            backgroundColor={colors.shiftlyViolet + "20"}
-            borderRadius="$3"
-            borderWidth={1}
-            borderColor={colors.shiftlyViolet}
-          >
-            <Text fontSize={13} color={colors.shiftlyViolet} fontWeight="600">
-              Top Freelance
-            </Text>
-          </XStack>
-        </XStack>
+        )}
       </YStack>
     </XStack>
   );
