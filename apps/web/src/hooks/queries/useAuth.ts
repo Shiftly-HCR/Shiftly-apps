@@ -94,8 +94,10 @@ export function useSignUp() {
   return useMutation({
     mutationFn: signUp,
     onSuccess: (result) => {
-      if (result.success && result.user) {
-        queryClient.setQueryData(["auth", "user"], result.user);
+      if (result.success) {
+        // Ne pas forcer un état "connecté" après signup.
+        // Revalider la source de vérité Supabase pour refléter la session réelle.
+        queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
       }
     },
   });

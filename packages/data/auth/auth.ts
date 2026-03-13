@@ -22,6 +22,7 @@ export interface AuthResponse {
   success: boolean;
   error?: string;
   user?: any;
+  requiresEmailConfirmation?: boolean;
 }
 
 /**
@@ -54,6 +55,8 @@ export async function signUp({
       };
     }
 
+    const requiresEmailConfirmation = !data.session;
+
     // Si l'utilisateur est créé, on crée aussi son profil
     // Note: Le trigger SQL devrait le faire automatiquement, mais on le fait aussi ici
     // pour s'assurer que le profil existe immédiatement avec le bon rôle
@@ -81,6 +84,7 @@ export async function signUp({
     return {
       success: true,
       user: data.user,
+      requiresEmailConfirmation,
     };
   } catch (err) {
     return {
