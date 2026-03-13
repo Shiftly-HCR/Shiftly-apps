@@ -17,6 +17,7 @@ interface MissionCardProps {
   onEdit?: () => void; // Callback pour le bouton "Modifier" (mode recruteur)
   onManageCandidates?: () => void; // Callback pour le bouton "Gérer les candidatures" (mode recruteur)
   missionId?: string; // ID de la mission pour le lien vers le dashboard
+  fullHeight?: boolean;
 }
 
 export const MissionCard = ({
@@ -33,6 +34,7 @@ export const MissionCard = ({
   onEdit,
   onManageCandidates,
   missionId,
+  fullHeight = false,
 }: MissionCardProps) => {
   return (
     <BaseCard
@@ -42,6 +44,7 @@ export const MissionCard = ({
       padding={0}
       overflow="hidden"
       position="relative"
+      height={fullHeight ? "100%" : undefined}
     >
       {/* Image */}
       {image && (
@@ -53,7 +56,7 @@ export const MissionCard = ({
         />
       )}
 
-      <YStack padding="$4" gap="$3">
+      <YStack padding="$4" gap="$3" flex={fullHeight ? 1 : undefined}>
         {/* Header avec badge Premium */}
         <XStack alignItems="flex-start" justifyContent="space-between">
           <YStack flex={1} gap="$2">
@@ -82,40 +85,42 @@ export const MissionCard = ({
           )}
         </XStack>
 
-        {/* Date et horaires */}
-        <YStack gap="$2">
-          {date && (
-            <XStack alignItems="center" gap="$2">
-              <Text fontSize={14} color="#999999">
-                📅
-              </Text>
-              <Text fontSize={14} color="#666666">
-                {date}
-              </Text>
-            </XStack>
-          )}
+        <YStack gap="$3" flex={fullHeight ? 1 : undefined}>
+          {/* Date et horaires */}
+          <YStack gap="$2">
+            {date && (
+              <XStack alignItems="center" gap="$2">
+                <Text fontSize={14} color="#999999">
+                  📅
+                </Text>
+                <Text fontSize={14} color="#666666">
+                  {date}
+                </Text>
+              </XStack>
+            )}
 
-          {time && (
-            <XStack alignItems="center" gap="$2">
-              <Text fontSize={14} color="#999999">
-                🕐
-              </Text>
-              <Text fontSize={14} color="#666666">
-                {time}
-              </Text>
-            </XStack>
-          )}
+            {time && (
+              <XStack alignItems="center" gap="$2">
+                <Text fontSize={14} color="#999999">
+                  🕐
+                </Text>
+                <Text fontSize={14} color="#666666">
+                  {time}
+                </Text>
+              </XStack>
+            )}
+          </YStack>
+
+          {/* Prix */}
+          <XStack alignItems="baseline" gap="$1">
+            <Text fontSize={18} fontWeight="700" color="$primary">
+              {price}
+            </Text>
+            <Text fontSize={14} fontWeight="500" color="#666666">
+              {priceUnit}
+            </Text>
+          </XStack>
         </YStack>
-
-        {/* Prix */}
-        <XStack alignItems="baseline" gap="$1">
-          <Text fontSize={18} fontWeight="700" color="$primary">
-            {price}
-          </Text>
-          <Text fontSize={14} fontWeight="500" color="#666666">
-            {priceUnit}
-          </Text>
-        </XStack>
 
         {/* Boutons */}
         {onEdit || onManageCandidates ? (
