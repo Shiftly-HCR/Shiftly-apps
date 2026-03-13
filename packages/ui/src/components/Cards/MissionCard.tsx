@@ -57,39 +57,56 @@ export const MissionCard = ({
       )}
 
       <YStack padding="$4" gap="$3" flex={fullHeight ? 1 : undefined}>
-        {/* Header avec badge Premium */}
-        <XStack alignItems="flex-start" justifyContent="space-between">
-          <YStack flex={1} gap="$2">
-            <Text
-              fontSize={16}
-              fontWeight="600"
-              color="$color"
-              numberOfLines={2}
-            >
-              {title}
-            </Text>
-          </YStack>
-
-          {isPremium && (
-            <XStack
-              paddingHorizontal={12}
-              paddingVertical={6}
-              borderRadius="$2"
-              backgroundColor="#FFF4E6"
-              marginLeft="$2"
-            >
-              <Text fontSize={12} fontWeight="600" color="#F59E0B">
-                Premium
+        <YStack
+          gap="$3"
+          flex={fullHeight ? 1 : undefined}
+          justifyContent={!image && fullHeight ? "center" : "flex-start"}
+          alignItems={!image && fullHeight ? "center" : "stretch"}
+        >
+          {/* Header avec badge Premium */}
+          <XStack
+            alignItems="flex-start"
+            justifyContent={
+              !image && fullHeight && !isPremium ? "center" : "space-between"
+            }
+            width="100%"
+          >
+            <YStack flex={1} gap="$2">
+              <Text
+                fontSize={16}
+                fontWeight="600"
+                color="$color"
+                numberOfLines={2}
+                textAlign={!image && fullHeight ? "center" : "left"}
+              >
+                {title}
               </Text>
-            </XStack>
-          )}
-        </XStack>
+            </YStack>
 
-        <YStack gap="$3" flex={fullHeight ? 1 : undefined}>
+            {isPremium && (
+              <XStack
+                paddingHorizontal={12}
+                paddingVertical={6}
+                borderRadius="$2"
+                backgroundColor="#FFF4E6"
+                marginLeft="$2"
+              >
+                <Text fontSize={12} fontWeight="600" color="#F59E0B">
+                  Premium
+                </Text>
+              </XStack>
+            )}
+          </XStack>
+
           {/* Date et horaires */}
           <YStack gap="$2">
             {date && (
-              <XStack alignItems="center" gap="$2">
+              <XStack
+                alignItems="center"
+                justifyContent={!image && fullHeight ? "center" : "flex-start"}
+                gap="$2"
+                width="100%"
+              >
                 <Text fontSize={14} color="#999999">
                   📅
                 </Text>
@@ -100,7 +117,12 @@ export const MissionCard = ({
             )}
 
             {time && (
-              <XStack alignItems="center" gap="$2">
+              <XStack
+                alignItems="center"
+                justifyContent={!image && fullHeight ? "center" : "flex-start"}
+                gap="$2"
+                width="100%"
+              >
                 <Text fontSize={14} color="#999999">
                   🕐
                 </Text>
@@ -112,7 +134,12 @@ export const MissionCard = ({
           </YStack>
 
           {/* Prix */}
-          <XStack alignItems="baseline" gap="$1">
+          <XStack
+            alignItems="baseline"
+            justifyContent={!image && fullHeight ? "center" : "flex-start"}
+            gap="$1"
+            width="100%"
+          >
             <Text fontSize={18} fontWeight="700" color="$primary">
               {price}
             </Text>
