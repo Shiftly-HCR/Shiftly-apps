@@ -37,8 +37,20 @@ export function MissionBubbleMarker({ mission, onClick }: Props) {
               borderRadius={12}
             />
           )}
-          <YStack>
-            <Text fontWeight="600" numberOfLines={1}>
+          <YStack flex={1} minWidth={0}>
+            <Text
+              fontWeight="600"
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                wordBreak: "break-word",
+              }}
+            >
               {mission.title}
             </Text>
             {mission.daily_rate ? (

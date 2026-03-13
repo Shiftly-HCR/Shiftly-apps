@@ -21,13 +21,19 @@ export function MissionListView({
   const { isMobile } = useResponsive();
 
   return (
-    <XStack flexWrap="wrap" gap="$4" justifyContent="flex-start">
+    <XStack
+      flexWrap="wrap"
+      gap="$4"
+      justifyContent="flex-start"
+      alignItems="stretch"
+    >
       {missions.map((mission) => (
         <YStack
           key={mission.id}
           width={isMobile ? "100%" : "calc(33.333% - 12px)"}
           minWidth={isMobile ? undefined : 300}
           position="relative"
+          alignSelf="stretch"
           cursor="pointer"
           onPress={() => onMissionClick(mission.id)}
         >
@@ -50,6 +56,7 @@ export function MissionListView({
             }
             priceUnit={mission.daily_rate ? "/ jour" : "/ heure"}
             image={mission.image_url}
+            fullHeight={!isMobile}
           />
         </YStack>
       ))}
