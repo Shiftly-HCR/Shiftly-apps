@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useResendConfirmationEmail, useSignIn } from "@/hooks/queries";
 
 /**
@@ -10,6 +10,7 @@ import { useResendConfirmationEmail, useSignIn } from "@/hooks/queries";
  */
 export function useLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const signInMutation = useSignIn();
   const resendConfirmationMutation = useResendConfirmationEmail();
   const [email, setEmail] = useState("");
@@ -17,6 +18,15 @@ export function useLoginPage() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    const signupStatus = searchParams.get("signup");
+    if (signupStatus === "check-email") {
+      setInfo(
+        "Compte créé. Confirmez votre adresse e-mail avant de vous connecter."
+      );
+    }
+  }, [searchParams]);
 
   const handleLogin = async () => {
     setError("");
