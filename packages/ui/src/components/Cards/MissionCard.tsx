@@ -20,6 +20,38 @@ interface MissionCardProps {
   fullHeight?: boolean;
 }
 
+function getMissionEmoji(title: string): string {
+  const normalizedTitle = title.toLowerCase();
+
+  if (
+    normalizedTitle.includes("barman") ||
+    normalizedTitle.includes("barmaid") ||
+    normalizedTitle.includes("serveur") ||
+    normalizedTitle.includes("serveuse")
+  ) {
+    return "🍸";
+  }
+
+  if (
+    normalizedTitle.includes("cuisinier") ||
+    normalizedTitle.includes("chef") ||
+    normalizedTitle.includes("cuisine")
+  ) {
+    return "👨‍🍳";
+  }
+
+  if (
+    normalizedTitle.includes("vendeur") ||
+    normalizedTitle.includes("vendeuse") ||
+    normalizedTitle.includes("caissier") ||
+    normalizedTitle.includes("caissière")
+  ) {
+    return "🛍️";
+  }
+
+  return "🍽️";
+}
+
 export const MissionCard = ({
   title,
   date,
@@ -36,6 +68,8 @@ export const MissionCard = ({
   missionId,
   fullHeight = false,
 }: MissionCardProps) => {
+  const missionEmoji = getMissionEmoji(title);
+
   return (
     <BaseCard
       elevated
@@ -55,29 +89,39 @@ export const MissionCard = ({
           resizeMode="cover"
         />
       )}
+      {!image && (
+        <YStack
+          height={180}
+          width="100%"
+          alignItems="center"
+          justifyContent="center"
+          gap="$2"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(122, 36, 122, 0.08) 0%, rgba(122, 36, 122, 0.18) 100%)",
+          }}
+        >
+          <Text fontSize={34}>{missionEmoji}</Text>
+          <Text fontSize={13} color="#6B7280" fontWeight="600">
+            Photo non disponible
+          </Text>
+        </YStack>
+      )}
 
       <YStack padding="$4" gap="$3" flex={fullHeight ? 1 : undefined}>
         <YStack
           gap="$3"
           flex={fullHeight ? 1 : undefined}
           justifyContent={!image && fullHeight ? "center" : "flex-start"}
-          alignItems={!image && fullHeight ? "center" : "stretch"}
         >
           {/* Header avec badge Premium */}
-          <XStack
-            alignItems="flex-start"
-            justifyContent={
-              !image && fullHeight && !isPremium ? "center" : "space-between"
-            }
-            width="100%"
-          >
+          <XStack alignItems="flex-start" justifyContent="space-between">
             <YStack flex={1} gap="$2">
               <Text
                 fontSize={16}
                 fontWeight="600"
                 color="$color"
                 numberOfLines={2}
-                textAlign={!image && fullHeight ? "center" : "left"}
               >
                 {title}
               </Text>
@@ -101,12 +145,7 @@ export const MissionCard = ({
           {/* Date et horaires */}
           <YStack gap="$2">
             {date && (
-              <XStack
-                alignItems="center"
-                justifyContent={!image && fullHeight ? "center" : "flex-start"}
-                gap="$2"
-                width="100%"
-              >
+              <XStack alignItems="center" gap="$2">
                 <Text fontSize={14} color="#999999">
                   📅
                 </Text>
@@ -117,12 +156,7 @@ export const MissionCard = ({
             )}
 
             {time && (
-              <XStack
-                alignItems="center"
-                justifyContent={!image && fullHeight ? "center" : "flex-start"}
-                gap="$2"
-                width="100%"
-              >
+              <XStack alignItems="center" gap="$2">
                 <Text fontSize={14} color="#999999">
                   🕐
                 </Text>
@@ -134,12 +168,7 @@ export const MissionCard = ({
           </YStack>
 
           {/* Prix */}
-          <XStack
-            alignItems="baseline"
-            justifyContent={!image && fullHeight ? "center" : "flex-start"}
-            gap="$1"
-            width="100%"
-          >
+          <XStack alignItems="baseline" gap="$1">
             <Text fontSize={18} fontWeight="700" color="$primary">
               {price}
             </Text>
