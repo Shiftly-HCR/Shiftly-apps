@@ -131,7 +131,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           </YStack>
         </YStack>
       )}
-      <YStack flex={1}>{children}</YStack>
+      <YStack flex={1} minHeight={0} overflow="hidden">
+        {children}
+      </YStack>
       <Footer
         onHomeClick={() => handleNavigation("/home")}
         onMissionsClick={() => handleNavigation("/missions")}
