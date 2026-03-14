@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { FiMessageCircle, FiDollarSign } from "react-icons/fi";
 import { openConversation } from "@/utils/chatService";
 import { useCurrentProfile } from "@/hooks/queries";
-import { getOrCreateDirectConversationMission } from "@shiftly/data";
 import type { Profile, FreelanceProfile } from "@shiftly/data";
 
 interface FreelanceProfileSidebarProps {
@@ -89,22 +88,9 @@ export function FreelanceProfileSidebar({
 
           setIsCreatingConversation(true);
           try {
-            // Créer ou récupérer une mission "directe" pour cette conversation
-            const missionResult = await getOrCreateDirectConversationMission(
-              currentProfile.id,
-              freelanceId
-            );
-
-            if (!missionResult.success || !missionResult.mission) {
-              console.error("Erreur lors de la création de la mission:", missionResult.error);
-              setIsCreatingConversation(false);
-              return;
-            }
-
             // Créer ou récupérer la conversation
             const conversationResult = await openConversation(
               {
-                missionId: missionResult.mission.id,
                 recruiterId: currentProfile.id,
                 freelanceId: freelanceId,
               },
