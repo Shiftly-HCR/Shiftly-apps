@@ -237,6 +237,14 @@ export async function listUserConversations(
       .in("conversation_id", conversationIds)
       .order("created_at", { ascending: false });
 
+    // Récupérer les messages non lus (reçus par l'utilisateur connecté)
+    const { data: unreadMessages } = await supabase
+      .from("messages")
+      .select("id, conversation_id")
+      .in("conversation_id", conversationIds)
+      .neq("sender_id", targetUserId)
+      .is("read_at", null);
+
     // Construire des maps pour un accès rapide
     const missionsMap = new Map((missions || []).map((m) => [m.id, m]));
     const profilesMap = new Map((profiles || []).map((p) => [p.id, p]));
@@ -249,6 +257,15 @@ export async function listUserConversations(
       }
     });
 
+    // Compter les non lus par conversation
+    const unreadCountMap = new Map<string, number>();
+    (unreadMessages || []).forEach((msg) => {
+      unreadCountMap.set(
+        msg.conversation_id,
+        (unreadCountMap.get(msg.conversation_id) || 0) + 1
+      );
+    });
+
     // Combiner les données et filtrer les conversations vides côté destinataire
     const conversationsWithDetails = conversations
       .map((conversation) => ({
@@ -257,7 +274,7 @@ export async function listUserConversations(
         recruiter: profilesMap.get(conversation.recruiter_id) || null,
         freelance: profilesMap.get(conversation.freelance_id) || null,
         last_message: lastMessagesMap.get(conversation.id) || null,
-        unread_count: 0, // TODO: Implémenter le comptage des messages non lus
+        unread_count: unreadCountMap.get(conversation.id) || 0,
       }))
       .filter((conversation) => {
         // Si la conversation n'a pas de messages (last_message est null)
