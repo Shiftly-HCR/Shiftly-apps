@@ -222,20 +222,23 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const [{ data: recipientProfile }, { data: senderProfile }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id, email, first_name, last_name")
-        .eq("id", recipientId)
-        .single(),
-      supabase
-        .from("profiles")
-        .select("id, first_name, last_name")
-        .eq("id", user.id)
-        .single(),
-    ]);
+    const [{ data: recipientProfile }, { data: senderProfile }, authRecipient] =
+      await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, email, first_name, last_name")
+          .eq("id", recipientId)
+          .single(),
+        supabase
+          .from("profiles")
+          .select("id, first_name, last_name")
+          .eq("id", user.id)
+          .single(),
+        supabase.auth.admin.getUserById(recipientId),
+      ]);
 
-    const recipientEmail = recipientProfile?.email;
+    const recipientEmail =
+      recipientProfile?.email || authRecipient.data.user?.email || null;
     if (!recipientEmail) {
       await supabase
         .from("messages")
