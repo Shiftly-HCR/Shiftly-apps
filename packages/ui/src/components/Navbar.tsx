@@ -18,6 +18,7 @@ interface NavbarProps {
   onSubscriptionClick?: () => void;
   onFreelanceClick?: () => void;
   onMessagingClick?: () => void;
+  messagingUnreadCount?: number;
   onCommercialClick?: () => void;
   onPaymentsClick?: () => void;
   onAdminDisputesClick?: () => void;
@@ -50,6 +51,7 @@ export function Navbar({
   onSubscriptionClick,
   onFreelanceClick,
   onMessagingClick,
+  messagingUnreadCount = 0,
   onCommercialClick,
   onPaymentsClick,
   onAdminDisputesClick,
@@ -61,6 +63,8 @@ export function Navbar({
   const [navbarVisible, setNavbarVisible] = useState(true);
   const lastScrollY = useRef(0);
   const SCROLL_THRESHOLD = 60;
+  const unreadValue = Math.max(0, messagingUnreadCount || 0);
+  const unreadBadgeText = unreadValue > 99 ? "99+" : String(unreadValue);
 
   useEffect(() => {
     const check = () => setIsMobile(typeof window !== "undefined" && window.innerWidth < NAVBAR_MOBILE_MAX_WIDTH);
@@ -116,25 +120,42 @@ export function Navbar({
   const MenuLink = ({
     label,
     onPress,
+    badgeText,
   }: {
     label: string;
     onPress?: () => void;
+    badgeText?: string;
   }) => (
-    <Text
-      fontSize={16}
-      fontWeight="600"
-      color={colors.gray900}
+    <XStack
+      alignItems="center"
+      justifyContent="space-between"
       cursor="pointer"
       paddingVertical="$3"
       paddingHorizontal="$4"
       hoverStyle={{
-        color: colors.shiftlyViolet,
         backgroundColor: colors.gray050,
       }}
       onPress={() => handleMenuClick(onPress)}
     >
-      {label}
-    </Text>
+      <Text fontSize={16} fontWeight="600" color={colors.gray900}>
+        {label}
+      </Text>
+      {badgeText ? (
+        <YStack
+          backgroundColor={colors.shiftlyViolet}
+          borderRadius={999}
+          minWidth={20}
+          height={20}
+          paddingHorizontal="$2"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Text fontSize={11} fontWeight="700" color={colors.white}>
+            {badgeText}
+          </Text>
+        </YStack>
+      ) : null}
+    </XStack>
   );
 
   const navbarContent = (
@@ -179,8 +200,27 @@ export function Navbar({
               hoverStyle={{ opacity: 0.8 }}
               onPress={() => setMenuOpen(true)}
               padding="$2"
+              position="relative"
             >
               <Menu size={24} color={colors.gray900} />
+              {unreadValue > 0 && (
+                <YStack
+                  position="absolute"
+                  top={-2}
+                  right={-2}
+                  backgroundColor={colors.shiftlyViolet}
+                  borderRadius={999}
+                  minWidth={18}
+                  height={18}
+                  paddingHorizontal={4}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text fontSize={10} fontWeight="700" color={colors.white}>
+                    {unreadBadgeText}
+                  </Text>
+                </YStack>
+              )}
             </XStack>
             <XStack
               alignItems="center"
@@ -271,18 +311,42 @@ export function Navbar({
                       </Text>
                     )}
                     {onMessagingClick && (
-                      <Text
-                        fontSize={14}
-                        fontWeight="600"
-                        color={colors.gray900}
+                      <XStack
+                        alignItems="center"
+                        gap="$2"
                         cursor="pointer"
-                        hoverStyle={{
-                          color: colors.shiftlyViolet,
-                        }}
                         onPress={onMessagingClick}
                       >
-                        Messagerie
-                      </Text>
+                        <Text
+                          fontSize={14}
+                          fontWeight="600"
+                          color={colors.gray900}
+                          hoverStyle={{
+                            color: colors.shiftlyViolet,
+                          }}
+                        >
+                          Messagerie
+                        </Text>
+                        {unreadValue > 0 && (
+                          <YStack
+                            backgroundColor={colors.shiftlyViolet}
+                            borderRadius={999}
+                            minWidth={18}
+                            height={18}
+                            paddingHorizontal={4}
+                            alignItems="center"
+                            justifyContent="center"
+                          >
+                            <Text
+                              fontSize={10}
+                              fontWeight="700"
+                              color={colors.white}
+                            >
+                              {unreadBadgeText}
+                            </Text>
+                          </YStack>
+                        )}
+                      </XStack>
                     )}
                   </>
                 )}
@@ -359,18 +423,42 @@ export function Navbar({
                         >
                           Freelance
                         </Text>
-                        <Text
-                          fontSize={14}
-                          fontWeight="600"
-                          color={colors.gray900}
+                        <XStack
+                          alignItems="center"
+                          gap="$2"
                           cursor="pointer"
-                          hoverStyle={{
-                            color: colors.shiftlyViolet,
-                          }}
                           onPress={onMessagingClick}
                         >
-                          Messagerie
-                        </Text>
+                          <Text
+                            fontSize={14}
+                            fontWeight="600"
+                            color={colors.gray900}
+                            hoverStyle={{
+                              color: colors.shiftlyViolet,
+                            }}
+                          >
+                            Messagerie
+                          </Text>
+                          {unreadValue > 0 && (
+                            <YStack
+                              backgroundColor={colors.shiftlyViolet}
+                              borderRadius={999}
+                              minWidth={18}
+                              height={18}
+                              paddingHorizontal={4}
+                              alignItems="center"
+                              justifyContent="center"
+                            >
+                              <Text
+                                fontSize={10}
+                                fontWeight="700"
+                                color={colors.white}
+                              >
+                                {unreadBadgeText}
+                              </Text>
+                            </YStack>
+                          )}
+                        </XStack>
                       </>
                     )}
                   </>
@@ -574,6 +662,7 @@ export function Navbar({
                         <MenuLink
                           label="Messagerie"
                           onPress={onMessagingClick}
+                          badgeText={unreadValue > 0 ? unreadBadgeText : undefined}
                         />
                       )}
                     </>
@@ -615,6 +704,7 @@ export function Navbar({
                           <MenuLink
                             label="Messagerie"
                             onPress={onMessagingClick}
+                            badgeText={unreadValue > 0 ? unreadBadgeText : undefined}
                           />
                         </>
                       )}

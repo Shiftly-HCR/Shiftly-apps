@@ -8,6 +8,30 @@ import type {
   SendMessageParams,
 } from "../types/message";
 
+async function notifyMessageRecipient(messageId: string): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const accessToken = session?.access_token;
+
+    await fetch("/api/messages/notify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      credentials: "include",
+      body: JSON.stringify({ messageId }),
+    });
+  } catch (err) {
+    console.warn("Notification email non envoyee (best-effort):", err);
+  }
+}
+
 /**
  * Récupère ou crée une conversation pour un couple (mission_id, recruiter_id, freelance_id)
  */
@@ -328,6 +352,11 @@ export async function sendMessage({
       };
     }
 
+    // Notification email best-effort (ne bloque jamais l'envoi du message)
+    notifyMessageRecipient(data.id).catch((err) => {
+      console.warn("Erreur notifyMessageRecipient:", err);
+    });
+
     return {
       success: true,
       message: data,
@@ -338,6 +367,47 @@ export async function sendMessage({
       success: false,
       error: "Une erreur est survenue lors de l'envoi du message",
     };
+  }
+}
+
+/**
+ * Compte les messages non lus pour l'utilisateur connecté.
+ */
+export async function getUnreadMessagesCount(): Promise<number> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return 0;
+
+    const { data: conversations, error: convError } = await supabase
+      .from("conversations")
+      .select("id")
+      .or(`recruiter_id.eq.${user.id},freelance_id.eq.${user.id}`);
+
+    if (convError || !conversations || conversations.length === 0) {
+      return 0;
+    }
+
+    const conversationIds = conversations.map((c) => c.id);
+
+    const { count, error: countError } = await supabase
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .in("conversation_id", conversationIds)
+      .neq("sender_id", user.id)
+      .is("read_at", null);
+
+    if (countError) {
+      console.error("Erreur lors du comptage des messages non lus:", countError);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (err) {
+    console.error("Erreur getUnreadMessagesCount:", err);
+    return 0;
   }
 }
 

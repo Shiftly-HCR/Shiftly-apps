@@ -16,7 +16,12 @@ CREATE TABLE IF NOT EXISTS public.messages (
   content TEXT NOT NULL,
   
   -- Statut de lecture (nullable, rempli quand le message est lu)
-  read_at TIMESTAMPTZ
+  read_at TIMESTAMPTZ,
+
+  -- Statut de notification email pour le destinataire
+  notification_status TEXT,
+  notification_sent_at TIMESTAMPTZ,
+  notification_error TEXT
 );
 
 -- Index pour améliorer les performances
@@ -85,4 +90,6 @@ COMMENT ON COLUMN public.messages.conversation_id IS 'ID de la conversation à l
 COMMENT ON COLUMN public.messages.sender_id IS 'ID de l''utilisateur qui a envoyé le message';
 COMMENT ON COLUMN public.messages.content IS 'Contenu textuel du message';
 COMMENT ON COLUMN public.messages.read_at IS 'Date et heure à laquelle le message a été lu (NULL si non lu)';
-
+COMMENT ON COLUMN public.messages.notification_status IS 'Statut notification email (sent, skipped_cooldown, skipped_no_email, error)';
+COMMENT ON COLUMN public.messages.notification_sent_at IS 'Date d''envoi de l''email de notification';
+COMMENT ON COLUMN public.messages.notification_error IS 'Détails d''erreur de notification email';
