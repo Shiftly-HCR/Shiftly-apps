@@ -7,6 +7,8 @@ import { useUserConversations } from "@/hooks/queries";
 import { supabase } from "@shiftly/data";
 import type { ConversationWithDetails, Conversation } from "@shiftly/data";
 import { useCurrentProfile } from "@/hooks/profile/useCurrentProfile";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 /**
  * Hook pour gérer les conversations et la sélection
@@ -29,6 +31,13 @@ export function useConversations() {
     new Map()
   );
   const subscriptionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!selectedConversationId) return;
+    track(ANALYTICS_EVENTS.messagingConversationOpened, {
+      conversation_id: selectedConversationId,
+    });
+  }, [selectedConversationId]);
   
   // Mettre à jour les conversations locales quand les données React Query changent
   useEffect(() => {

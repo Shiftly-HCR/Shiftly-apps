@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/hooks/profile/useCurrentUser";
 import { useCurrentProfile } from "@/hooks/queries";
 import { YStack, Text, Spinner } from "tamagui";
 import { colors } from "@shiftly/ui";
+import { identifyPosthogUser } from "@/analytics/client";
 
 /**
  * Routes publiques accessibles sans authentification
@@ -36,6 +37,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const hasRedirected = useRef(false);
+  const identifiedUserId = useRef<string | null>(null);
   const { user, isLoading: isLoadingUser } = useCurrentUser();
   const { isLoading: isLoadingProfile, isAuthResolved } = useCurrentProfile();
 
@@ -49,6 +51,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // Réinitialiser hasRedirected quand le pathname change
     hasRedirected.current = false;
   }, [pathname]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    if (identifiedUserId.current === user.id) return;
+    identifyPosthogUser(user.id, {
+      role: user.user_metadata?.role || "unknown",
+    });
+    identifiedUserId.current = user.id;
+  }, [user?.id, user?.user_metadata?.role]);
 
   useEffect(() => {
     // Ne pas rediriger si on n'est pas prêt ou si on a déjà redirigé

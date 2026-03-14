@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { trackServerEvent } from "@/analytics/server";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +68,8 @@ interface RouteContext {
 export async function POST(req: NextRequest, context: RouteContext) {
   const { id: missionId } = await context.params;
   console.log(`📥 POST /api/missions/${missionId}/dispute`);
+  const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
+  const endpoint = "/api/missions/[id]/dispute";
 
   try {
     // Récupérer le body
@@ -73,6 +77,16 @@ export async function POST(req: NextRequest, context: RouteContext) {
     const { reason, description } = body;
 
     if (!reason || !reason.trim()) {
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          mission_id: missionId,
+          status_code: 400,
+          error_code: "missing_reason",
+        },
+      });
       return NextResponse.json(
         { error: "La raison du problème est requise" },
         { status: 400 }
@@ -96,6 +110,16 @@ export async function POST(req: NextRequest, context: RouteContext) {
     }
 
     if (!user) {
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          mission_id: missionId,
+          status_code: 401,
+          error_code: "unauthenticated",
+        },
+      });
       return NextResponse.json(
         { error: "Vous devez être connecté" },
         { status: 401 }
@@ -115,6 +139,18 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
     if (missionError || !mission) {
       console.error("❌ Mission introuvable:", missionError);
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          mission_id: missionId,
+          status_code: 404,
+          error_code: "mission_not_found",
+          user_id: user.id,
+        },
+      });
       return NextResponse.json(
         { error: "Mission introuvable" },
         { status: 404 }
@@ -124,6 +160,18 @@ export async function POST(req: NextRequest, context: RouteContext) {
     // Vérifier que l'utilisateur est le recruteur
     if (mission.recruiter_id !== user.id) {
       console.warn(`⚠️ Utilisateur ${user.id} n'est pas le recruteur`);
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          mission_id: missionId,
+          status_code: 403,
+          error_code: "forbidden_not_recruiter",
+          user_id: user.id,
+        },
+      });
       return NextResponse.json(
         { error: "Vous n'êtes pas autorisé à signaler un problème sur cette mission" },
         { status: 403 }
@@ -140,6 +188,18 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
     if (paymentError || !payment) {
       console.error("❌ Aucun paiement en attente trouvé");
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          mission_id: missionId,
+          status_code: 400,
+          error_code: "payment_not_received",
+          user_id: user.id,
+        },
+      });
       return NextResponse.json(
         { error: "Aucun paiement en attente trouvé pour cette mission" },
         { status: 400 }
@@ -156,6 +216,18 @@ export async function POST(req: NextRequest, context: RouteContext) {
         .maybeSingle();
 
       if (existingDispute) {
+        trackServerEvent({
+          event: ANALYTICS_EVENTS.apiRequestFailed,
+          distinctId: user.id,
+          properties: {
+            endpoint,
+            request_id: requestId,
+            mission_id: missionId,
+            status_code: 400,
+            error_code: "open_dispute_exists",
+            user_id: user.id,
+          },
+        });
         return NextResponse.json(
           { error: "Un litige est déjà en cours pour ce paiement" },
           { status: 400 }
@@ -180,6 +252,18 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
     if (disputeError || !dispute) {
       console.error("❌ Erreur création litige:", disputeError);
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          mission_id: missionId,
+          status_code: 500,
+          error_code: "dispute_insert_failed",
+          user_id: user.id,
+        },
+      });
       return NextResponse.json(
         { error: "Erreur lors de la création du litige" },
         { status: 500 }
@@ -202,6 +286,18 @@ export async function POST(req: NextRequest, context: RouteContext) {
         .from("mission_disputes")
         .delete()
         .eq("id", dispute.id);
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          mission_id: missionId,
+          status_code: 500,
+          error_code: "payment_update_failed",
+          user_id: user.id,
+        },
+      });
       return NextResponse.json(
         { error: "Erreur lors de la mise à jour du paiement" },
         { status: 500 }
@@ -209,6 +305,17 @@ export async function POST(req: NextRequest, context: RouteContext) {
     }
 
     console.log(`✅ Litige créé: ${dispute.id} pour mission ${missionId}`);
+    trackServerEvent({
+      event: ANALYTICS_EVENTS.apiRequestSuccess,
+      distinctId: user.id,
+      properties: {
+        endpoint,
+        request_id: requestId,
+        mission_id: missionId,
+        status_code: 200,
+        user_id: user.id,
+      },
+    });
 
     // TODO: Envoyer notification à l'admin
     // await sendNotification({ ... });
@@ -225,6 +332,16 @@ export async function POST(req: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     console.error("❌ Erreur lors de la création du litige:", error);
+    trackServerEvent({
+      event: ANALYTICS_EVENTS.apiRequestFailed,
+      properties: {
+        endpoint,
+        request_id: requestId,
+        mission_id: missionId,
+        status_code: 500,
+        error_code: "exception",
+      },
+    });
     return NextResponse.json(
       {
         error:

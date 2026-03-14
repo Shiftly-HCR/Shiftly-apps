@@ -9,6 +9,8 @@ import {
   useSignOut,
   useUnreadMessagesCount,
 } from "@/hooks/queries";
+import { resetPosthog, track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 const SEARCHABLE_PATHS = ["/home", "/freelance"] as const;
 
@@ -87,8 +89,12 @@ export function useAppLayout() {
 
   const handleLogout = async () => {
     try {
+      track(ANALYTICS_EVENTS.authLogout, {
+        role: profile?.role || "unknown",
+      });
       // Déconnecter de Supabase (le hook useSignOut gère déjà le nettoyage du cache)
       await signOutMutation.mutateAsync();
+      resetPosthog();
 
       // Utiliser window.location.href pour forcer un rechargement complet
       if (typeof window !== "undefined") {

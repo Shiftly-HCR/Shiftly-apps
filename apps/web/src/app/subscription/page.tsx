@@ -33,6 +33,8 @@ import {
 import { getSession } from "@shiftly/data";
 import { useBillingPortal, useCancelSubscription } from "@/hooks/stripe";
 import { Button } from "@shiftly/ui";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 const faqItems = [
   {
@@ -92,6 +94,13 @@ function SubscriptionPageContent() {
     const status = searchParams.get("status");
     const plan = searchParams.get("plan") as SubscriptionPlanId | null;
 
+    if (status === "cancelled" && plan) {
+      track(ANALYTICS_EVENTS.paymentReturnCancelled, {
+        flow: "subscription",
+        plan_id: plan,
+      });
+    }
+
     // Si le paiement est réussi et qu'on n'a pas encore traité
     if (
       status === "success" &&
@@ -99,6 +108,10 @@ function SubscriptionPageContent() {
       !hasProcessedPayment &&
       !isUpdatingPremium
     ) {
+      track(ANALYTICS_EVENTS.paymentReturnSuccess, {
+        flow: "subscription",
+        plan_id: plan,
+      });
       setHasProcessedPayment(true);
 
       // Mettre à jour le statut premium avec le planId
@@ -127,6 +140,10 @@ function SubscriptionPageContent() {
   const handleSubscribe = async (planId: SubscriptionPlanId) => {
     setError(null);
     setLoadingPlanId(planId);
+    track(ANALYTICS_EVENTS.paymentCheckoutStarted, {
+      flow: "subscription",
+      plan_id: planId,
+    });
 
     try {
       console.log("Début de l'abonnement pour le plan:", planId);
@@ -134,6 +151,11 @@ function SubscriptionPageContent() {
       const session = await getSession();
       if (!session?.access_token) {
         setError("Vous devez être connecté pour vous abonner.");
+        track(ANALYTICS_EVENTS.paymentCheckoutFailed, {
+          flow: "subscription",
+          plan_id: planId,
+          error_type: "unauthenticated",
+        });
         setLoadingPlanId(null);
         return;
       }
@@ -161,6 +183,12 @@ function SubscriptionPageContent() {
 
       if (!response.ok) {
         console.error("Erreur HTTP:", response.status, data);
+        track(ANALYTICS_EVENTS.paymentCheckoutFailed, {
+          flow: "subscription",
+          plan_id: planId,
+          error_type: "http_error",
+          status_code: response.status,
+        });
         throw new Error(
           data?.error ||
             `Erreur ${response.status}: Impossible de démarrer le paiement Stripe`,
@@ -169,13 +197,27 @@ function SubscriptionPageContent() {
 
       if (!data?.url) {
         console.error("Pas d'URL dans la réponse:", data);
+        track(ANALYTICS_EVENTS.paymentCheckoutFailed, {
+          flow: "subscription",
+          plan_id: planId,
+          error_type: "missing_checkout_url",
+        });
         throw new Error("Aucune URL de paiement reçue");
       }
 
       console.log("Redirection vers:", data.url);
+      track(ANALYTICS_EVENTS.paymentCheckoutRedirected, {
+        flow: "subscription",
+        plan_id: planId,
+      });
       window.location.href = data.url;
     } catch (err) {
       console.error("Erreur d'abonnement Stripe:", err);
+      track(ANALYTICS_EVENTS.paymentCheckoutFailed, {
+        flow: "subscription",
+        plan_id: planId,
+        error_type: "exception",
+      });
       setError(
         err instanceof Error
           ? err.message

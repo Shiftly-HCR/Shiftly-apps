@@ -4,6 +4,7 @@ import "./globals.css";
 import { TamaguiProvider } from "@/providers/TamaguiProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { AuthGuard } from "@/components/AuthGuard";
+import { AnalyticsProvider } from "@/analytics/AnalyticsProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,9 @@ export default function RootLayout({
       >
         <TamaguiProvider>
           <QueryProvider>
-            <AuthGuard>{children}</AuthGuard>
+            <AnalyticsProvider>
+              <AuthGuard>{children}</AuthGuard>
+            </AnalyticsProvider>
           </QueryProvider>
         </TamaguiProvider>
       </body>

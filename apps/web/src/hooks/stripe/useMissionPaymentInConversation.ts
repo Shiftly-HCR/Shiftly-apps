@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect } from "react";
 import type { ConversationWithDetails } from "@shiftly/data";
 import { supabase } from "@shiftly/data";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 // Statuts de paiement mis à jour
 export type MissionPaymentStatus =
@@ -176,6 +178,10 @@ export function useMissionPaymentInConversation(
 
     setIsProcessing(true);
     setError(null);
+    track(ANALYTICS_EVENTS.paymentCheckoutStarted, {
+      flow: "mission_conversation",
+      mission_id: conversation.mission.id,
+    });
 
     try {
       // Récupérer le token de session pour l'authentification
@@ -203,13 +209,28 @@ export function useMissionPaymentInConversation(
       const data = await response.json();
 
       if (!response.ok) {
+        track(ANALYTICS_EVENTS.paymentCheckoutFailed, {
+          flow: "mission_conversation",
+          mission_id: conversation.mission.id,
+          error_type: "http_error",
+          status_code: response.status,
+        });
         throw new Error(data.error || "Erreur lors de la création du checkout");
       }
 
       // Rediriger vers Stripe Checkout
       if (data.url) {
+        track(ANALYTICS_EVENTS.paymentCheckoutRedirected, {
+          flow: "mission_conversation",
+          mission_id: conversation.mission.id,
+        });
         window.location.href = data.url;
       } else {
+        track(ANALYTICS_EVENTS.paymentCheckoutFailed, {
+          flow: "mission_conversation",
+          mission_id: conversation.mission.id,
+          error_type: "missing_checkout_url",
+        });
         throw new Error("URL de checkout non reçue");
       }
     } catch (err: unknown) {
@@ -217,6 +238,11 @@ export function useMissionPaymentInConversation(
         err instanceof Error ? err.message : "Erreur lors du paiement";
       console.error("Erreur lors du checkout:", err);
       setError(errorMessage);
+      track(ANALYTICS_EVENTS.paymentCheckoutFailed, {
+        flow: "mission_conversation",
+        mission_id: conversation.mission.id,
+        error_type: "exception",
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -261,6 +287,12 @@ export function useMissionPaymentInConversation(
           throw new Error(data.error || "Erreur lors du signalement");
         }
 
+        track(ANALYTICS_EVENTS.apiRequestSuccess, {
+          endpoint: `/api/missions/${conversation.mission.id}/dispute`,
+          flow: "mission_conversation",
+          mission_id: conversation.mission.id,
+        });
+
         // Rafraîchir les informations de paiement
         await fetchPaymentInfo();
 
@@ -273,6 +305,12 @@ export function useMissionPaymentInConversation(
           err instanceof Error ? err.message : "Erreur lors du signalement";
         console.error("Erreur lors du signalement:", err);
         setError(errorMessage);
+        track(ANALYTICS_EVENTS.apiRequestFailed, {
+          endpoint: `/api/missions/${conversation.mission.id}/dispute`,
+          flow: "mission_conversation",
+          mission_id: conversation.mission.id,
+          error_type: "exception",
+        });
         return { success: false, error: errorMessage };
       } finally {
         setIsProcessing(false);

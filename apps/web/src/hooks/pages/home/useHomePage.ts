@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Mission } from "@shiftly/data";
 import { usePublishedMissions } from "@/hooks/queries";
 import { useSearchQuery } from "@/hooks/search";
 import type { MissionFiltersState } from "@shiftly/ui";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 export const positionOptions = [
   { label: "Tous les postes", value: "all" },
@@ -45,6 +47,14 @@ export function useHomePage() {
   const { data: missions = [], isLoading, error } = usePublishedMissions();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<MissionFiltersState>({});
+
+  useEffect(() => {
+    track(ANALYTICS_EVENTS.missionDiscoveryViewed, {
+      page: "home",
+      results_count: missions.length,
+      has_search_query: Boolean(searchQuery.trim()),
+    });
+  }, [missions.length, searchQuery]);
 
   // Gérer les erreurs silencieusement (on peut afficher un message si nécessaire)
   if (error) {
@@ -192,6 +202,27 @@ export function useHomePage() {
     });
   }, [missions, filters, searchQuery]);
 
+  useEffect(() => {
+    const hasFilters = Object.values(filters).some(
+      (value) => value !== undefined && value !== null && value !== ""
+    );
+    if (!hasFilters) return;
+
+    track(ANALYTICS_EVENTS.missionFiltersApplied, {
+      page: "home",
+      has_search_query: Boolean(searchQuery.trim()),
+      results_count: filteredMissions.length,
+    });
+  }, [filters, filteredMissions.length, searchQuery]);
+
+  useEffect(() => {
+    if (filteredMissions.length > 0) return;
+    track(ANALYTICS_EVENTS.missionDiscoveryEmptyResults, {
+      page: "home",
+      has_search_query: Boolean(searchQuery.trim()),
+    });
+  }, [filteredMissions.length, searchQuery]);
+
   // Générer les tags de filtres actifs pour l'affichage
   const activeFilterTags = useMemo(() => {
     const tags: string[] = [];
@@ -255,6 +286,10 @@ export function useHomePage() {
 
   // Gérer le clic sur une mission
   const handleMissionClick = (missionId: string) => {
+    track(ANALYTICS_EVENTS.missionCardClicked, {
+      page: "home",
+      mission_id: missionId,
+    });
     router.push(`/missions/${missionId}`);
   };
 
@@ -274,4 +309,3 @@ export function useHomePage() {
     handleMissionClick,
   };
 }
-

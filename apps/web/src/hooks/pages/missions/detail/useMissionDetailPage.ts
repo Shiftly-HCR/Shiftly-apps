@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { useMission, useCurrentProfile, useApplyToMission as useApplyMutation, useCheckApplication, useApplicationsQuota, useMissionApplications as useMissionApplicationsQuery, useUpdateApplicationStatus, useUserApplications } from "@/hooks/queries";
 import { useMissionChat } from "@/hooks";
 import type { ApplicationStatus } from "@shiftly/data";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 /**
  * Hook pour gérer la logique de la page de détail d'une mission
@@ -92,7 +94,32 @@ export function useMissionDetailPage() {
 
   const handleApply = async () => {
     if (!missionId) return;
-    await applyMutation.mutateAsync({ mission_id: missionId });
+    track(ANALYTICS_EVENTS.applicationAttempt, {
+      mission_id: missionId,
+      can_apply_by_quota: canApplyByQuota,
+      already_applied: hasApplied,
+    });
+
+    try {
+      const result = await applyMutation.mutateAsync({ mission_id: missionId });
+      if (result.success) {
+        track(ANALYTICS_EVENTS.applicationSuccess, {
+          mission_id: missionId,
+        });
+      } else {
+        track(ANALYTICS_EVENTS.applicationFailed, {
+          mission_id: missionId,
+          error_type: "business_error",
+          reason: result.error || "unknown_error",
+        });
+      }
+    } catch (error) {
+      track(ANALYTICS_EVENTS.applicationFailed, {
+        mission_id: missionId,
+        error_type: "exception",
+      });
+      throw error;
+    }
     // Plus besoin de recharger la page, React Query invalide automatiquement le cache
   };
 

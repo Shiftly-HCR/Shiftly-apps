@@ -4,6 +4,8 @@ import { useState } from "react";
 import { deleteConversation } from "@shiftly/data";
 import { useShiftlyToast } from "@shiftly/ui";
 import type { ConversationWithDetails } from "@shiftly/data";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 interface UseDeleteConversationProps {
   selectedConversationId: string | null;
@@ -36,6 +38,9 @@ export function useDeleteConversation({
       const result = await deleteConversation(conversationToDelete);
 
       if (result.success) {
+        track(ANALYTICS_EVENTS.messagingConversationDeleteSuccess, {
+          conversation_id: conversationToDelete,
+        });
         toast.success("Conversation supprimée", {
           description: "La conversation et tous ses messages ont été supprimés",
         });
@@ -48,12 +53,21 @@ export function useDeleteConversation({
         // Rafraîchir la liste des conversations
         onConversationDeleted?.();
       } else {
+        track(ANALYTICS_EVENTS.messagingConversationDeleteFailed, {
+          conversation_id: conversationToDelete,
+          error_type: "business_error",
+          reason: result.error || "unknown_error",
+        });
         toast.error("Erreur", {
           description:
             result.error || "Impossible de supprimer la conversation",
         });
       }
     } catch (error: any) {
+      track(ANALYTICS_EVENTS.messagingConversationDeleteFailed, {
+        conversation_id: conversationToDelete,
+        error_type: "exception",
+      });
       toast.error("Erreur", {
         description: error.message || "Une erreur est survenue",
       });

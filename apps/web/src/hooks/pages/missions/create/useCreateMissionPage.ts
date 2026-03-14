@@ -8,6 +8,8 @@ import {
   reverseGeocode,
   debounce,
 } from "@shiftly/data";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -63,6 +65,12 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
   // État pour le géocodage
   const [isGeocoding, setIsGeocoding] = useState(false);
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+  useEffect(() => {
+    track(ANALYTICS_EVENTS.missionCreateStepViewed, {
+      step: currentStep,
+    });
+  }, [currentStep]);
 
   // Utiliser le hook React Query pour charger l'établissement
   const { data: selectedEstablishment } = useEstablishment(selectedEstablishmentId);
@@ -194,6 +202,10 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     if (currentStep === 1) {
       if (!title.trim()) {
         setError("Le titre est requis");
+        track(ANALYTICS_EVENTS.missionCreateValidationFailed, {
+          step: currentStep,
+          reason: "missing_title",
+        });
         return;
       }
     }
@@ -202,6 +214,10 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     if (currentStep === 5) {
       if (!hourlyRate.trim() && !dailyRate.trim()) {
         setError("Vous devez renseigner au moins le tarif horaire ou le TJM");
+        track(ANALYTICS_EVENTS.missionCreateValidationFailed, {
+          step: currentStep,
+          reason: "missing_rates",
+        });
         return;
       }
     }
@@ -233,6 +249,9 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
 
   const handleSubmit = async (saveAsDraft: boolean = false) => {
     setError("");
+    track(ANALYTICS_EVENTS.missionCreateAttempt, {
+      mode: saveAsDraft ? "draft" : "published",
+    });
 
     try {
       // Créer la mission
@@ -281,6 +300,11 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
 
       if (!missionResult.success) {
         setError(missionResult.error || "Erreur lors de la création");
+        track(ANALYTICS_EVENTS.missionCreateFailed, {
+          error_type: "business_error",
+          reason: missionResult.error || "unknown_error",
+          mode: saveAsDraft ? "draft" : "published",
+        });
         return;
       }
 
@@ -294,10 +318,18 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
 
       // React Query invalide automatiquement le cache, pas besoin de refresh manuel
       // Redirection vers la liste des missions
+      track(ANALYTICS_EVENTS.missionCreateSuccess, {
+        mission_id: missionResult.mission?.id || null,
+        mode: saveAsDraft ? "draft" : "published",
+      });
       router.push("/missions");
     } catch (err) {
       console.error(err);
       setError("Une erreur est survenue");
+      track(ANALYTICS_EVENTS.missionCreateFailed, {
+        error_type: "exception",
+        mode: saveAsDraft ? "draft" : "published",
+      });
     }
   };
 
@@ -362,4 +394,3 @@ export function useCreateMissionPage(initialEstablishmentId?: string) {
     handleSubmit,
   };
 }
-

@@ -3,7 +3,8 @@
 export const dynamic = "force-dynamic";
 
 import { YStack, XStack, Text, ScrollView } from "tamagui";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@shiftly/ui";
 import {
   AppLayout,
@@ -21,10 +22,13 @@ import {
   MissionPaymentBanner,
 } from "@/components";
 import { useMissionDetailPage, useResponsive } from "@/hooks";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 export default function MissionDetailPage() {
   const { isMobile } = useResponsive();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     missionId,
     mission,
@@ -57,6 +61,23 @@ export default function MissionDetailPage() {
     handleApply,
     formatDateShort,
   } = useMissionDetailPage();
+
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    if (!payment) return;
+
+    if (payment === "success") {
+      track(ANALYTICS_EVENTS.paymentReturnSuccess, {
+        flow: "mission_checkout",
+        mission_id: missionId,
+      });
+    } else if (payment === "cancelled") {
+      track(ANALYTICS_EVENTS.paymentReturnCancelled, {
+        flow: "mission_checkout",
+        mission_id: missionId,
+      });
+    }
+  }, [missionId, searchParams]);
 
   if (isLoading) {
     return <PageLoading />;

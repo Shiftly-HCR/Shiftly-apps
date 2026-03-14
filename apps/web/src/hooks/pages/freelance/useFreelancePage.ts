@@ -6,6 +6,8 @@ import type { PublishedFreelance } from "@shiftly/data";
 import { usePublishedFreelances } from "@/hooks/queries";
 import { useSearchQuery } from "@/hooks/search";
 import type { FreelanceFiltersState } from "@shiftly/ui";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 export const positionOptions = [
   { label: "Tous les postes", value: "all" },
@@ -101,6 +103,14 @@ export function useFreelancePage() {
   const totalPages = Math.max(1, Math.ceil(totalFreelances / ITEMS_PER_PAGE));
 
   useEffect(() => {
+    track(ANALYTICS_EVENTS.missionDiscoveryViewed, {
+      page: "freelance",
+      results_count: totalFreelances,
+      has_search_query: Boolean(searchQuery.trim()),
+    });
+  }, [totalFreelances, searchQuery]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [
     normalizedQuery,
@@ -137,6 +147,27 @@ export function useFreelancePage() {
       return bUpdatedAt - aUpdatedAt;
     });
   }, [freelances]);
+
+  useEffect(() => {
+    const hasFilters = Object.values(filters).some(
+      (value) => value !== undefined && value !== null && value !== ""
+    );
+    if (!hasFilters) return;
+
+    track(ANALYTICS_EVENTS.missionFiltersApplied, {
+      page: "freelance",
+      results_count: filteredFreelances.length,
+      has_search_query: Boolean(searchQuery.trim()),
+    });
+  }, [filters, filteredFreelances.length, searchQuery]);
+
+  useEffect(() => {
+    if (filteredFreelances.length > 0) return;
+    track(ANALYTICS_EVENTS.missionDiscoveryEmptyResults, {
+      page: "freelance",
+      has_search_query: Boolean(searchQuery.trim()),
+    });
+  }, [filteredFreelances.length, searchQuery]);
 
   // Générer les tags de filtres actifs pour l'affichage
   const activeFilterTags = useMemo(() => {
@@ -229,11 +260,21 @@ export function useFreelancePage() {
 
   // Gérer le clic sur "Voir le profil"
   const handleViewProfile = (freelanceId: string) => {
+    track(ANALYTICS_EVENTS.missionCardClicked, {
+      page: "freelance",
+      target_profile_id: freelanceId,
+      action: "view_profile",
+    });
     router.push(`/profile/${freelanceId}`);
   };
 
   // Gérer le contact direct
   const handleInvite = (freelanceId: string) => {
+    track(ANALYTICS_EVENTS.missionCardClicked, {
+      page: "freelance",
+      target_profile_id: freelanceId,
+      action: "contact",
+    });
     router.push(`/profile/${freelanceId}?contact=true`);
   };
 

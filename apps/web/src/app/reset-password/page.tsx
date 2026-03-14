@@ -5,6 +5,8 @@ import { YStack, XStack, Text, Spinner } from "tamagui";
 import { Button, Input, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { supabase } from "@shiftly/data";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 const MIN_PASSWORD_LENGTH = 6;
 
@@ -44,19 +46,32 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async () => {
     setError("");
+    track(ANALYTICS_EVENTS.authResetPasswordAttempt);
 
     if (!newPassword || !confirmPassword) {
       setError("Veuillez remplir tous les champs");
+      track(ANALYTICS_EVENTS.authResetPasswordFailed, {
+        error_type: "validation_error",
+        reason: "missing_fields",
+      });
       return;
     }
 
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
       setError(`Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères`);
+      track(ANALYTICS_EVENTS.authResetPasswordFailed, {
+        error_type: "validation_error",
+        reason: "password_too_short",
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
+      track(ANALYTICS_EVENTS.authResetPasswordFailed, {
+        error_type: "validation_error",
+        reason: "password_mismatch",
+      });
       return;
     }
 
@@ -80,12 +95,20 @@ export default function ResetPasswordPage() {
               "Une erreur est survenue. Veuillez réessayer."
           );
         }
+        track(ANALYTICS_EVENTS.authResetPasswordFailed, {
+          error_type: "business_error",
+          reason: updateError.message || "unknown_error",
+        });
         return;
       }
 
+      track(ANALYTICS_EVENTS.authResetPasswordSuccess);
       setSuccess(true);
     } catch {
       setError("Une erreur inattendue est survenue. Veuillez réessayer.");
+      track(ANALYTICS_EVENTS.authResetPasswordFailed, {
+        error_type: "exception",
+      });
     } finally {
       setIsLoading(false);
     }

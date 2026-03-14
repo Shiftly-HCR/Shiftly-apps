@@ -8,6 +8,8 @@ import { useChat } from "@shiftly/data";
 import { useConversations, useResponsive } from "@/hooks";
 import { formatLastMessageTime } from "@/utils/messagingHelpers";
 import { useCurrentProfile } from "@/hooks";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 function MessagerieContent() {
   const { profile } = useCurrentProfile();
@@ -25,6 +27,33 @@ function MessagerieContent() {
 
   // Hook pour le chat
   const chat = useChat(selectedConversationId);
+
+  const handleSendMessage = async (content: string) => {
+    try {
+      const result = await chat.sendMessage(content);
+      if (result) {
+        track(ANALYTICS_EVENTS.messagingMessageSendSuccess, {
+          channel: "messagerie",
+          conversation_id: selectedConversationId,
+          message_length: content.length,
+        });
+      } else {
+        track(ANALYTICS_EVENTS.messagingMessageSendFailed, {
+          channel: "messagerie",
+          conversation_id: selectedConversationId,
+          error_type: "send_returned_false",
+        });
+      }
+      return result;
+    } catch (error) {
+      track(ANALYTICS_EVENTS.messagingMessageSendFailed, {
+        channel: "messagerie",
+        conversation_id: selectedConversationId,
+        error_type: "exception",
+      });
+      throw error;
+    }
+  };
 
   // Mobile: show either list or conversation (list/detail pattern)
   // Desktop: show both side by side
@@ -61,7 +90,7 @@ function MessagerieContent() {
             senderNames={senderNames}
             isLoading={chat.isLoading}
             isSending={chat.isSending}
-            onSendMessage={chat.sendMessage}
+            onSendMessage={handleSendMessage}
             onMarkAsRead={chat.markAsRead}
             onClose={() => setSelectedConversationId(null)}
             getOtherParticipantName={getOtherParticipantName}

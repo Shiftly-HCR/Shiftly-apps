@@ -6,6 +6,8 @@ import type { Conversation } from "@shiftly/data";
 import { useCurrentProfile } from "@/hooks/profile/useCurrentProfile";
 import { getProfileById } from "@shiftly/data";
 import { supabase } from "@shiftly/data";
+import { track } from "@/analytics/client";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 /**
  * Hook pour gérer le chat d'une mission entre recruteur et freelance
@@ -84,17 +86,46 @@ export function useMissionChat(
     );
   }, [conversation, currentProfile]);
 
+  const sendMessage = async (content: string) => {
+    try {
+      const sent = await chat.sendMessage(content);
+      if (sent) {
+        track(ANALYTICS_EVENTS.messagingMessageSendSuccess, {
+          channel: "mission_chat",
+          conversation_id: conversation?.id || null,
+          mission_id: missionId,
+          message_length: content.length,
+        });
+      } else {
+        track(ANALYTICS_EVENTS.messagingMessageSendFailed, {
+          channel: "mission_chat",
+          conversation_id: conversation?.id || null,
+          mission_id: missionId,
+          error_type: "send_returned_false",
+        });
+      }
+      return sent;
+    } catch (error) {
+      track(ANALYTICS_EVENTS.messagingMessageSendFailed, {
+        channel: "mission_chat",
+        conversation_id: conversation?.id || null,
+        mission_id: missionId,
+        error_type: "exception",
+      });
+      throw error;
+    }
+  };
+
   return {
     conversation,
     messages: chat.messages,
     isLoading: isInitializing || chat.isLoading,
     isSending: chat.isSending,
     error: error || chat.error,
-    sendMessage: chat.sendMessage,
+    sendMessage,
     markAsRead: chat.markAsRead,
     canAccess,
     senderNames,
     currentUserId: currentProfile?.id || null,
   };
 }
-

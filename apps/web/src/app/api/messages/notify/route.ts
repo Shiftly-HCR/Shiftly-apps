@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { trackServerEvent } from "@/analytics/server";
+import { ANALYTICS_EVENTS } from "@/analytics/events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -92,11 +94,22 @@ async function sendViaResend(params: {
 }
 
 export async function POST(req: NextRequest) {
+  const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
+  const endpoint = "/api/messages/notify";
   try {
     const body = await req.json().catch(() => null);
     const messageId = body?.messageId as string | undefined;
 
     if (!messageId) {
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 400,
+          error_code: "missing_message_id",
+        },
+      });
       return NextResponse.json(
         { error: "messageId requis" },
         { status: 400 }
@@ -119,6 +132,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (!user) {
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 401,
+          error_code: "unauthenticated",
+        },
+      });
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
@@ -133,6 +155,18 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (messageError || !message) {
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 404,
+          error_code: "message_not_found",
+          user_id: user.id,
+          message_id: messageId,
+        },
+      });
       return NextResponse.json(
         { error: "Message introuvable" },
         { status: 404 }
@@ -140,6 +174,18 @@ export async function POST(req: NextRequest) {
     }
 
     if (message.sender_id !== user.id) {
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 403,
+          error_code: "forbidden_sender_mismatch",
+          user_id: user.id,
+          message_id: messageId,
+        },
+      });
       return NextResponse.json(
         { error: "Action non autorisée pour ce message" },
         { status: 403 }
@@ -148,6 +194,18 @@ export async function POST(req: NextRequest) {
 
     // Idempotence: message déjà traité
     if (message.notification_status) {
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestSuccess,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 200,
+          user_id: user.id,
+          message_id: messageId,
+          skipped: "already_processed",
+        },
+      });
       return NextResponse.json({
         success: true,
         skipped: "already_processed",
@@ -169,6 +227,18 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", message.id);
 
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 404,
+          error_code: "conversation_not_found",
+          user_id: user.id,
+          message_id: messageId,
+        },
+      });
       return NextResponse.json(
         { error: "Conversation introuvable" },
         { status: 404 }
@@ -188,6 +258,18 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", message.id);
 
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestSuccess,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 200,
+          user_id: user.id,
+          message_id: messageId,
+          skipped: "no_recipient",
+        },
+      });
       return NextResponse.json({
         success: true,
         skipped: "no_recipient",
@@ -216,6 +298,18 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", message.id);
 
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestSuccess,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 200,
+          user_id: user.id,
+          message_id: messageId,
+          skipped: "cooldown",
+        },
+      });
       return NextResponse.json({
         success: true,
         skipped: "cooldown",
@@ -247,6 +341,18 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", message.id);
 
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestSuccess,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 200,
+          user_id: user.id,
+          message_id: messageId,
+          skipped: "no_email",
+        },
+      });
       return NextResponse.json({
         success: true,
         skipped: "no_email",
@@ -284,6 +390,18 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", message.id);
 
+      trackServerEvent({
+        event: ANALYTICS_EVENTS.apiRequestFailed,
+        distinctId: user.id,
+        properties: {
+          endpoint,
+          request_id: requestId,
+          status_code: 500,
+          error_code: "email_send_failed",
+          user_id: user.id,
+          message_id: messageId,
+        },
+      });
       return NextResponse.json({
         success: false,
         error: sendResult.error,
@@ -299,9 +417,29 @@ export async function POST(req: NextRequest) {
       })
       .eq("id", message.id);
 
+    trackServerEvent({
+      event: ANALYTICS_EVENTS.apiRequestSuccess,
+      distinctId: user.id,
+      properties: {
+        endpoint,
+        request_id: requestId,
+        status_code: 200,
+        user_id: user.id,
+        message_id: messageId,
+      },
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Erreur /api/messages/notify:", error);
+    trackServerEvent({
+      event: ANALYTICS_EVENTS.apiRequestFailed,
+      properties: {
+        endpoint,
+        request_id: requestId,
+        status_code: 500,
+        error_code: "exception",
+      },
+    });
     return NextResponse.json(
       { error: "Erreur interne lors de la notification message" },
       { status: 500 }
