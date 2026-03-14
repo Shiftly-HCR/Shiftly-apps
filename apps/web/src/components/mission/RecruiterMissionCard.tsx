@@ -80,6 +80,7 @@ export function RecruiterMissionCard({
       <StatusBadge
         label={getStatusLabel(mission.status)}
         backgroundColor={getStatusColor(mission.status)}
+        position="top-left"
       />
 
       {/* Bouton de suppression */}

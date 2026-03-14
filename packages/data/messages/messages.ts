@@ -28,13 +28,17 @@ export async function getOrCreateConversation({
     const currentUserId = user?.id;
 
     // Vérifier si une conversation existe déjà
-    const { data: existing, error: selectError } = await supabase
+    let existingQuery = supabase
       .from("conversations")
       .select("*")
-      .eq("mission_id", missionId)
       .eq("recruiter_id", recruiterId)
-      .eq("freelance_id", freelanceId)
-      .single();
+      .eq("freelance_id", freelanceId);
+
+    existingQuery = missionId
+      ? existingQuery.eq("mission_id", missionId)
+      : existingQuery.is("mission_id", null);
+
+    const { data: existing } = await existingQuery.single();
 
     if (existing) {
       return {
@@ -47,7 +51,7 @@ export async function getOrCreateConversation({
     const { data, error } = await supabase
       .from("conversations")
       .insert({
-        mission_id: missionId,
+        mission_id: missionId ?? null,
         recruiter_id: recruiterId,
         freelance_id: freelanceId,
         created_by: currentUserId || null, // Enregistrer qui crée la conversation
@@ -59,13 +63,17 @@ export async function getOrCreateConversation({
     if (error) {
       // Si l'erreur est une contrainte d'unicité, réessayer de récupérer
       if (error.code === "23505") {
-        const { data: retryData, error: retryError } = await supabase
+        let retryQuery = supabase
           .from("conversations")
           .select("*")
-          .eq("mission_id", missionId)
           .eq("recruiter_id", recruiterId)
-          .eq("freelance_id", freelanceId)
-          .single();
+          .eq("freelance_id", freelanceId);
+
+        retryQuery = missionId
+          ? retryQuery.eq("mission_id", missionId)
+          : retryQuery.is("mission_id", null);
+
+        const { data: retryData, error: retryError } = await retryQuery.single();
 
         if (retryData) {
           return {
@@ -171,7 +179,13 @@ export async function listUserConversations(
     }
 
     // Récupérer les détails (mission, recruteur, freelance, dernier message)
-    const missionIds = [...new Set(conversations.map((c) => c.mission_id))];
+    const missionIds = [
+      ...new Set(
+        conversations
+          .map((c) => c.mission_id)
+          .filter((id): id is string => typeof id === "string" && id.length > 0)
+      ),
+    ];
     const userIds = [
       ...new Set([
         ...conversations.map((c) => c.recruiter_id),
@@ -180,10 +194,10 @@ export async function listUserConversations(
     ];
 
     // Récupérer les missions
-    const { data: missions } = await supabase
-      .from("missions")
-      .select("id, title")
-      .in("id", missionIds);
+    const { data: missions } =
+      missionIds.length > 0
+        ? await supabase.from("missions").select("id, title").in("id", missionIds)
+        : { data: [] as Array<{ id: string; title: string }> };
 
     // Récupérer les profils
     const { data: profiles } = await supabase
