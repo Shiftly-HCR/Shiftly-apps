@@ -50,6 +50,7 @@ export function ConversationsList({
     <>
       <YStack
         width={mounted && isMobile ? "100%" : 350}
+        minHeight={0}
         borderRightWidth={mounted && isMobile ? 0 : 1}
         borderRightColor={colors.gray200}
         backgroundColor={colors.white}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUserConversations } from "@/hooks/queries";
 import { supabase } from "@shiftly/data";
 import type { ConversationWithDetails, Conversation } from "@shiftly/data";
@@ -12,6 +13,7 @@ import { useCurrentProfile } from "@/hooks/profile/useCurrentProfile";
  */
 export function useConversations() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const conversationIdParam = searchParams.get("conversationId");
   const { profile } = useCurrentProfile();
@@ -268,6 +270,10 @@ export function useConversations() {
           const newMessage = payload.new as any;
           console.log("📨 Nouveau message créé:", newMessage.id);
 
+          queryClient.invalidateQueries({
+            queryKey: ["messages", "unread", "count"],
+          });
+
           // Mettre à jour le dernier message des conversations concernées
           setConversations((prev) => {
             const conversation = prev.find(
@@ -302,6 +308,19 @@ export function useConversations() {
           });
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+        },
+        () => {
+          queryClient.invalidateQueries({
+            queryKey: ["messages", "unread", "count"],
+          });
+        }
+      )
       .subscribe((status, err) => {
         if (status === "SUBSCRIBED") {
           console.log("✅ Abonnement Realtime activé pour les conversations");
@@ -323,7 +342,7 @@ export function useConversations() {
         subscriptionRef.current = null;
       }
     };
-  }, [profile?.id, loadConversationDetails]);
+  }, [profile?.id, loadConversationDetails, queryClient]);
 
   // Mettre à jour l'URL quand la conversation sélectionnée change
   useEffect(() => {

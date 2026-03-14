@@ -3,7 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCurrentUser, useCurrentProfile, useSignOut } from "@/hooks/queries";
+import {
+  useCurrentUser,
+  useCurrentProfile,
+  useSignOut,
+  useUnreadMessagesCount,
+} from "@/hooks/queries";
 
 const SEARCHABLE_PATHS = ["/home", "/freelance"] as const;
 
@@ -29,6 +34,7 @@ export function useAppLayout() {
   } = useCurrentProfile();
 
   const signOutMutation = useSignOut();
+  const { unreadCount } = useUnreadMessagesCount();
 
   const isLoading = isLoadingUser || isLoadingProfile;
 
@@ -102,6 +108,7 @@ export function useAppLayout() {
     user,
     profile,
     isLoading,
+    unreadMessagesCount: unreadCount,
     searchValue,
     setSearchValue,
     handleSearchSubmit,

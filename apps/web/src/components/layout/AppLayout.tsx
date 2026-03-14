@@ -16,6 +16,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     user,
     profile,
     isLoading,
+    unreadMessagesCount,
     searchValue,
     setSearchValue,
     handleSearchSubmit,
@@ -91,6 +92,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         onSubscriptionClick={() => handleNavigation("/subscription")}
         onFreelanceClick={() => handleNavigation("/freelance")}
         onMessagingClick={() => handleNavigation("/messagerie")}
+        messagingUnreadCount={unreadMessagesCount}
         onCommercialClick={() => handleNavigation("/commercial")}
         onPaymentsClick={() => handleNavigation("/payments")}
         onAdminDisputesClick={() => handleNavigation("/admin/disputes")}
@@ -129,7 +131,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           </YStack>
         </YStack>
       )}
-      <YStack flex={1}>{children}</YStack>
+      <YStack flex={1} minHeight={0} overflow="hidden">
+        {children}
+      </YStack>
       <Footer
         onHomeClick={() => handleNavigation("/home")}
         onMissionsClick={() => handleNavigation("/missions")}
