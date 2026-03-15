@@ -16,7 +16,8 @@ const ESTABLISHMENTS_COLUMN_WIDTH = "10%";
 const MISSIONS_COLUMN_WIDTH = "8%";
 
 function getRecruiterIdentity(recruiter: RecruiterDashboardRow): string {
-  const fullName = `${recruiter.first_name || ""} ${recruiter.last_name || ""}`.trim();
+  const fullName =
+    `${recruiter.first_name || ""} ${recruiter.last_name || ""}`.trim();
   if (fullName) return fullName;
   if (recruiter.email) return recruiter.email;
   return "Inconnu";
@@ -55,7 +56,7 @@ export function RecruitersTable({ recruiters }: RecruitersTableProps) {
         borderRadius={12}
       >
         <Text fontSize={14} color={colors.gray700}>
-          Aucun recruiter à afficher.
+          Aucun recruteur à afficher.
         </Text>
       </YStack>
     );
@@ -122,7 +123,7 @@ export function RecruitersTable({ recruiters }: RecruitersTableProps) {
       >
         <XStack width={RECRUITER_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
-            Recruiter
+            Recruteur
           </Text>
         </XStack>
         <XStack width={EMAIL_COLUMN_WIDTH}>
