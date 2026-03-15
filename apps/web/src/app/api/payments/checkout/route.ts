@@ -171,6 +171,7 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get("origin") ?? req.nextUrl.origin;
     const successUrl = `${origin}/subscription?status=success&plan=${planId}`;
     const cancelUrl = `${origin}/subscription?status=cancelled&plan=${planId}`;
+    const trialPeriodDays = planId === "establishment" ? 61 : undefined;
 
     console.log("Création de la session Stripe...");
     console.log("Plan:", planId);
@@ -184,6 +185,7 @@ export async function POST(req: NextRequest) {
       customerEmail: customerEmail || user.email || undefined,
       customerId: customerId,
       userId: user.id, // Important: pour lier l'utilisateur dans les webhooks
+      trialPeriodDays,
     });
 
     if (!url) {

@@ -32,7 +32,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     price: 50,
     priceCents: 5000,
     currency: "eur",
-    description: "Pour les restaurants, hôtels et établissements HCR",
+    description: "2 mois offerts puis 50€/mois",
     features: [
       "Publication illimitée de missions",
       "Accès à tous les freelances",
@@ -83,7 +83,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     price: 500, // 50 x 10
     priceCents: 50000,
     currency: "eur",
-    description: "Pour les restaurants, hôtels et établissements HCR",
+    description: "500€/an soit 41,67€/mois",
     features: [
       "Publication illimitée de missions",
       "Accès à tous les freelances",

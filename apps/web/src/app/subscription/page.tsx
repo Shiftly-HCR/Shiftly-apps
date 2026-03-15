@@ -80,7 +80,7 @@ function SubscriptionPageContent() {
   const [hasProcessedPayment, setHasProcessedPayment] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("annual");
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
 
   // Récupérer le plan d'abonnement actuel depuis le profil
   const currentPlan =
@@ -806,31 +806,47 @@ function SubscriptionPageContent() {
               return plan.id === "establishment-annual";
             })
               .sort((a, b) => a.price - b.price)
-              .map((plan) => (
-              <SubscriptionCard
-                key={plan.id}
-                id={plan.id}
-                name={plan.name}
-                price={plan.price}
-                description={plan.description}
-                icon={
-                  plan.id === "establishment" ||
-                  plan.id === "establishment-annual" ? (
-                    <FiHome size={32} color={colors.shiftlyViolet} />
-                  ) : (
-                    <FiBriefcase size={32} color={colors.shiftlyViolet} />
-                  )
-                }
-                features={plan.features}
-                popular={plan.popular}
-                onSubscribe={(planId: string) =>
-                  handleSubscribe(planId as SubscriptionPlanId)
-                }
-                isLoading={loadingPlanId === plan.id}
-                billingPeriod={plan.billingPeriod}
-                monthlyPrice={plan.monthlyPrice}
-              />
-            ))}
+              .map((plan) => {
+                const establishmentCtaLabel =
+                  plan.id === "establishment"
+                    ? "Commencer gratuitement"
+                    : plan.id === "establishment-annual"
+                      ? "Économiser 2 mois"
+                      : undefined;
+                const establishmentPriceDisplayLabel =
+                  plan.id === "establishment" ? "Offert" : undefined;
+                const establishmentPriceDetailsLabel =
+                  plan.id === "establishment" ? "pendant 2 mois" : undefined;
+
+                return (
+                  <SubscriptionCard
+                    key={plan.id}
+                    id={plan.id}
+                    name={plan.name}
+                    price={plan.price}
+                    description={plan.description}
+                    icon={
+                      plan.id === "establishment" ||
+                      plan.id === "establishment-annual" ? (
+                        <FiHome size={32} color={colors.shiftlyViolet} />
+                      ) : (
+                        <FiBriefcase size={32} color={colors.shiftlyViolet} />
+                      )
+                    }
+                    features={plan.features}
+                    popular={plan.popular}
+                    onSubscribe={(planId: string) =>
+                      handleSubscribe(planId as SubscriptionPlanId)
+                    }
+                    isLoading={loadingPlanId === plan.id}
+                    billingPeriod={plan.billingPeriod}
+                    monthlyPrice={plan.monthlyPrice}
+                    ctaLabel={establishmentCtaLabel}
+                    priceDisplayLabel={establishmentPriceDisplayLabel}
+                    priceDetailsLabel={establishmentPriceDetailsLabel}
+                  />
+                );
+              })}
           </XStack>
 
           {error && (

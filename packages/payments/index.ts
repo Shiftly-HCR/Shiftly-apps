@@ -74,6 +74,7 @@ export interface CheckoutSessionParams {
   customerEmail?: string;
   customerId?: string;
   userId?: string;
+  trialPeriodDays?: number;
 }
 
 export interface CheckoutSessionResult {
@@ -149,6 +150,15 @@ export async function createCheckoutSession(
   console.log(`📋 [createCheckoutSession] PlanId:`, params.planId);
   console.log(`📋 [createCheckoutSession] userId:`, params.userId);
 
+  const subscriptionData: Stripe.Checkout.SessionCreateParams.SubscriptionData =
+    {
+      metadata: subscriptionMetadata, // IMPORTANT: Les métadonnées doivent être dans subscription_data pour être propagées à la subscription
+    };
+
+  if (params.trialPeriodDays && params.trialPeriodDays > 0) {
+    subscriptionData.trial_period_days = params.trialPeriodDays;
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
@@ -160,9 +170,7 @@ export async function createCheckoutSession(
     customer: params.customerId,
     client_reference_id: params.userId || undefined, // Important: pour retrouver userId dans les webhooks
     metadata, // Metadata au niveau session (double sécurité)
-    subscription_data: {
-      metadata: subscriptionMetadata, // IMPORTANT: Les métadonnées doivent être dans subscription_data pour être propagées à la subscription
-    },
+    subscription_data: subscriptionData,
   });
 
   console.log(

@@ -18,6 +18,9 @@ interface SubscriptionCardProps {
   isLoading?: boolean;
   billingPeriod?: "weekly" | "monthly" | "annual";
   monthlyPrice?: number; // Prix mensuel équivalent pour les plans annuels
+  ctaLabel?: string;
+  priceDisplayLabel?: string;
+  priceDetailsLabel?: string;
 }
 
 /**
@@ -35,6 +38,9 @@ export function SubscriptionCard({
   isLoading = false,
   billingPeriod = "monthly",
   monthlyPrice,
+  ctaLabel,
+  priceDisplayLabel,
+  priceDetailsLabel,
 }: SubscriptionCardProps) {
   const { isMobile } = useResponsive();
   const weeklyEquivalent =
@@ -153,13 +159,19 @@ export function SubscriptionCard({
           )}
           <XStack alignItems="baseline" gap="$1">
             <Text fontSize={48} fontWeight="700" color={colors.gray900}>
-              {billingPeriod === "annual" ? price : price}€
+              {priceDisplayLabel ?? `${price}€`}
             </Text>
-            <Text fontSize={18} color={colors.gray700}>
-              TTC
-            </Text>
+            {!priceDisplayLabel && (
+              <Text fontSize={18} color={colors.gray700}>
+                TTC
+              </Text>
+            )}
           </XStack>
-          {billingPeriod === "annual" ? (
+          {priceDetailsLabel ? (
+            <Text fontSize={14} color={colors.gray500} fontWeight="600">
+              {priceDetailsLabel}
+            </Text>
+          ) : billingPeriod === "annual" ? (
             <YStack alignItems="center" gap="$1">
               <Text fontSize={14} color={colors.gray500}>
                 par an
@@ -231,7 +243,9 @@ export function SubscriptionCard({
         >
           {isLoading
             ? "Redirection en cours..."
-            : popular
+            : ctaLabel
+              ? ctaLabel
+              : popular
               ? "Choisir ce plan"
               : "S'abonner"}
         </Button>
