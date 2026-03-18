@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { XStack, YStack, Text, Image } from "tamagui";
+import { Linkedin, Instagram } from "lucide-react";
 import { colors } from "../theme";
 
 const MOBILE_BREAKPOINT = 900;
@@ -66,6 +67,12 @@ export function Footer({
     }
   };
 
+  const handleExternalNavigation = (url: string) => {
+    if (typeof window !== "undefined") {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <YStack
       backgroundColor={colors.white}
@@ -116,6 +123,49 @@ export function Footer({
             La plateforme de recrutement pour l'hôtellerie et la restauration.
             Trouvez les meilleurs talents ou les meilleures missions.
           </Text>
+          <YStack gap="$2" marginTop="$1">
+            <Text fontSize={14} fontWeight="600" color={colors.gray900}>
+              Suivez-nous
+            </Text>
+            <XStack gap="$3" alignItems="center">
+              <XStack
+                alignItems="center"
+                justifyContent="center"
+                width={32}
+                height={32}
+                borderRadius={16}
+                borderWidth={1}
+                borderColor={colors.gray300}
+                cursor="pointer"
+                hoverStyle={{ opacity: 0.8 }}
+                onPress={() =>
+                  handleExternalNavigation(
+                    "https://www.linkedin.com/company/shiftly-hcr/"
+                  )
+                }
+              >
+                <Linkedin size={16} color={colors.gray700} />
+              </XStack>
+              <XStack
+                alignItems="center"
+                justifyContent="center"
+                width={32}
+                height={32}
+                borderRadius={16}
+                borderWidth={1}
+                borderColor={colors.gray300}
+                cursor="pointer"
+                hoverStyle={{ opacity: 0.8 }}
+                onPress={() =>
+                  handleExternalNavigation(
+                    "https://www.instagram.com/shiftly.pro/"
+                  )
+                }
+              >
+                <Instagram size={16} color={colors.gray700} />
+              </XStack>
+            </XStack>
+          </YStack>
         </YStack>
 
         {/* Section Liens */}
