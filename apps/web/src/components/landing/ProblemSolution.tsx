@@ -1,52 +1,73 @@
-import { Clock, MessageCircle, Shield } from "lucide-react";
-
 export default function ProblemSolution() {
-  const features = [
+  const stats = [
     {
-      icon: Clock,
-      title: "Recrutez en quelques minutes",
-      description:
-        "Matching intelligent et profils certifiés pour des recrutements ultra-rapides.",
+      value: "350",
+      label: "établissements",
+      sublabel: "accompagnés en France",
     },
     {
-      icon: MessageCircle,
-      title: "Communication simplifiée",
-      description:
-        "Chat et visio intégrés pour échanger directement avec les talents.",
+      value: "4",
+      label: "antennes locales sur le",
+      sublabel: "territoire",
     },
     {
-      icon: Shield,
-      title: "Confiance et transparence",
-      description:
-        "Notations bilatérales et profils vérifiés pour une collaboration sereine.",
+      value: "100",
+      suffix: "%",
+      label: "de missions honorées",
+      sublabel: "dans les délais",
+    },
+    {
+      value: "4.9",
+      suffix: "/5",
+      label: "de satisfaction client",
+      sublabel: "mesurée",
+    },
+    {
+      value: "<24",
+      suffix: "h",
+      label: "délai moyen de réponse",
+      sublabel: "opérationnelle",
     },
   ];
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#fcfaf7]">
+    <section className="relative py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#fcfaf7]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#4c114f] mb-4">
-            Le recrutement HCR n&apos;a jamais été aussi fluide.
-          </h2>
+        <div className="mb-12 flex items-center gap-3">
+          <div className="flex -space-x-3">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#782478] to-[#cc9933] ring-2 ring-[#fcfaf7]" />
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#cc9933] to-[#782478] ring-2 ring-[#fcfaf7]" />
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#4c114f] to-[#782478] ring-2 ring-[#fcfaf7]" />
+          </div>
+          <p className="text-sm sm:text-base text-[#503342]">
+            <span className="font-semibold text-[#1a1a1a]">
+              +350 établissements
+            </span>{" "}
+            nous font déjà confiance en France
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-6">
+          {stats.map((stat, index) => (
             <div
               key={index}
-              className="group p-8 rounded-2xl bg-[#bdaaa1]/20 hover:bg-gradient-to-br hover:from-[#782478] hover:to-[#cc9933] transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              className="text-center border-r border-[#bdaaa1]/30 last:border-r-0 sm:last:border-r lg:last:border-r-0 px-3 sm:px-4"
             >
-              <div className="mb-6">
-                <div className="w-16 h-16 rounded-xl bg-[#fcfaf7] flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-8 h-8 text-[#782478] group-hover:text-[#cc9933]" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-[#4c114f] mb-4 group-hover:text-[#fcfaf7] transition-colors">
-                {feature.title}
-              </h3>
-              <p className="text-[#503342] leading-relaxed group-hover:text-[#fcfaf7]/90 transition-colors">
-                {feature.description}
+              <p
+                className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-[#782478] leading-none tracking-tight"
+              >
+                {stat.value}
+                {stat.suffix && (
+                  <span className="text-2xl sm:text-3xl lg:text-4xl align-top">
+                    {stat.suffix}
+                  </span>
+                )}
+              </p>
+              <p className="mt-3 text-xs sm:text-sm text-[#1a1a1a] leading-tight">
+                {stat.label}
+              </p>
+              <p className="mt-1 text-xs text-[#503342]/70 leading-tight">
+                {stat.sublabel}
               </p>
             </div>
           ))}
