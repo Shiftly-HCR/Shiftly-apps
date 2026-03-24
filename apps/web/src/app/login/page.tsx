@@ -1,20 +1,26 @@
 "use client";
 
-import { YStack, XStack, Text, Image, Spinner } from "tamagui";
+import { useState } from "react";
+import { YStack, XStack, Text, Spinner } from "tamagui";
 import { Button, Input, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
 import { useLoginPage } from "@/hooks";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const {
     email,
     setEmail,
     password,
     setPassword,
     error,
+    info,
     isLoading,
+    isResendingConfirmationEmail,
     handleLogin,
+    handleResendConfirmationEmail,
   } = useLoginPage();
 
   return (
@@ -112,6 +118,19 @@ export default function LoginPage() {
                 </Text>
               </YStack>
             )}
+            {info && (
+              <YStack
+                padding="$3"
+                backgroundColor="#ECFDF5"
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor="#10B981"
+              >
+                <Text fontSize={14} color="#059669" fontWeight="500">
+                  {info}
+                </Text>
+              </YStack>
+            )}
 
             {/* Email */}
             <Input
@@ -144,9 +163,28 @@ export default function LoginPage() {
                 placeholder="Entrez votre mot de passe"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
+                paddingRight={48}
               />
+              <XStack
+                position="absolute"
+                right={12}
+                bottom={13}
+                onPress={() => setShowPassword((prev) => !prev)}
+                cursor="pointer"
+                alignItems="center"
+                justifyContent="center"
+                width={24}
+                height={24}
+              >
+                {showPassword ? (
+                  <FiEyeOff size={18} color="#6B7280" />
+                ) : (
+                  <FiEye size={18} color="#6B7280" />
+                )}
+              </XStack>
             </YStack>
 
             {/* Bouton de connexion */}
@@ -178,6 +216,27 @@ export default function LoginPage() {
               Inscrivez-vous
             </Text>
           </XStack>
+
+          <Text
+            fontSize={13}
+            color={colors.gray500}
+            cursor={isLoading || isResendingConfirmationEmail ? "default" : "pointer"}
+            hoverStyle={
+              isLoading || isResendingConfirmationEmail
+                ? undefined
+                : { textDecorationLine: "underline", color: colors.gray700 }
+            }
+            opacity={isLoading || isResendingConfirmationEmail ? 0.6 : 1}
+            onPress={
+              isLoading || isResendingConfirmationEmail
+                ? undefined
+                : handleResendConfirmationEmail
+            }
+          >
+            {isResendingConfirmationEmail
+              ? "Envoi..."
+              : "Renvoyer l'email de confirmation"}
+          </Text>
         </YStack>
       </YStack>
     </YStack>

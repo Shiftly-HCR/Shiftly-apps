@@ -19,7 +19,66 @@ interface UseFreelanceProfileFormProps {
   externalLastName?: string;
   externalEmail?: string;
   externalPhone?: string;
+  externalSiret?: string;
+  externalCityOfResidence?: string;
   externalBio?: string;
+}
+
+type FreelanceFieldKey =
+  | "dailyRate"
+  | "hourlyRate"
+  | "experienceTitle"
+  | "experienceCompany"
+  | "educationSchool";
+
+type FreelanceFieldErrors = Partial<Record<FreelanceFieldKey, string>>;
+
+function translateFreelanceError(rawError?: string): {
+  message: string;
+  fieldErrors?: FreelanceFieldErrors;
+} {
+  if (!rawError) {
+    return { message: "Une erreur est survenue." };
+  }
+
+  const normalized = rawError.toLowerCase();
+
+  if (normalized.includes("invalid input syntax for type numeric")) {
+    if (normalized.includes("daily_rate")) {
+      return {
+        message: "Le TJM est invalide. Saisissez uniquement un nombre.",
+        fieldErrors: { dailyRate: "TJM invalide." },
+      };
+    }
+    if (normalized.includes("hourly_rate")) {
+      return {
+        message: "Le tarif horaire est invalide. Saisissez uniquement un nombre.",
+        fieldErrors: { hourlyRate: "Tarif horaire invalide." },
+      };
+    }
+    return {
+      message:
+        "Un montant est invalide. Verifiez le TJM et le tarif horaire (nombres uniquement).",
+      fieldErrors: {
+        dailyRate: "Valeur numerique invalide.",
+        hourlyRate: "Valeur numerique invalide.",
+      },
+    };
+  }
+
+  if (normalized.includes("duplicate key value") && normalized.includes("email")) {
+    return { message: "Cette adresse e-mail est deja utilisee par un autre compte." };
+  }
+
+  if (normalized.includes("failed to fetch") || normalized.includes("network")) {
+    return { message: "Impossible de joindre le serveur. Verifiez votre connexion." };
+  }
+
+  if (normalized.includes("permission denied") || normalized.includes("row-level security")) {
+    return { message: "Acces refuse pour cette operation." };
+  }
+
+  return { message: rawError };
 }
 
 /**
@@ -32,6 +91,8 @@ export function useFreelanceProfileForm({
   externalLastName,
   externalEmail,
   externalPhone,
+  externalSiret,
+  externalCityOfResidence,
   externalBio,
 }: UseFreelanceProfileFormProps = {}) {
   const {
@@ -87,6 +148,7 @@ export function useFreelanceProfileForm({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FreelanceFieldErrors>({});
 
   // Charger les données au montage
   useEffect(() => {
@@ -111,13 +173,29 @@ export function useFreelanceProfileForm({
     setIsSaving(true);
     setError("");
     setSuccess("");
+    setFieldErrors({});
+
+    const parsedDailyRate = dailyRate ? Number(dailyRate) : undefined;
+    const parsedHourlyRate = hourlyRate ? Number(hourlyRate) : undefined;
+    if (dailyRate && !Number.isFinite(parsedDailyRate)) {
+      setFieldErrors({ dailyRate: "Le TJM doit etre un nombre valide." });
+      setError("Le TJM est invalide. Entrez uniquement des chiffres.");
+      setIsSaving(false);
+      return;
+    }
+    if (hourlyRate && !Number.isFinite(parsedHourlyRate)) {
+      setFieldErrors({ hourlyRate: "Le tarif horaire doit etre un nombre valide." });
+      setError("Le tarif horaire est invalide. Entrez uniquement des chiffres.");
+      setIsSaving(false);
+      return;
+    }
 
     try {
       const result = await updateFreelanceProfile({
         bio,
         skills,
-        daily_rate: dailyRate ? parseFloat(dailyRate) : undefined,
-        hourly_rate: hourlyRate ? parseFloat(hourlyRate) : undefined,
+        daily_rate: parsedDailyRate,
+        hourly_rate: parsedHourlyRate,
         availability: availability || undefined,
       });
 
@@ -128,11 +206,15 @@ export function useFreelanceProfileForm({
         await refreshProfile();
         onSave?.();
       } else {
-        setError(result.error || "Erreur lors de la mise à jour");
+        const translated = translateFreelanceError(result.error);
+        setError(translated.message);
+        setFieldErrors(translated.fieldErrors || {});
       }
     } catch (err: any) {
       console.error("❌ Erreur dans handleSaveProfile:", err);
-      setError(err.message || "Une erreur est survenue");
+      const translated = translateFreelanceError(err?.message);
+      setError(translated.message);
+      setFieldErrors(translated.fieldErrors || {});
     } finally {
       setIsSaving(false);
     }
@@ -142,22 +224,45 @@ export function useFreelanceProfileForm({
     setIsSaving(true);
     setError("");
     setSuccess("");
+    setFieldErrors({});
+
+    const parsedDailyRate = dailyRate ? Number(dailyRate) : undefined;
+    const parsedHourlyRate = hourlyRate ? Number(hourlyRate) : undefined;
+    if (dailyRate && !Number.isFinite(parsedDailyRate)) {
+      setFieldErrors({ dailyRate: "Le TJM doit etre un nombre valide." });
+      setError("Le TJM est invalide. Entrez uniquement des chiffres.");
+      setIsSaving(false);
+      return;
+    }
+    if (hourlyRate && !Number.isFinite(parsedHourlyRate)) {
+      setFieldErrors({ hourlyRate: "Le tarif horaire doit etre un nombre valide." });
+      setError("Le tarif horaire est invalide. Entrez uniquement des chiffres.");
+      setIsSaving(false);
+      return;
+    }
 
     try {
+      const trimmedExternalPhone = externalPhone?.trim();
+      const trimmedExternalSiret = externalSiret?.trim();
+      const trimmedExternalCityOfResidence = externalCityOfResidence?.trim();
       // Sauvegarder les informations personnelles
       const personalInfoResult = await updateProfile({
         firstName: externalFirstName,
         lastName: externalLastName,
         email: externalEmail,
-        phone: externalPhone,
+        phone: trimmedExternalPhone || undefined,
+        siret: trimmedExternalSiret || undefined,
+        city_of_residence: trimmedExternalCityOfResidence || undefined,
         bio: externalBio,
       });
 
       if (!personalInfoResult.success) {
+        const translated = translateFreelanceError(personalInfoResult.error);
         setError(
-          personalInfoResult.error ||
-            "Erreur lors de la mise à jour des informations personnelles"
+          translated.message ||
+            "Erreur lors de la mise a jour des informations personnelles"
         );
+        setFieldErrors(translated.fieldErrors || {});
         setIsSaving(false);
         return;
       }
@@ -166,16 +271,18 @@ export function useFreelanceProfileForm({
       const freelanceResult = await updateFreelanceProfile({
         bio: externalBio,
         skills,
-        daily_rate: dailyRate ? parseFloat(dailyRate) : undefined,
-        hourly_rate: hourlyRate ? parseFloat(hourlyRate) : undefined,
+        daily_rate: parsedDailyRate,
+        hourly_rate: parsedHourlyRate,
         availability: availability || undefined,
       });
 
       if (!freelanceResult.success) {
+        const translated = translateFreelanceError(freelanceResult.error);
         setError(
-          freelanceResult.error ||
-            "Erreur lors de la mise à jour des informations freelance"
+          translated.message ||
+            "Erreur lors de la mise a jour des informations freelance"
         );
+        setFieldErrors(translated.fieldErrors || {});
         setIsSaving(false);
         return;
       }
@@ -185,7 +292,9 @@ export function useFreelanceProfileForm({
       onSave?.();
     } catch (err: any) {
       console.error("❌ Erreur dans handleSaveAll:", err);
-      setError(err.message || "Une erreur est survenue");
+      const translated = translateFreelanceError(err?.message);
+      setError(translated.message);
+      setFieldErrors(translated.fieldErrors || {});
     } finally {
       setIsSaving(false);
     }
@@ -203,7 +312,17 @@ export function useFreelanceProfileForm({
   };
 
   const handleSaveExperience = async () => {
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next.experienceTitle;
+      delete next.experienceCompany;
+      return next;
+    });
     if (!experienceForm.title || !experienceForm.company) {
+      setFieldErrors({
+        experienceTitle: !experienceForm.title ? "Le titre du poste est requis." : undefined,
+        experienceCompany: !experienceForm.company ? "L'entreprise est requise." : undefined,
+      });
       setError("Le titre et l'entreprise sont requis");
       return;
     }
@@ -247,10 +366,14 @@ export function useFreelanceProfileForm({
         });
         await refreshExperiences();
       } else {
-        setError(result.error || "Erreur lors de la sauvegarde");
+        const translated = translateFreelanceError(result.error);
+        setError(translated.message || "Erreur lors de la sauvegarde");
+        setFieldErrors(translated.fieldErrors || {});
       }
     } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
+      const translated = translateFreelanceError(err?.message);
+      setError(translated.message || "Une erreur est survenue");
+      setFieldErrors(translated.fieldErrors || {});
     } finally {
       setIsSaving(false);
     }
@@ -268,10 +391,12 @@ export function useFreelanceProfileForm({
         setSuccess("Expérience supprimée avec succès !");
         await refreshExperiences();
       } else {
-        setError(result.error || "Erreur lors de la suppression");
+        const translated = translateFreelanceError(result.error);
+        setError(translated.message || "Erreur lors de la suppression");
       }
     } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
+      const translated = translateFreelanceError(err?.message);
+      setError(translated.message || "Une erreur est survenue");
     } finally {
       setIsSaving(false);
     }
@@ -304,7 +429,15 @@ export function useFreelanceProfileForm({
   };
 
   const handleSaveEducation = async () => {
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next.educationSchool;
+      return next;
+    });
     if (!educationForm.school) {
+      setFieldErrors({
+        educationSchool: "L'etablissement est requis.",
+      });
       setError("L'établissement est requis");
       return;
     }
@@ -342,10 +475,14 @@ export function useFreelanceProfileForm({
         });
         await refreshEducations();
       } else {
-        setError(result.error || "Erreur lors de la sauvegarde");
+        const translated = translateFreelanceError(result.error);
+        setError(translated.message || "Erreur lors de la sauvegarde");
+        setFieldErrors(translated.fieldErrors || {});
       }
     } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
+      const translated = translateFreelanceError(err?.message);
+      setError(translated.message || "Une erreur est survenue");
+      setFieldErrors(translated.fieldErrors || {});
     } finally {
       setIsSaving(false);
     }
@@ -363,13 +500,26 @@ export function useFreelanceProfileForm({
         setSuccess("Formation supprimée avec succès !");
         await refreshEducations();
       } else {
-        setError(result.error || "Erreur lors de la suppression");
+        const translated = translateFreelanceError(result.error);
+        setError(translated.message || "Erreur lors de la suppression");
       }
     } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
+      const translated = translateFreelanceError(err?.message);
+      setError(translated.message || "Une erreur est survenue");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const clearFieldError = (field: FreelanceFieldKey) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const handleEditEducation = (edu: FreelanceEducation) => {
@@ -404,7 +554,8 @@ export function useFreelanceProfileForm({
       // Pour l'instant, on affiche un message d'erreur
       setError("La synchronisation LinkedIn n'est pas encore implémentée");
     } catch (err: any) {
-      setError(err.message || "Une erreur est survenue");
+      const translated = translateFreelanceError(err?.message);
+      setError(translated.message || "Une erreur est survenue");
     } finally {
       setIsSaving(false);
     }
@@ -444,6 +595,8 @@ export function useFreelanceProfileForm({
     isSaving,
     error,
     success,
+    fieldErrors,
+    clearFieldError,
 
     // Handlers profil
     handleSaveProfile,

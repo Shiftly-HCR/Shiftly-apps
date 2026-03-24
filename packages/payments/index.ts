@@ -30,6 +30,12 @@ function getPriceId(planId: SubscriptionPlanId): string | undefined {
         return process.env.STRIPE_PRICE_ESTABLISHMENT;
       case "establishment-annual":
         return process.env.STRIPE_PRICE_ESTABLISHMENT_ANNUAL;
+      case "freelance-weekly":
+        return process.env.STRIPE_PRICE_FREELANCE_WEEKLY;
+      case "freelance-monthly":
+        return process.env.STRIPE_PRICE_FREELANCE_MONTHLY;
+      case "freelance-annual":
+        return process.env.STRIPE_PRICE_FREELANCE_ANNUAL;
       case "freelance-student":
         return process.env.STRIPE_PRICE_FREELANCE_STUDENT;
       case "freelance-student-annual":
@@ -68,6 +74,7 @@ export interface CheckoutSessionParams {
   customerEmail?: string;
   customerId?: string;
   userId?: string;
+  trialPeriodDays?: number;
 }
 
 export interface CheckoutSessionResult {
@@ -89,8 +96,15 @@ export async function createCheckoutSession(
   const priceId = getPriceId(params.planId);
 
   // Déterminer l'intervalle de facturation selon le plan
-  const billingInterval: "month" | "year" =
-    plan.billingPeriod === "annual" ? "year" : "month";
+  const billingInterval: "week" | "month" | "year" = (() => {
+    if (plan.billingPeriod === "weekly") {
+      return "week";
+    }
+    if (plan.billingPeriod === "annual") {
+      return "year";
+    }
+    return "month";
+  })();
 
   const lineItem: Stripe.Checkout.SessionCreateParams.LineItem =
     priceId !== undefined
@@ -136,6 +150,15 @@ export async function createCheckoutSession(
   console.log(`📋 [createCheckoutSession] PlanId:`, params.planId);
   console.log(`📋 [createCheckoutSession] userId:`, params.userId);
 
+  const subscriptionData: Stripe.Checkout.SessionCreateParams.SubscriptionData =
+    {
+      metadata: subscriptionMetadata, // IMPORTANT: Les métadonnées doivent être dans subscription_data pour être propagées à la subscription
+    };
+
+  if (params.trialPeriodDays && params.trialPeriodDays > 0) {
+    subscriptionData.trial_period_days = params.trialPeriodDays;
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
@@ -147,9 +170,7 @@ export async function createCheckoutSession(
     customer: params.customerId,
     client_reference_id: params.userId || undefined, // Important: pour retrouver userId dans les webhooks
     metadata, // Metadata au niveau session (double sécurité)
-    subscription_data: {
-      metadata: subscriptionMetadata, // IMPORTANT: Les métadonnées doivent être dans subscription_data pour être propagées à la subscription
-    },
+    subscription_data: subscriptionData,
   });
 
   console.log(

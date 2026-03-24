@@ -15,7 +15,6 @@ import {
 } from "@/components";
 import {
   FiHome,
-  FiUser,
   FiBriefcase,
   FiAlertTriangle,
   FiCheck,
@@ -47,9 +46,9 @@ const faqItems = [
       "Non, tous nos abonnements sont sans engagement. Vous pouvez résilier à tout moment.",
   },
   {
-    question: "Comment puis-je prouver mon statut étudiant ou Pôle Emploi ?",
+    question: "Quels avantages sont inclus dans l'abonnement freelance ?",
     answer:
-      "Vous devrez fournir une preuve lors de votre inscription. Nos équipes vérifieront votre éligibilité sous 48h.",
+      "L'abonnement freelance inclut un meilleur référencement de votre profil et la possibilité de postuler à des missions en illimité.",
   },
 ];
 
@@ -81,7 +80,7 @@ function SubscriptionPageContent() {
   const [hasProcessedPayment, setHasProcessedPayment] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("annual");
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
 
   // Récupérer le plan d'abonnement actuel depuis le profil
   const currentPlan =
@@ -239,6 +238,24 @@ function SubscriptionPageContent() {
       profile?.subscription_status === "active" &&
       !profile?.cancel_at_period_end);
 
+  const isFreelanceUser = profile?.role === "freelance";
+  const freelancePlanIds = new Set<SubscriptionPlanId>([
+    "freelance-weekly",
+    "freelance-monthly",
+    "freelance-annual",
+  ]);
+
+  const getPlanPeriodLabel = (period: BillingPeriod): string => {
+    switch (period) {
+      case "weekly":
+        return "semaine";
+      case "annual":
+        return "an";
+      default:
+        return "mois";
+    }
+  };
+
   // Si l'utilisateur est premium ou a un abonnement Stripe, afficher les informations d'abonnement
   if (
     !isLoadingProfile &&
@@ -337,8 +354,8 @@ function SubscriptionPageContent() {
                   <Text fontSize={18} fontWeight="700" color={colors.gray900}>
                     {currentPlan.price} {currentPlan.currency.toUpperCase()}
                     <Text fontSize={14} fontWeight="400" color={colors.gray700}>
-                      {" "}
-                      / mois
+                      {" / "}
+                      {getPlanPeriodLabel(currentPlan.billingPeriod)}
                     </Text>
                   </Text>
                 </XStack>
@@ -420,7 +437,13 @@ function SubscriptionPageContent() {
               >
                 {profile?.cancel_at_period_end
                   ? "Votre abonnement prendra fin à la date de renouvellement."
-                  : "Votre abonnement se renouvelle automatiquement tous les mois."}
+                  : `Votre abonnement se renouvelle automatiquement ${
+                      currentPlan.billingPeriod === "weekly"
+                        ? "chaque semaine"
+                        : currentPlan.billingPeriod === "annual"
+                          ? "chaque année"
+                          : "chaque mois"
+                    }.`}
               </Text>
 
               {/* Boutons de gestion - visibles pour tous les utilisateurs avec un abonnement */}
@@ -670,88 +693,94 @@ function SubscriptionPageContent() {
             align="center"
           />
 
-          {/* Toggle Mensuelle/Annuelle */}
-          <YStack alignItems="center" gap="$2" width="100%">
-            <XStack
-              position="relative"
-              backgroundColor={colors.shiftlyVioletLight}
-              borderRadius="$6"
-              padding={4}
-              width={280}
-              alignSelf="center"
-            >
-              {/* Fond blanc qui se déplace */}
+          {/* Toggle Mensuelle/Annuelle (recruteurs uniquement) */}
+          {!isFreelanceUser && (
+            <YStack alignItems="center" gap="$2" width="100%">
               <XStack
-                position="absolute"
-                backgroundColor={colors.white}
-                borderRadius="$5"
-                width={136}
-                height="calc(100% - 8px)"
-                left={billingPeriod === "monthly" ? 4 : 140}
-                top={4}
-                borderWidth={1}
-                borderColor={colors.shiftlyViolet}
-                shadowColor="rgba(0, 0, 0, 0.1)"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={1}
-                shadowRadius={4}
-                style={{
-                  transition: "left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              />
+                position="relative"
+                backgroundColor={colors.shiftlyVioletLight}
+                borderRadius="$6"
+                padding={4}
+                width={280}
+                alignSelf="center"
+              >
+                {/* Fond blanc qui se déplace */}
+                <XStack
+                  position="absolute"
+                  backgroundColor={colors.white}
+                  borderRadius="$5"
+                  width={136}
+                  height="calc(100% - 8px)"
+                  left={billingPeriod === "monthly" ? 4 : 140}
+                  top={4}
+                  borderWidth={1}
+                  borderColor={colors.shiftlyViolet}
+                  shadowColor="rgba(0, 0, 0, 0.1)"
+                  shadowOffset={{ width: 0, height: 2 }}
+                  shadowOpacity={1}
+                  shadowRadius={4}
+                  style={{
+                    transition: "left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
+                />
 
-              {/* Options */}
-              <XStack width="100%" position="relative" zIndex={1}>
-                <XStack
-                  flex={1}
-                  alignItems="center"
-                  justifyContent="center"
-                  paddingVertical={12}
-                  paddingHorizontal={16}
-                  onPress={() => setBillingPeriod("monthly")}
-                  cursor="pointer"
-                >
-                  <Text
-                    fontSize={16}
-                    fontWeight={billingPeriod === "monthly" ? "600" : "400"}
-                    color={
-                      billingPeriod === "monthly"
-                        ? colors.shiftlyViolet
-                        : colors.gray700
-                    }
+                {/* Options */}
+                <XStack width="100%" position="relative" zIndex={1}>
+                  <XStack
+                    flex={1}
+                    alignItems="center"
+                    justifyContent="center"
+                    paddingVertical={12}
+                    paddingHorizontal={16}
+                    onPress={() => setBillingPeriod("monthly")}
+                    cursor="pointer"
                   >
-                    Mensuelle
-                  </Text>
-                </XStack>
-                <XStack
-                  flex={1}
-                  alignItems="center"
-                  justifyContent="center"
-                  paddingVertical={12}
-                  paddingHorizontal={16}
-                  onPress={() => setBillingPeriod("annual")}
-                  cursor="pointer"
-                >
-                  <Text
-                    fontSize={16}
-                    fontWeight={billingPeriod === "annual" ? "600" : "400"}
-                    color={
-                      billingPeriod === "annual"
-                        ? colors.shiftlyViolet
-                        : colors.gray700
-                    }
+                    <Text
+                      fontSize={16}
+                      fontWeight={billingPeriod === "monthly" ? "600" : "400"}
+                      color={
+                        billingPeriod === "monthly"
+                          ? colors.shiftlyViolet
+                          : colors.gray700
+                      }
+                    >
+                      Mensuelle
+                    </Text>
+                  </XStack>
+                  <XStack
+                    flex={1}
+                    alignItems="center"
+                    justifyContent="center"
+                    paddingVertical={12}
+                    paddingHorizontal={16}
+                    onPress={() => setBillingPeriod("annual")}
+                    cursor="pointer"
                   >
-                    Annuelle
-                  </Text>
+                    <Text
+                      fontSize={16}
+                      fontWeight={billingPeriod === "annual" ? "600" : "400"}
+                      color={
+                        billingPeriod === "annual"
+                          ? colors.shiftlyViolet
+                          : colors.gray700
+                      }
+                    >
+                      Annuelle
+                    </Text>
+                  </XStack>
                 </XStack>
               </XStack>
-            </XStack>
-            {billingPeriod === "annual" && (
-              <Text fontSize={14} color={colors.shiftlyViolet} fontWeight="600">
-                💰 Économisez 2 mois avec l'abonnement annuel !
-              </Text>
-            )}
-          </YStack>
+              {billingPeriod === "annual" && (
+                <Text
+                  fontSize={14}
+                  color={colors.shiftlyViolet}
+                  fontWeight="600"
+                >
+                  💰 Économisez 2 mois avec l'abonnement annuel !
+                </Text>
+              )}
+            </YStack>
+          )}
 
           {/* Cartes d'abonnement */}
           <XStack
@@ -763,63 +792,61 @@ function SubscriptionPageContent() {
             marginTop="$4"
           >
             {SUBSCRIPTION_PLANS.filter((plan) => {
-              // Filtrer les plans selon le rôle de l'utilisateur
-              const userRole = profile?.role || "recruiter"; // Par défaut, recruteur
+              if (isFreelanceUser) {
+                return freelancePlanIds.has(plan.id);
+              }
 
-              // Filtrer selon la période de facturation
               if (plan.billingPeriod !== billingPeriod) {
                 return false;
               }
 
-              if (userRole === "freelance") {
-                // Les freelances voient uniquement les plans freelance
-                if (billingPeriod === "monthly") {
-                  return (
-                    plan.id === "freelance-student" ||
-                    plan.id === "freelance-classic"
-                  );
-                } else {
-                  return (
-                    plan.id === "freelance-student-annual" ||
-                    plan.id === "freelance-classic-annual"
-                  );
-                }
-              } else {
-                // Les recruteurs voient uniquement le plan establishment
-                if (billingPeriod === "monthly") {
-                  return plan.id === "establishment";
-                } else {
-                  return plan.id === "establishment-annual";
-                }
+              if (billingPeriod === "monthly") {
+                return plan.id === "establishment";
               }
-            }).map((plan) => (
-              <SubscriptionCard
-                key={plan.id}
-                id={plan.id}
-                name={plan.name}
-                price={plan.price}
-                description={plan.description}
-                icon={
-                  plan.id === "establishment" ||
-                  plan.id === "establishment-annual" ? (
-                    <FiHome size={32} color={colors.shiftlyViolet} />
-                  ) : plan.id === "freelance-student" ||
-                    plan.id === "freelance-student-annual" ? (
-                    <FiUser size={32} color={colors.shiftlyViolet} />
-                  ) : (
-                    <FiBriefcase size={32} color={colors.shiftlyViolet} />
-                  )
-                }
-                features={plan.features}
-                popular={plan.popular}
-                onSubscribe={(planId: string) =>
-                  handleSubscribe(planId as SubscriptionPlanId)
-                }
-                isLoading={loadingPlanId === plan.id}
-                billingPeriod={plan.billingPeriod}
-                monthlyPrice={plan.monthlyPrice}
-              />
-            ))}
+              return plan.id === "establishment-annual";
+            })
+              .sort((a, b) => a.price - b.price)
+              .map((plan) => {
+                const establishmentCtaLabel =
+                  plan.id === "establishment"
+                    ? "Commencer gratuitement"
+                    : plan.id === "establishment-annual"
+                      ? "Économiser 2 mois"
+                      : undefined;
+                const establishmentPriceDisplayLabel =
+                  plan.id === "establishment" ? "Offert" : undefined;
+                const establishmentPriceDetailsLabel =
+                  plan.id === "establishment" ? "pendant 2 mois" : undefined;
+
+                return (
+                  <SubscriptionCard
+                    key={plan.id}
+                    id={plan.id}
+                    name={plan.name}
+                    price={plan.price}
+                    description={plan.description}
+                    icon={
+                      plan.id === "establishment" ||
+                      plan.id === "establishment-annual" ? (
+                        <FiHome size={32} color={colors.shiftlyViolet} />
+                      ) : (
+                        <FiBriefcase size={32} color={colors.shiftlyViolet} />
+                      )
+                    }
+                    features={plan.features}
+                    popular={plan.popular}
+                    onSubscribe={(planId: string) =>
+                      handleSubscribe(planId as SubscriptionPlanId)
+                    }
+                    isLoading={loadingPlanId === plan.id}
+                    billingPeriod={plan.billingPeriod}
+                    monthlyPrice={plan.monthlyPrice}
+                    ctaLabel={establishmentCtaLabel}
+                    priceDisplayLabel={establishmentPriceDisplayLabel}
+                    priceDetailsLabel={establishmentPriceDetailsLabel}
+                  />
+                );
+              })}
           </XStack>
 
           {error && (

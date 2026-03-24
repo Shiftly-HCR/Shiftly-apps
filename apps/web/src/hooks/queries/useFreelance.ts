@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getPublishedFreelances,
   getFreelanceProfileById,
+  getFreelanceCompletionStatusByUserId,
   getFreelanceExperiencesById,
   getFreelanceEducationsById,
   updateFreelanceProfile,
@@ -12,6 +13,8 @@ import {
   upsertFreelanceEducation,
   deleteFreelanceEducation,
   type FreelanceProfile,
+  type PublishedFreelanceSearchParams,
+  type PublishedFreelanceSearchResult,
   type FreelanceExperience,
   type FreelanceEducation,
 } from "@shiftly/data";
@@ -19,11 +22,14 @@ import {
 /**
  * Hook pour récupérer tous les freelances publiés
  */
-export function usePublishedFreelances() {
+export function usePublishedFreelances(
+  params: PublishedFreelanceSearchParams
+) {
   return useQuery({
-    queryKey: ["freelance", "published"],
-    queryFn: getPublishedFreelances,
+    queryKey: ["freelance", "published", params],
+    queryFn: () => getPublishedFreelances(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
+    placeholderData: (previousData) => previousData as PublishedFreelanceSearchResult,
   });
 }
 
@@ -34,6 +40,21 @@ export function useFreelanceProfile(userId: string | null) {
   return useQuery({
     queryKey: ["freelance", "profile", userId],
     queryFn: () => (userId ? getFreelanceProfileById(userId) : null),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook léger pour récupérer les compteurs de complétion d'un freelance
+ */
+export function useFreelanceCompletionStatus(userId: string | null) {
+  return useQuery({
+    queryKey: ["freelance", "completion", userId],
+    queryFn: () =>
+      userId
+        ? getFreelanceCompletionStatusByUserId(userId)
+        : { experience_count: 0, education_count: 0 },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });

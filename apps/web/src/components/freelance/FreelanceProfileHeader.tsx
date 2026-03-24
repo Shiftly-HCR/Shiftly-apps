@@ -2,7 +2,7 @@
 
 import { YStack, XStack, Text } from "tamagui";
 import { colors } from "@shiftly/ui";
-import { FiCheck } from "react-icons/fi";
+import { FiCheck, FiMapPin } from "react-icons/fi";
 import type { Profile, FreelanceProfile } from "@shiftly/data";
 
 interface FreelanceProfileHeaderProps {
@@ -77,37 +77,52 @@ export function FreelanceProfileHeader({
             ? profile.headline
             : "Freelance"}
         </Text>
+        {"city_of_residence" in profile && profile.city_of_residence && (
+          <XStack gap="$2" alignItems="center">
+            <FiMapPin size={15} color={colors.gray600} />
+            <Text fontSize={14} color={colors.gray700}>
+              {profile.city_of_residence}
+            </Text>
+          </XStack>
+        )}
 
         {/* Badges */}
-        <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
-          <XStack
-            paddingHorizontal="$3"
-            paddingVertical="$1.5"
-            backgroundColor={colors.white}
-            borderRadius="$3"
-            borderWidth={1}
-            borderColor={colors.gray200}
-            gap="$2"
-            alignItems="center"
-          >
-            <FiCheck size={16} color={colors.shiftlyViolet} />
-            <Text fontSize={13} color={colors.gray700} fontWeight="500">
-              Profil vérifié
-            </Text>
+        {(profile.email_verified || profile.is_premium) && (
+          <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
+            {profile.email_verified && (
+              <XStack
+                paddingHorizontal="$3"
+                paddingVertical="$1.5"
+                backgroundColor={colors.white}
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor={colors.gray200}
+                gap="$2"
+                alignItems="center"
+              >
+                <FiCheck size={16} color={colors.shiftlyViolet} />
+                <Text fontSize={13} color={colors.gray700} fontWeight="500">
+                  Profil vérifié
+                </Text>
+              </XStack>
+            )}
+
+            {profile.is_premium && (
+              <XStack
+                paddingHorizontal="$3"
+                paddingVertical="$1.5"
+                backgroundColor={colors.shiftlyViolet + "20"}
+                borderRadius="$3"
+                borderWidth={1}
+                borderColor={colors.shiftlyViolet}
+              >
+                <Text fontSize={13} color={colors.shiftlyViolet} fontWeight="600">
+                  Certifié
+                </Text>
+              </XStack>
+            )}
           </XStack>
-          <XStack
-            paddingHorizontal="$3"
-            paddingVertical="$1.5"
-            backgroundColor={colors.shiftlyViolet + "20"}
-            borderRadius="$3"
-            borderWidth={1}
-            borderColor={colors.shiftlyViolet}
-          >
-            <Text fontSize={13} color={colors.shiftlyViolet} fontWeight="600">
-              Top Freelance
-            </Text>
-          </XStack>
-        </XStack>
+        )}
       </YStack>
     </XStack>
   );

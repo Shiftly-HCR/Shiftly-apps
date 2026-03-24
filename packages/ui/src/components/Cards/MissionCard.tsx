@@ -17,6 +17,39 @@ interface MissionCardProps {
   onEdit?: () => void; // Callback pour le bouton "Modifier" (mode recruteur)
   onManageCandidates?: () => void; // Callback pour le bouton "Gérer les candidatures" (mode recruteur)
   missionId?: string; // ID de la mission pour le lien vers le dashboard
+  fullHeight?: boolean;
+}
+
+function getMissionEmoji(title: string): string {
+  const normalizedTitle = title.toLowerCase();
+
+  if (
+    normalizedTitle.includes("barman") ||
+    normalizedTitle.includes("barmaid") ||
+    normalizedTitle.includes("serveur") ||
+    normalizedTitle.includes("serveuse")
+  ) {
+    return "🍸";
+  }
+
+  if (
+    normalizedTitle.includes("cuisinier") ||
+    normalizedTitle.includes("chef") ||
+    normalizedTitle.includes("cuisine")
+  ) {
+    return "👨‍🍳";
+  }
+
+  if (
+    normalizedTitle.includes("vendeur") ||
+    normalizedTitle.includes("vendeuse") ||
+    normalizedTitle.includes("caissier") ||
+    normalizedTitle.includes("caissière")
+  ) {
+    return "🛍️";
+  }
+
+  return "🍽️";
 }
 
 export const MissionCard = ({
@@ -33,7 +66,10 @@ export const MissionCard = ({
   onEdit,
   onManageCandidates,
   missionId,
+  fullHeight = false,
 }: MissionCardProps) => {
+  const missionEmoji = getMissionEmoji(title);
+
   return (
     <BaseCard
       elevated
@@ -42,6 +78,7 @@ export const MissionCard = ({
       padding={0}
       overflow="hidden"
       position="relative"
+      height={fullHeight ? "100%" : undefined}
     >
       {/* Image */}
       {image && (
@@ -52,70 +89,94 @@ export const MissionCard = ({
           resizeMode="cover"
         />
       )}
+      {!image && (
+        <YStack
+          height={180}
+          width="100%"
+          alignItems="center"
+          justifyContent="center"
+          gap="$2"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(122, 36, 122, 0.08) 0%, rgba(122, 36, 122, 0.18) 100%)",
+          }}
+        >
+          <Text fontSize={34}>{missionEmoji}</Text>
+          <Text fontSize={13} color="#6B7280" fontWeight="600">
+            Photo non disponible
+          </Text>
+        </YStack>
+      )}
 
-      <YStack padding="$4" gap="$3">
-        {/* Header avec badge Premium */}
-        <XStack alignItems="flex-start" justifyContent="space-between">
-          <YStack flex={1} gap="$2">
-            <Text
-              fontSize={16}
-              fontWeight="600"
-              color="$color"
-              numberOfLines={2}
-            >
-              {title}
-            </Text>
+      <YStack padding="$4" gap="$3" flex={fullHeight ? 1 : undefined}>
+        <YStack
+          gap="$3"
+          flex={fullHeight ? 1 : undefined}
+          justifyContent={!image && fullHeight ? "center" : "flex-start"}
+        >
+          {/* Header avec badge Premium */}
+          <XStack alignItems="flex-start" justifyContent="space-between">
+            <YStack flex={1} gap="$2">
+              <Text
+                fontSize={16}
+                fontWeight="600"
+                color="$color"
+                numberOfLines={2}
+              >
+                {title}
+              </Text>
+            </YStack>
+
+            {isPremium && (
+              <XStack
+                paddingHorizontal={12}
+                paddingVertical={6}
+                borderRadius="$2"
+                backgroundColor="#FFF4E6"
+                marginLeft="$2"
+              >
+                <Text fontSize={12} fontWeight="600" color="#F59E0B">
+                  Premium
+                </Text>
+              </XStack>
+            )}
+          </XStack>
+
+          {/* Date et horaires */}
+          <YStack gap="$2">
+            {date && (
+              <XStack alignItems="center" gap="$2">
+                <Text fontSize={14} color="#999999">
+                  📅
+                </Text>
+                <Text fontSize={14} color="#666666">
+                  {date}
+                </Text>
+              </XStack>
+            )}
+
+            {time && (
+              <XStack alignItems="center" gap="$2">
+                <Text fontSize={14} color="#999999">
+                  🕐
+                </Text>
+                <Text fontSize={14} color="#666666">
+                  {time}
+                </Text>
+              </XStack>
+            )}
           </YStack>
 
-          {isPremium && (
-            <XStack
-              paddingHorizontal={12}
-              paddingVertical={6}
-              borderRadius="$2"
-              backgroundColor="#FFF4E6"
-              marginLeft="$2"
-            >
-              <Text fontSize={12} fontWeight="600" color="#F59E0B">
-                Premium
-              </Text>
-            </XStack>
-          )}
-        </XStack>
-
-        {/* Date et horaires */}
-        <YStack gap="$2">
-          {date && (
-            <XStack alignItems="center" gap="$2">
-              <Text fontSize={14} color="#999999">
-                📅
-              </Text>
-              <Text fontSize={14} color="#666666">
-                {date}
-              </Text>
-            </XStack>
-          )}
-
-          {time && (
-            <XStack alignItems="center" gap="$2">
-              <Text fontSize={14} color="#999999">
-                🕐
-              </Text>
-              <Text fontSize={14} color="#666666">
-                {time}
-              </Text>
-            </XStack>
-          )}
+          {/* Prix */}
+          <XStack alignItems="baseline" gap="$1">
+            <Text fontSize={18} fontWeight="700" color="$primary">
+              {price}
+            </Text>
+            <Text fontSize={14} fontWeight="500" color="#666666">
+              {priceUnit}
+            </Text>
+          </XStack>
         </YStack>
-
-        {/* Prix */}
-        <XStack alignItems="baseline" gap="$1">
-          <Text fontSize={18} fontWeight="700" color="$primary">
-            {price}
-          </Text>
-          <Text fontSize={14} fontWeight="500" color="#666666">
-            {priceUnit}
-          </Text>
-        </XStack>
 
         {/* Boutons */}
         {onEdit || onManageCandidates ? (

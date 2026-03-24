@@ -16,8 +16,11 @@ interface SubscriptionCardProps {
   popular?: boolean;
   onSubscribe: (planId: string) => void;
   isLoading?: boolean;
-  billingPeriod?: "monthly" | "annual";
+  billingPeriod?: "weekly" | "monthly" | "annual";
   monthlyPrice?: number; // Prix mensuel équivalent pour les plans annuels
+  ctaLabel?: string;
+  priceDisplayLabel?: string;
+  priceDetailsLabel?: string;
 }
 
 /**
@@ -35,8 +38,25 @@ export function SubscriptionCard({
   isLoading = false,
   billingPeriod = "monthly",
   monthlyPrice,
+  ctaLabel,
+  priceDisplayLabel,
+  priceDetailsLabel,
 }: SubscriptionCardProps) {
   const { isMobile } = useResponsive();
+  const weeklyEquivalent =
+    billingPeriod === "weekly"
+      ? price
+      : billingPeriod === "monthly"
+        ? (price * 12) / 52
+        : price / 52;
+
+  const periodLabel =
+    billingPeriod === "weekly"
+      ? "SEMAINE"
+      : billingPeriod === "annual"
+        ? "AN"
+        : "MOIS";
+  const pricingSectionMinHeight = 210;
 
   return (
     <YStack
@@ -44,6 +64,7 @@ export function SubscriptionCard({
       width={isMobile ? "100%" : undefined}
       minWidth={isMobile ? undefined : 320}
       maxWidth={isMobile ? undefined : 400}
+      height={isMobile ? undefined : "100%"}
       position="relative"
     >
       {popular && (
@@ -76,7 +97,8 @@ export function SubscriptionCard({
         borderWidth={popular ? 2 : 1}
         borderColor={popular ? colors.shiftlyViolet : colors.gray200}
         backgroundColor={colors.white}
-        minHeight={600}
+        minHeight={620}
+        height={isMobile ? undefined : "100%"}
       >
         {/* Icône et nom */}
         <YStack alignItems="center" gap="$3">
@@ -105,7 +127,23 @@ export function SubscriptionCard({
         </YStack>
 
         {/* Prix */}
-        <YStack alignItems="center" gap="$2">
+        <YStack
+          alignItems="center"
+          justifyContent="center"
+          gap="$2"
+          minHeight={pricingSectionMinHeight}
+        >
+          <XStack
+            paddingHorizontal="$3"
+            paddingVertical="$1"
+            backgroundColor={colors.shiftlyViolet}
+            borderRadius="$3"
+          >
+            <Text fontSize={12} fontWeight="700" color={colors.white}>
+              FACTURATION / {periodLabel}
+            </Text>
+          </XStack>
+
           {billingPeriod === "annual" && monthlyPrice && (
             <XStack
               paddingHorizontal="$3"
@@ -121,13 +159,19 @@ export function SubscriptionCard({
           )}
           <XStack alignItems="baseline" gap="$1">
             <Text fontSize={48} fontWeight="700" color={colors.gray900}>
-              {billingPeriod === "annual" ? price : price}€
+              {priceDisplayLabel ?? `${price}€`}
             </Text>
-            <Text fontSize={18} color={colors.gray700}>
-              TTC
-            </Text>
+            {!priceDisplayLabel && (
+              <Text fontSize={18} color={colors.gray700}>
+                TTC
+              </Text>
+            )}
           </XStack>
-          {billingPeriod === "annual" ? (
+          {priceDetailsLabel ? (
+            <Text fontSize={14} color={colors.gray500} fontWeight="600">
+              {priceDetailsLabel}
+            </Text>
+          ) : billingPeriod === "annual" ? (
             <YStack alignItems="center" gap="$1">
               <Text fontSize={14} color={colors.gray500}>
                 par an
@@ -137,11 +181,23 @@ export function SubscriptionCard({
                   Soit {monthlyPrice.toFixed(2)}€ / mois
                 </Text>
               )}
+              <Text fontSize={14} color={colors.gray700} fontWeight="700">
+                Soit {weeklyEquivalent.toFixed(2)}€ / semaine
+              </Text>
             </YStack>
-          ) : (
+          ) : billingPeriod === "weekly" ? (
             <Text fontSize={14} color={colors.gray500}>
-              par mois
+              par semaine
             </Text>
+          ) : (
+            <YStack alignItems="center" gap="$1">
+              <Text fontSize={14} color={colors.gray500}>
+                par mois
+              </Text>
+              <Text fontSize={14} color={colors.gray700} fontWeight="700">
+                Soit {weeklyEquivalent.toFixed(2)}€ / semaine
+              </Text>
+            </YStack>
           )}
         </YStack>
 
@@ -187,7 +243,9 @@ export function SubscriptionCard({
         >
           {isLoading
             ? "Redirection en cours..."
-            : popular
+            : ctaLabel
+              ? ctaLabel
+              : popular
               ? "Choisir ce plan"
               : "S'abonner"}
         </Button>

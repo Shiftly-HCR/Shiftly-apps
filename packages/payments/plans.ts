@@ -1,12 +1,15 @@
 export type SubscriptionPlanId =
   | "establishment"
   | "establishment-annual"
+  | "freelance-weekly"
+  | "freelance-monthly"
+  | "freelance-annual"
   | "freelance-student"
   | "freelance-student-annual"
   | "freelance-classic"
   | "freelance-classic-annual";
 
-export type BillingPeriod = "monthly" | "annual";
+export type BillingPeriod = "weekly" | "monthly" | "annual";
 
 export interface SubscriptionPlan {
   id: SubscriptionPlanId;
@@ -22,14 +25,14 @@ export interface SubscriptionPlan {
 }
 
 export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
-  // Plans mensuels
+  // Plans actifs
   {
     id: "establishment",
     name: "Établissement",
     price: 50,
     priceCents: 5000,
     currency: "eur",
-    description: "Pour les restaurants, hôtels et établissements HCR",
+    description: "2 mois offerts puis 50€/mois",
     features: [
       "Publication illimitée de missions",
       "Accès à tous les freelances",
@@ -40,6 +43,77 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     ],
     billingPeriod: "monthly",
   },
+  {
+    id: "freelance-weekly",
+    name: "Freelance",
+    price: 3,
+    priceCents: 300,
+    currency: "eur",
+    description:
+      "Meilleur référencement et possibilité de postuler à des missions en illimité",
+    features: [
+      "Meilleur référencement de votre profil",
+      "Candidatures illimitées aux missions",
+      "Notifications en temps réel",
+      "Support client",
+    ],
+    billingPeriod: "weekly",
+  },
+  {
+    id: "freelance-monthly",
+    name: "Freelance",
+    price: 10,
+    priceCents: 1000,
+    currency: "eur",
+    description:
+      "Meilleur référencement et possibilité de postuler à des missions en illimité",
+    features: [
+      "Meilleur référencement de votre profil",
+      "Candidatures illimitées aux missions",
+      "Notifications en temps réel",
+      "Support client",
+    ],
+    popular: true,
+    billingPeriod: "monthly",
+  },
+  // Plans annuels
+  {
+    id: "establishment-annual",
+    name: "Établissement",
+    price: 500, // 50 x 10
+    priceCents: 50000,
+    currency: "eur",
+    description: "500€/an soit 41,67€/mois",
+    features: [
+      "Publication illimitée de missions",
+      "Accès à tous les freelances",
+      "Gestion des candidatures",
+      "Support prioritaire",
+      "Statistiques détaillées",
+      "Recherche avancée",
+    ],
+    billingPeriod: "annual",
+    monthlyPrice: 41.67, // 500 / 12
+  },
+  {
+    id: "freelance-annual",
+    name: "Freelance",
+    price: 100,
+    priceCents: 10000,
+    currency: "eur",
+    description:
+      "Meilleur référencement et possibilité de postuler à des missions en illimité",
+    features: [
+      "Meilleur référencement de votre profil",
+      "Candidatures illimitées aux missions",
+      "Notifications en temps réel",
+      "Support client",
+    ],
+    billingPeriod: "annual",
+    monthlyPrice: 8.33, // 100 / 12
+  },
+
+  // Plans legacy conservés temporairement pour compatibilité des abonnements existants
   {
     id: "freelance-student",
     name: "Freelance Étudiant",
@@ -55,7 +129,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Gestion de disponibilité",
       "Historique des missions",
     ],
-    popular: true,
     billingPeriod: "monthly",
   },
   {
@@ -76,25 +149,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     ],
     billingPeriod: "monthly",
   },
-  // Plans annuels (prix mensuel x 10 = 2 mois d'économies)
-  {
-    id: "establishment-annual",
-    name: "Établissement",
-    price: 500, // 50 x 10
-    priceCents: 50000,
-    currency: "eur",
-    description: "Pour les restaurants, hôtels et établissements HCR",
-    features: [
-      "Publication illimitée de missions",
-      "Accès à tous les freelances",
-      "Gestion des candidatures",
-      "Support prioritaire",
-      "Statistiques détaillées",
-      "Recherche avancée",
-    ],
-    billingPeriod: "annual",
-    monthlyPrice: 41.67, // 500 / 12
-  },
   {
     id: "freelance-student-annual",
     name: "Freelance Étudiant",
@@ -110,7 +164,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Gestion de disponibilité",
       "Historique des missions",
     ],
-    popular: true,
     billingPeriod: "annual",
     monthlyPrice: 20.83, // 250 / 12
   },

@@ -128,7 +128,7 @@ export function EstablishmentsTable({
         </XStack>
         <XStack width={RECRUITER_COLUMN_WIDTH}>
           <Text fontSize={13} fontWeight="700" color={colors.gray700}>
-            Recruiter lie
+            Recruteur
           </Text>
         </XStack>
         <XStack width={COMMERCIAL_COLUMN_WIDTH}>

@@ -99,14 +99,15 @@ export default function MissionDetailPage() {
           <XStack
             gap="$4"
             alignItems="flex-start"
-            flexWrap="wrap"
+            flexWrap="nowrap"
             flexDirection={isMobile ? "column" : "row"}
           >
             {/* COLONNE GAUCHE */}
             <YStack
               flex={isMobile ? undefined : 1}
+              flexBasis={isMobile ? undefined : 0}
               gap="$4"
-              minWidth={isMobile ? undefined : 300}
+              minWidth={isMobile ? undefined : 0}
               width={isMobile ? "100%" : undefined}
             >
               {/* Bandeau de paiement pour le recruteur */}

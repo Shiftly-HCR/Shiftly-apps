@@ -57,9 +57,8 @@ export function useRegisterPage() {
       });
 
       if (result.success) {
-        // React Query invalide automatiquement le cache via onSuccess
-        // Rediriger vers la page d'accueil
-        router.push("/home");
+        // Après inscription: rediriger vers login avec message de confirmation email
+        router.push("/login?signup=check-email");
       } else {
         setError(result.error || "Une erreur est survenue");
       }

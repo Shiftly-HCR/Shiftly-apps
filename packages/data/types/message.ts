@@ -8,7 +8,7 @@
 export interface Conversation {
   id: string;
   created_at?: string;
-  mission_id: string;
+  mission_id: string | null;
   recruiter_id: string;
   freelance_id: string;
   created_by?: string | null; // ID de l'utilisateur qui a créé la conversation
@@ -66,7 +66,7 @@ export interface MessageWithSender extends Message {
  * Paramètres pour créer ou récupérer une conversation
  */
 export interface GetOrCreateConversationParams {
-  missionId: string;
+  missionId?: string | null;
   recruiterId: string;
   freelanceId: string;
 }

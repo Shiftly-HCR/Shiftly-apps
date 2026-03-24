@@ -4,10 +4,9 @@ import { useState } from "react";
 import { YStack, XStack, Text } from "tamagui";
 import { Button, colors } from "@shiftly/ui";
 import { useRouter } from "next/navigation";
-import { FiMessageCircle, FiBookmark, FiDollarSign } from "react-icons/fi";
+import { FiMessageCircle, FiDollarSign } from "react-icons/fi";
 import { openConversation } from "@/utils/chatService";
 import { useCurrentProfile } from "@/hooks/queries";
-import { getOrCreateDirectConversationMission } from "@shiftly/data";
 import type { Profile, FreelanceProfile } from "@shiftly/data";
 
 interface FreelanceProfileSidebarProps {
@@ -80,32 +79,6 @@ export function FreelanceProfileSidebar({
       )}
 
       <Button
-        variant="primary"
-        size="md"
-        onPress={() =>
-          router.push(`/missions/create?freelance=${freelanceId}`)
-        }
-        width="100%"
-      >
-        Inviter sur une mission
-      </Button>
-
-      <Button
-        variant="secondary"
-        size="md"
-        onPress={() => {
-          // TODO: Implémenter la sauvegarde du profil
-          console.log("Sauvegarder le profil");
-        }}
-        width="100%"
-      >
-        <XStack gap="$2" alignItems="center" justifyContent="center">
-          <FiBookmark size={18} />
-          <Text>Sauvegarder le profil</Text>
-        </XStack>
-      </Button>
-
-      <Button
         variant="secondary"
         size="md"
         onPress={async () => {
@@ -115,22 +88,9 @@ export function FreelanceProfileSidebar({
 
           setIsCreatingConversation(true);
           try {
-            // Créer ou récupérer une mission "directe" pour cette conversation
-            const missionResult = await getOrCreateDirectConversationMission(
-              currentProfile.id,
-              freelanceId
-            );
-
-            if (!missionResult.success || !missionResult.mission) {
-              console.error("Erreur lors de la création de la mission:", missionResult.error);
-              setIsCreatingConversation(false);
-              return;
-            }
-
             // Créer ou récupérer la conversation
             const conversationResult = await openConversation(
               {
-                missionId: missionResult.mission.id,
                 recruiterId: currentProfile.id,
                 freelanceId: freelanceId,
               },
@@ -159,4 +119,3 @@ export function FreelanceProfileSidebar({
     </YStack>
   );
 }
-

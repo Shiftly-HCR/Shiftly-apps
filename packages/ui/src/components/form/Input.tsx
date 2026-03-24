@@ -103,14 +103,31 @@ export const Input = ({
         value={value}
         onChangeText={onChangeText}
         disabled={disabled}
-        borderColor={error ? "$primary" : "$borderColor"}
+        borderColor={error ? "#DC2626" : "$borderColor"}
+        focusStyle={
+          error
+            ? {
+                borderColor: "#DC2626",
+                borderWidth: 2,
+                outlineWidth: 0,
+              }
+            : undefined
+        }
+        hoverStyle={
+          error
+            ? {
+                borderColor: "#DC2626",
+                outlineWidth: 0,
+              }
+            : undefined
+        }
         opacity={disabled ? 0.5 : 1}
         cursor={disabled ? "not-allowed" : "text"}
         {...props}
       />
 
       {error && (
-        <Text fontSize={12} color="$primary">
+        <Text fontSize={12} color="#DC2626">
           {error}
         </Text>
       )}

@@ -24,6 +24,8 @@ export function ConversationItem({
   formatTime,
 }: ConversationItemProps) {
   const lastMessage = conversation.last_message;
+  const unreadCount = conversation.unread_count || 0;
+  const hasUnread = unreadCount > 0;
   const { handleDelete } = useConversationItemActions({
     conversationId: conversation.id,
     onDelete,
@@ -48,11 +50,22 @@ export function ConversationItem({
           <Text fontSize={14} fontWeight="600" color={colors.gray900}>
             {otherParticipantName}
           </Text>
-          {lastMessage && (
-            <Text fontSize={11} color={colors.gray500}>
-              {formatTime(lastMessage.created_at)}
-            </Text>
-          )}
+          <XStack alignItems="center" gap="$2">
+            {hasUnread && (
+              <Text
+                fontSize={11}
+                fontWeight="700"
+                color={colors.shiftlyViolet}
+              >
+                Nouveau message ({unreadCount})
+              </Text>
+            )}
+            {lastMessage && (
+              <Text fontSize={11} color={colors.gray500}>
+                {formatTime(lastMessage.created_at)}
+              </Text>
+            )}
+          </XStack>
         </XStack>
         {conversation.mission && (
           <Text fontSize={12} color={colors.gray700}>
@@ -60,7 +73,12 @@ export function ConversationItem({
           </Text>
         )}
         {lastMessage && (
-          <Text fontSize={12} color={colors.gray700} numberOfLines={1}>
+          <Text
+            fontSize={12}
+            color={hasUnread ? colors.gray900 : colors.gray700}
+            fontWeight={hasUnread ? "600" : "400"}
+            numberOfLines={1}
+          >
             {lastMessage.content}
           </Text>
         )}

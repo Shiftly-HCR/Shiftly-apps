@@ -85,7 +85,13 @@ export function ConversationView({
     conversation?.mission?.title?.startsWith("Conversation directe");
 
   return (
-    <YStack flex={1} backgroundColor={colors.white}>
+    <YStack
+      flex={1}
+      minHeight={0}
+      height="100%"
+      backgroundColor={colors.white}
+      overflow="hidden"
+    >
       {/* En-tête de la conversation */}
       <YStack
         padding="$4"
@@ -321,12 +327,19 @@ export function ConversationView({
         )}
 
       {/* Messages */}
-      <ChatThread
-        messages={messages}
-        currentUserId={currentUserId}
-        senderNames={senderNames}
-        isLoading={isLoading}
-      />
+      <YStack
+        flex={1}
+        minHeight={280}
+        maxHeight="65vh"
+        overflow="hidden"
+      >
+        <ChatThread
+          messages={messages}
+          currentUserId={currentUserId}
+          senderNames={senderNames}
+          isLoading={isLoading}
+        />
+      </YStack>
 
       {/* Input */}
       <MessageInput onSend={handleSend} isSending={isSending} />

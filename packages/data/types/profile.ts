@@ -67,8 +67,10 @@ export interface FreelanceProfile {
   first_name?: string;
   last_name?: string;
   email?: string;
+  email_verified?: boolean;
   phone?: string;
   siret?: string;
+  city_of_residence?: string;
   bio?: string;
   photo_url?: string;
   headline?: string;
@@ -77,13 +79,42 @@ export interface FreelanceProfile {
   // Champs supplémentaires pour freelance
   summary?: string;
   skills?: string[];
+  is_premium?: boolean;
   note?: number;
   daily_rate?: number; // TJM (Taux Journalier Moyen) en euros
   hourly_rate?: number; // Tarif horaire en euros
   availability?: string; // Disponibilité (temps plein, temps partiel, etc.)
   badges?: string | string[]; // Badges/certifications (DB: _text)
+  experience_count?: number; // Nombre d'experiences renseignees
+  education_count?: number; // Nombre de formations renseignees
   created_at?: string;
   updated_at?: string;
+}
+
+export interface PublishedFreelance extends FreelanceProfile {
+  experience_count: number;
+  education_count: number;
+  completeness_score?: number;
+  search_blob?: string;
+}
+
+export interface PublishedFreelanceSearchParams {
+  query?: string;
+  position?: string;
+  location?: string;
+  availability?: string;
+  badge?: string;
+  dailyRateMin?: number;
+  dailyRateMax?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PublishedFreelanceSearchResult {
+  items: PublishedFreelance[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface UpdateFreelanceProfileParams {
@@ -92,6 +123,7 @@ export interface UpdateFreelanceProfileParams {
   email?: string;
   phone?: string;
   siret?: string;
+  city_of_residence?: string;
   bio?: string;
   headline?: string;
   location?: string;

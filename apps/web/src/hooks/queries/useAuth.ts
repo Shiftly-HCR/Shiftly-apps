@@ -1,7 +1,13 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCurrentUser, signIn, signOut, signUp } from "@shiftly/data";
+import {
+  getCurrentUser,
+  resendConfirmationEmail,
+  signIn,
+  signOut,
+  signUp,
+} from "@shiftly/data";
 import type { User } from "@supabase/supabase-js";
 
 type SessionLike = { access_token?: string } | null;
@@ -88,9 +94,20 @@ export function useSignUp() {
   return useMutation({
     mutationFn: signUp,
     onSuccess: (result) => {
-      if (result.success && result.user) {
-        queryClient.setQueryData(["auth", "user"], result.user);
+      if (result.success) {
+        // Ne pas forcer un état "connecté" après signup.
+        // Revalider la source de vérité Supabase pour refléter la session réelle.
+        queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
       }
     },
+  });
+}
+
+/**
+ * Hook pour renvoyer l'email de confirmation
+ */
+export function useResendConfirmationEmail() {
+  return useMutation({
+    mutationFn: resendConfirmationEmail,
   });
 }

@@ -32,8 +32,13 @@ function MessagerieContent() {
   const showConversation = selectedConversationId && selectedConversation;
 
   return (
-    <YStack flex={1} backgroundColor={colors.backgroundLight}>
-      <XStack flex={1} height="100%">
+    <YStack
+      flex={1}
+      minHeight={0}
+      backgroundColor={colors.backgroundLight}
+      overflow="hidden"
+    >
+      <XStack flex={1} minHeight={0} overflow="hidden">
         {/* Liste des conversations - hidden on mobile when conversation is selected */}
         {showList && (
           <ConversationsList

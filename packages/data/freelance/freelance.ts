@@ -3,6 +3,9 @@ import type {
   FreelanceProfile,
   FreelanceExperience,
   FreelanceEducation,
+  PublishedFreelance,
+  PublishedFreelanceSearchParams,
+  PublishedFreelanceSearchResult,
   UpdateFreelanceProfileParams,
   LinkedInProfileData,
 } from "../types/profile";
@@ -145,6 +148,8 @@ export async function updateFreelanceProfile(
     if (params.lastName !== undefined) updateData.last_name = params.lastName;
     if (params.email !== undefined) updateData.email = params.email;
     if (params.phone !== undefined) updateData.phone = params.phone;
+    if (params.city_of_residence !== undefined)
+      updateData.city_of_residence = params.city_of_residence;
     if (params.bio !== undefined) updateData.bio = params.bio;
     if (params.headline !== undefined) updateData.headline = params.headline;
     if (params.location !== undefined) updateData.location = params.location;
@@ -183,6 +188,42 @@ export async function updateFreelanceProfile(
       success: false,
       error: "Une erreur est survenue lors de la mise à jour du profil",
     };
+  }
+}
+
+export async function getFreelanceCompletionStatusByUserId(
+  userId: string
+): Promise<{ experience_count: number; education_count: number } | null> {
+  try {
+    const [{ count: experienceCount, error: expError }, { count: educationCount, error: eduError }] =
+      await Promise.all([
+        supabase
+          .from("freelance_experiences")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
+        supabase
+          .from("freelance_educations")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
+      ]);
+
+    if (expError) {
+      console.error("Erreur lors du comptage des expériences:", expError);
+      return null;
+    }
+
+    if (eduError) {
+      console.error("Erreur lors du comptage des formations:", eduError);
+      return null;
+    }
+
+    return {
+      experience_count: experienceCount || 0,
+      education_count: educationCount || 0,
+    };
+  } catch (err) {
+    console.error("Erreur lors de la récupération du statut de complétion:", err);
+    return null;
   }
 }
 
@@ -483,23 +524,45 @@ export async function deleteFreelanceEducation(
 /**
  * Récupère tous les profils freelance publiés (pour les recruteurs)
  */
-export async function getPublishedFreelances(): Promise<FreelanceProfile[]> {
+export async function getPublishedFreelances(
+  params: PublishedFreelanceSearchParams = {}
+): Promise<PublishedFreelanceSearchResult> {
+  const page = Math.max(1, params.page ?? 1);
+  const pageSize = Math.max(1, params.pageSize ?? 50);
+
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("role", "freelance")
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("search_published_freelances", {
+      p_query: params.query || null,
+      p_position: params.position || null,
+      p_location: params.location || null,
+      p_availability:
+        params.availability && params.availability !== "all"
+          ? params.availability
+          : null,
+      p_badge: params.badge || null,
+      p_daily_rate_min: params.dailyRateMin ?? null,
+      p_daily_rate_max: params.dailyRateMax ?? null,
+      p_page: page,
+      p_page_size: pageSize,
+    });
 
     if (error) {
       console.error("Erreur lors de la récupération des freelances:", error);
-      return [];
+      return { items: [], totalCount: 0, page, pageSize };
     }
 
-    return (data || []) as FreelanceProfile[];
+    const rows = (data || []) as Array<PublishedFreelance & { total_count: number }>;
+    const totalCount = rows[0]?.total_count ?? 0;
+
+    return {
+      items: rows.map(({ total_count, ...row }) => row),
+      totalCount,
+      page,
+      pageSize,
+    };
   } catch (err) {
     console.error("Erreur lors de la récupération des freelances:", err);
-    return [];
+    return { items: [], totalCount: 0, page, pageSize };
   }
 }
 

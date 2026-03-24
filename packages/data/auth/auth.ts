@@ -14,10 +14,15 @@ export interface SignInParams {
   password: string;
 }
 
+export interface ResendConfirmationEmailParams {
+  email: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   error?: string;
   user?: any;
+  requiresEmailConfirmation?: boolean;
 }
 
 /**
@@ -50,6 +55,8 @@ export async function signUp({
       };
     }
 
+    const requiresEmailConfirmation = !data.session;
+
     // Si l'utilisateur est créé, on crée aussi son profil
     // Note: Le trigger SQL devrait le faire automatiquement, mais on le fait aussi ici
     // pour s'assurer que le profil existe immédiatement avec le bon rôle
@@ -77,6 +84,7 @@ export async function signUp({
     return {
       success: true,
       user: data.user,
+      requiresEmailConfirmation,
     };
   } catch (err) {
     return {
@@ -284,6 +292,45 @@ export async function resetPassword(email: string): Promise<AuthResponse> {
       success: false,
       error:
         "Une erreur est survenue lors de la réinitialisation du mot de passe",
+    };
+  }
+}
+
+/**
+ * Renvoie l'email de confirmation d'inscription
+ */
+export async function resendConfirmationEmail({
+  email,
+}: ResendConfirmationEmailParams): Promise<AuthResponse> {
+  try {
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/home`
+        : undefined;
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error:
+        "Une erreur est survenue lors de l'envoi de l'email de confirmation",
     };
   }
 }

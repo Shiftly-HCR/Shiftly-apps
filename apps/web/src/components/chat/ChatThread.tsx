@@ -54,6 +54,10 @@ export function ChatThread({
     <ScrollView
       ref={scrollViewRef}
       flex={1}
+      minHeight={0}
+      height="100%"
+      maxHeight="100%"
+      overflow="scroll"
       padding="$4"
       backgroundColor="#F9FAFB"
       onContentSizeChange={() => {
