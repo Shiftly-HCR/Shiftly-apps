@@ -135,7 +135,7 @@ export function Footer({
                 height={32}
                 borderRadius={16}
                 borderWidth={1}
-                borderColor={colors.gray300}
+                borderColor={colors.gray200}
                 cursor="pointer"
                 hoverStyle={{ opacity: 0.8 }}
                 onPress={() =>
@@ -153,7 +153,7 @@ export function Footer({
                 height={32}
                 borderRadius={16}
                 borderWidth={1}
-                borderColor={colors.gray300}
+                borderColor={colors.gray200}
                 cursor="pointer"
                 hoverStyle={{ opacity: 0.8 }}
                 onPress={() =>
