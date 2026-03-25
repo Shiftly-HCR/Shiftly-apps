@@ -30,3 +30,6 @@ export * from "./admin";
 
 // Auth components
 export { AuthGuard } from "./AuthGuard";
+
+// Profile components
+export * from "./profile";
