@@ -117,21 +117,12 @@ export default function ProfilePage() {
           flex={1}
           alignItems="center"
           padding={isMobile ? "$4" : "$6"}
-          paddingVertical="$8"
+          paddingTop="$8"
+          paddingBottom="$8"
         >
           <YStack maxWidth={800} gap="$4" style={{ width: "100%" }}>
             {/* En-tête */}
-            <YStack
-              padding="$6"
-              backgroundColor="white"
-              borderRadius="$4"
-              borderWidth={1}
-              borderColor="#E5E5E5"
-              shadowColor="rgba(0, 0, 0, 0.1)"
-              shadowOffset={{ width: 0, height: 4 }}
-              shadowOpacity={1}
-              shadowRadius={12}
-            >
+            <YStack gap="$4">
               <XStack
                 flexDirection={isMobile ? "column" : "row"}
                 justifyContent="space-between"
@@ -227,9 +218,6 @@ export default function ProfilePage() {
 
                   {/* Photo de profil */}
                   <YStack gap="$2">
-                    <Text fontSize={16} fontWeight="600" color={colors.gray900}>
-                      Photo de profil
-                    </Text>
                     <ImagePicker
                       value={photoUrl}
                       onChange={handlePhotoChange}
@@ -1137,17 +1125,10 @@ export default function ProfilePage() {
               )}
             </YStack>
 
-            {/* Bouton retour */}
-            <Button
-              variant="outline"
-              size="lg"
-              onPress={() => router.push("/home")}
-            >
-              Retour à l'accueil
-            </Button>
           </YStack>
         </YStack>
       </ScrollView>
+
     </AppLayout>
   );
 }
