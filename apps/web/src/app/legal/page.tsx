@@ -1,25 +1,155 @@
 "use client";
 
-import { YStack, Text, ScrollView } from "tamagui";
-import { AppLayout, PageHeader } from "@/components";
-import { useResponsive } from "@/hooks";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { ScrollView, Text, YStack } from "tamagui";
 import { colors } from "@shiftly/ui";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageHeader } from "@/components/ui/PageHeader";
+
+type ContentBlock =
+  | { type: "title"; text: string }
+  | { type: "article"; text: string }
+  | { type: "subsection"; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "separator" };
+
+function parseLegalContent(content: string): ContentBlock[] {
+  const normalized = content.replace(/^\uFEFF/, "");
+  const lines = normalized.split(/\r?\n/);
+  const blocks: ContentBlock[] = [];
+  let paragraphBuffer: string[] = [];
+
+  const flushParagraph = () => {
+    const text = paragraphBuffer.join(" ").trim();
+    if (text) {
+      blocks.push({ type: "paragraph", text });
+    }
+    paragraphBuffer = [];
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      flushParagraph();
+      continue;
+    }
+
+    if (/^━{10,}$/.test(line)) {
+      flushParagraph();
+      blocks.push({ type: "separator" });
+      continue;
+    }
+
+    if (/^MENTIONS\s+LÉGALES$/i.test(line)) {
+      flushParagraph();
+      blocks.push({ type: "title", text: line });
+      continue;
+    }
+
+    if (/^ARTICLE\s+\d+/.test(line)) {
+      flushParagraph();
+      blocks.push({ type: "article", text: line });
+      continue;
+    }
+
+    if (/^\d+(\.\d+)?\s+—\s+.+/.test(line)) {
+      flushParagraph();
+      blocks.push({ type: "subsection", text: line });
+      continue;
+    }
+
+    paragraphBuffer.push(line);
+  }
+
+  flushParagraph();
+  return blocks;
+}
+
+const LINK_REGEX =
+  /(https?:\/\/[^\s]+|www\.[^\s]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi;
+const SINGLE_LINK_REGEX =
+  /^(https?:\/\/[^\s]+|www\.[^\s]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})$/i;
+
+function sanitizeUrl(raw: string) {
+  return raw.replace(/[),.;]+$/, "");
+}
+
+function toHref(token: string) {
+  const clean = sanitizeUrl(token);
+  if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(clean)) {
+    return `mailto:${clean}`;
+  }
+  if (clean.startsWith("http://") || clean.startsWith("https://")) {
+    return clean;
+  }
+  if (clean.startsWith("www.")) {
+    return `https://${clean}`;
+  }
+  return clean;
+}
+
+function renderTextWithLinks(text: string): ReactNode[] {
+  const parts = text.split(LINK_REGEX);
+  return parts.map((part, index) => {
+    if (!part) {
+      return null;
+    }
+    if (SINGLE_LINK_REGEX.test(part)) {
+      const clean = sanitizeUrl(part);
+      const suffix = part.slice(clean.length);
+      return (
+        <span key={`link-${index}`}>
+          <a
+            href={toHref(part)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: colors.shiftlyViolet, textDecoration: "underline" }}
+          >
+            {clean}
+          </a>
+          {suffix}
+        </span>
+      );
+    }
+    return <span key={`text-${index}`}>{part}</span>;
+  });
+}
 
 export default function LegalPage() {
-  const { isMobile } = useResponsive();
+  const [legalContent, setLegalContent] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadLegal = async () => {
+      try {
+        const response = await fetch("/mention_legal.txt");
+        if (!response.ok) {
+          throw new Error("Impossible de charger les mentions légales.");
+        }
+        const text = await response.text();
+        setLegalContent(text);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erreur de chargement.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadLegal();
+  }, []);
+
+  const blocks = useMemo(() => parseLegalContent(legalContent), [legalContent]);
+
   return (
     <AppLayout>
       <ScrollView flex={1}>
-        <YStack
-          maxWidth={1000}
-          width="100%"
-          alignSelf="center"
-          padding={isMobile ? "$4" : "$6"}
-          gap="$6"
-        >
+        <YStack maxWidth={1000} width="100%" alignSelf="center" padding="$6" gap="$6">
           <PageHeader
             title="Mentions légales"
-            description="Informations légales sur Shiftly"
+            description="Document officiel SAS SHIFTLY"
           />
 
           <YStack
@@ -28,159 +158,88 @@ export default function LegalPage() {
             borderRadius="$4"
             borderWidth={1}
             borderColor={colors.gray200}
-            gap="$6"
+            gap="$4"
           >
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                1. Éditeur du site
-              </Text>
+            {isLoading && (
               <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Le site Shiftly est édité par :
+                Chargement des mentions légales...
               </Text>
-              <YStack gap="$2" marginTop="$2">
-                <Text fontSize={14} color={colors.gray700}>
-                  <Text fontWeight="600">Raison sociale :</Text> Shiftly
-                </Text>
-                <Text fontSize={14} color={colors.gray700}>
-                  <Text fontWeight="600">Email :</Text>{" "}
-                  <Text
-                    fontSize={14}
-                    color={colors.shiftlyViolet}
-                    fontWeight="600"
-                    cursor="pointer"
-                    hoverStyle={{ textDecorationLine: "underline" }}
-                    onPress={() => {
-                      window.location.href = "mailto:contact@shiftly.pro";
-                    }}
-                  >
-                    contact@shiftly.pro
-                  </Text>
-                </Text>
+            )}
+
+            {!isLoading && error && (
+              <Text fontSize={14} color="#DC2626" lineHeight={24}>
+                {error}
+              </Text>
+            )}
+
+            {!isLoading && !error && blocks.length > 0 && (
+              <YStack gap="$4">
+                {blocks.map((block, index) => {
+                  if (block.type === "separator") {
+                    return (
+                      <YStack
+                        key={`separator-${index}`}
+                        borderTopWidth={1}
+                        borderTopColor={colors.gray200}
+                        marginVertical="$2"
+                      />
+                    );
+                  }
+
+                  if (block.type === "title") {
+                    return (
+                      <Text
+                        key={`title-${index}`}
+                        fontSize={22}
+                        fontWeight="700"
+                        color={colors.gray900}
+                      >
+                        {renderTextWithLinks(block.text)}
+                      </Text>
+                    );
+                  }
+
+                  if (block.type === "article") {
+                    return (
+                      <Text
+                        key={`article-${index}`}
+                        fontSize={18}
+                        fontWeight="700"
+                        color={colors.gray900}
+                        marginTop="$2"
+                      >
+                        {renderTextWithLinks(block.text)}
+                      </Text>
+                    );
+                  }
+
+                  if (block.type === "subsection") {
+                    return (
+                      <Text
+                        key={`subsection-${index}`}
+                        fontSize={15}
+                        fontWeight="600"
+                        color={colors.gray900}
+                        marginTop="$1"
+                      >
+                        {renderTextWithLinks(block.text)}
+                      </Text>
+                    );
+                  }
+
+                  return (
+                    <Text
+                      key={`paragraph-${index}`}
+                      fontSize={14}
+                      color={colors.gray800}
+                      lineHeight={24}
+                    >
+                      {renderTextWithLinks(block.text)}
+                    </Text>
+                  );
+                })}
               </YStack>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                2. Directeur de publication
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Le directeur de la publication est le représentant légal de Shiftly.
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                3. Hébergement
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Le site est hébergé par des prestataires de services d'hébergement cloud sécurisés. Les données sont stockées dans des centres de données conformes aux normes de sécurité les plus strictes.
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                4. Propriété intellectuelle
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                L'ensemble du contenu du site (textes, images, vidéos, logos, graphismes, etc.) est la propriété exclusive de Shiftly, sauf mention contraire. Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site est interdite sans autorisation écrite préalable de Shiftly.
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                5. Protection des données personnelles
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Conformément à la loi Informatique et Libertés et au RGPD, vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition aux données personnelles vous concernant. Pour exercer ces droits, contactez-nous à{" "}
-                <Text
-                  fontSize={14}
-                  color={colors.shiftlyViolet}
-                  fontWeight="600"
-                  cursor="pointer"
-                  hoverStyle={{ textDecorationLine: "underline" }}
-                  onPress={() => {
-                    window.location.href = "mailto:contact@shiftly.pro";
-                  }}
-                >
-                  contact@shiftly.pro
-                </Text>
-                . Pour plus d'informations, consultez notre{" "}
-                <Text
-                  fontSize={14}
-                  color={colors.shiftlyViolet}
-                  fontWeight="600"
-                  cursor="pointer"
-                  hoverStyle={{ textDecorationLine: "underline" }}
-                  onPress={() => {
-                    window.location.href = "/privacy";
-                  }}
-                >
-                  politique de confidentialité
-                </Text>
-                .
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                6. Cookies
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Le site utilise des cookies pour améliorer l'expérience utilisateur et analyser le trafic. En continuant à naviguer sur le site, vous acceptez l'utilisation de cookies conformément à notre politique de confidentialité.
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                7. Limitation de responsabilité
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Shiftly s'efforce de fournir des informations aussi précises que possible. Toutefois, il ne pourra être tenu responsable des omissions, des inexactitudes et des carences dans la mise à jour, qu'elles soient de son fait ou du fait des tiers partenaires qui lui fournissent ces informations.
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24} marginTop="$2">
-                Shiftly ne pourra être tenu responsable des dommages directs et indirects causés au matériel de l'utilisateur lors de l'accès au site, et résultant soit de l'utilisation d'un matériel ne répondant pas aux spécifications, soit de l'apparition d'un bug ou d'une incompatibilité.
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                8. Liens hypertextes
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Le site peut contenir des liens hypertextes vers d'autres sites. Shiftly n'exerce aucun contrôle sur ces sites et décline toute responsabilité quant à leur contenu et leur accessibilité.
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                9. Droit applicable
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Les présentes mentions légales sont régies par le droit français. En cas de litige, les tribunaux français seront seuls compétents.
-              </Text>
-            </YStack>
-
-            <YStack gap="$4">
-              <Text fontSize={18} fontWeight="700" color={colors.gray900}>
-                10. Contact
-              </Text>
-              <Text fontSize={14} color={colors.gray700} lineHeight={24}>
-                Pour toute question concernant ces mentions légales, vous pouvez nous contacter à{" "}
-                <Text
-                  fontSize={14}
-                  color={colors.shiftlyViolet}
-                  fontWeight="600"
-                  cursor="pointer"
-                  hoverStyle={{ textDecorationLine: "underline" }}
-                  onPress={() => {
-                    window.location.href = "mailto:contact@shiftly.pro";
-                  }}
-                >
-                  contact@shiftly.pro
-                </Text>
-                .
-              </Text>
-            </YStack>
+            )}
           </YStack>
         </YStack>
       </ScrollView>
