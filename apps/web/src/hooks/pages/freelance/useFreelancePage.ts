@@ -29,10 +29,13 @@ export const locationOptions = [
 
 export const availabilityOptions = [
   { label: "Toutes", value: "all" },
-  { label: "Immédiatement", value: "immediate" },
-  { label: "Cette semaine", value: "this_week" },
-  { label: "Ce mois", value: "this_month" },
-  { label: "Flexible", value: "flexible" },
+  { label: "Temps plein", value: "temps_plein" },
+  { label: "Temps partiel", value: "temps_partiel" },
+  { label: "Week-end et soirée", value: "weekend_soiree" },
+  { label: "Soirée uniquement", value: "soiree" },
+  { label: "Week-end uniquement", value: "weekend" },
+  { label: "Disponibilité flexible", value: "flexible" },
+  { label: "Ponctuel / Événements", value: "ponctuel" },
 ];
 
 export const badgeOptions = [
