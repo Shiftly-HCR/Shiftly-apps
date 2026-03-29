@@ -6,7 +6,6 @@ import SolutionForHCR from "./ForFreelancers";
 import Hero from "./Hero";
 import Benefits from "./Benefits";
 import ProblemSolution from "./ProblemSolution";
-import Stats from "./Stats";
 import { PublicTopNavigation } from "@/components/layout";
 
 export function LandingPage() {
