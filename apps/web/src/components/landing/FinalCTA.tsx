@@ -1,11 +1,5 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Playfair_Display } from "next/font/google";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function FinalCTA() {
   return (
@@ -25,7 +19,7 @@ export default function FinalCTA() {
         </p>
 
         <h2
-          className={`${playfair.className} text-3xl sm:text-4xl lg:text-5xl xl:text-[3.5rem] font-normal text-[#fcfaf7] leading-[1.15] mb-6 sm:mb-8`}
+          className="text-3xl sm:text-4xl lg:text-5xl xl:text-[3.5rem] font-bold text-[#fcfaf7] leading-[1.15] mb-6 sm:mb-8"
         >
           Prêt à travailler autrement ?
         </h2>

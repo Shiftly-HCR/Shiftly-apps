@@ -1,11 +1,5 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Playfair_Display } from "next/font/google";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function Hero() {
   return (
@@ -23,7 +17,7 @@ export default function Hero() {
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-12 lg:gap-16 items-center">
           <div className="space-y-8 lg:space-y-10">
             <h1
-              className={`${playfair.className} text-4xl sm:text-5xl lg:text-[3.35rem] xl:text-6xl leading-[1.08] tracking-tight text-[#1a1a1a]`}
+              className="text-4xl sm:text-5xl lg:text-[3.35rem] xl:text-6xl leading-[1.08] tracking-tight text-[#1a1a1a] font-bold"
             >
               <span className="block">La solution qui</span>
               <span className="block text-[#782478] italic font-normal">
@@ -61,12 +55,12 @@ export default function Hero() {
 
           <div className="relative mx-auto w-full max-w-lg lg:max-w-none lg:mx-0 min-h-[420px] sm:min-h-[480px]">
             <div
-              className={`relative z-10 rounded-2xl bg-[#1e1424] p-6 sm:p-8 shadow-2xl shadow-black/20 ring-1 ring-white/5 ${playfair.className}`}
+              className="relative z-10 rounded-2xl bg-[#1e1424] p-6 sm:p-8 shadow-2xl shadow-black/20 ring-1 ring-white/5"
             >
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#bdaaa1]">
                 Établissement accompagné
               </p>
-              <h2 className="mt-3 text-2xl sm:text-3xl font-normal text-[#fcfaf7] leading-tight">
+              <h2 className="mt-3 text-2xl sm:text-3xl font-bold text-[#fcfaf7] leading-tight">
                 Hôtel Le Méridien Lyon
               </h2>
               <p className="mt-2 text-sm text-[#bdaaa1]">
@@ -104,9 +98,9 @@ export default function Hero() {
 
             {/* Purple stat card overlap */}
             <div
-              className={`absolute -bottom-2 right-0 z-20 w-[46%] max-w-[200px] rounded-2xl bg-[#782478] p-5 sm:p-6 shadow-xl shadow-[#782478]/40 ${playfair.className}`}
+              className="absolute -bottom-2 right-0 z-20 w-[46%] max-w-[200px] rounded-2xl bg-[#782478] p-5 sm:p-6 shadow-xl shadow-[#782478]/40"
             >
-              <p className="text-4xl sm:text-5xl font-normal leading-none text-[#fcfaf7]">
+              <p className="text-4xl sm:text-5xl font-bold leading-none text-[#fcfaf7]">
                 10
               </p>
               <p className="mt-2 text-xs sm:text-sm font-sans font-medium text-[#fcfaf7]/90">

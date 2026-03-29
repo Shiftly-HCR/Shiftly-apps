@@ -1,4 +1,3 @@
-import { Playfair_Display } from "next/font/google";
 import {
   Sparkles,
   CalendarDays,
@@ -6,11 +5,6 @@ import {
   Briefcase,
   Target,
 } from "lucide-react";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function ForEstablishments() {
   const leftFeatures = [
@@ -86,7 +80,7 @@ export default function ForEstablishments() {
             </p>
 
             <h2
-              className={`${playfair.className} text-3xl sm:text-4xl lg:text-[2.75rem] font-normal text-[#fcfaf7] leading-[1.15] mb-6`}
+              className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold text-[#fcfaf7] leading-[1.15] mb-6"
             >
               Une solution qui grandit avec votre établissement.
             </h2>

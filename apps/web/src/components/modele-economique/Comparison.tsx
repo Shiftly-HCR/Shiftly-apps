@@ -1,10 +1,4 @@
-import { Playfair_Display } from "next/font/google";
 import { Check, X, AlertTriangle } from "lucide-react";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function Comparison() {
   const comparisonRows = [
@@ -60,7 +54,7 @@ export default function Comparison() {
             </p>
 
             <h2
-              className={`${playfair.className} text-3xl sm:text-4xl lg:text-5xl font-normal text-[#fcfaf7] leading-[1.15] mb-6`}
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#fcfaf7] leading-[1.15] mb-6"
             >
               73% des établissements HCR peinent à trouver les bons profils.
             </h2>
@@ -76,7 +70,7 @@ export default function Comparison() {
                 Économie moyenne par mission avec Shiftly
               </p>
               <p
-                className={`${playfair.className} text-5xl sm:text-6xl font-normal text-[#cc9933] mb-3`}
+                className="text-5xl sm:text-6xl font-bold text-[#cc9933] mb-3"
               >
                 400€
               </p>

@@ -1,10 +1,4 @@
-import { Playfair_Display } from "next/font/google";
 import { Clock, RefreshCw, Unplug } from "lucide-react";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function SecteurProblem() {
   const problems = [
@@ -37,7 +31,7 @@ export default function SecteurProblem() {
           </p>
 
           <h2
-            className={`${playfair.className} text-3xl sm:text-4xl lg:text-5xl font-normal text-[#fcfaf7] leading-[1.15] mb-12`}
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#fcfaf7] leading-[1.15] mb-12"
           >
             L&apos;instabilité des équipes fragilise tout le secteur HCR.
           </h2>
@@ -63,7 +57,7 @@ export default function SecteurProblem() {
 
           <div className="space-y-4">
             <p
-              className={`${playfair.className} text-lg sm:text-xl text-[#bdaaa1]/70 italic`}
+              className="text-lg sm:text-xl text-[#bdaaa1]/70 italic"
             >
               Et si vous aviez un allié qui connaît vraiment votre métier ?
             </p>

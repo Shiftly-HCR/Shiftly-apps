@@ -1,10 +1,4 @@
-import { Playfair_Display } from "next/font/google";
 import { Shield, Clock, Users, Award, Scale, Headphones } from "lucide-react";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function Values() {
   const values = [
@@ -55,7 +49,7 @@ export default function Values() {
           </p>
 
           <h2
-            className={`${playfair.className} text-3xl sm:text-4xl lg:text-5xl font-normal text-[#1a1a1a] leading-[1.15] mb-6`}
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1a1a1a] leading-[1.15] mb-6"
           >
             Ce qui nous guide au quotidien.
           </h2>

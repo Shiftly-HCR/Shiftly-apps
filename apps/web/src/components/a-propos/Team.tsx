@@ -1,10 +1,4 @@
-import { Playfair_Display } from "next/font/google";
 import { Building2, MapPin, Briefcase, GraduationCap } from "lucide-react";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function Team() {
   const expertise = [
@@ -43,7 +37,7 @@ export default function Team() {
           </p>
 
           <h2
-            className={`${playfair.className} text-3xl sm:text-4xl lg:text-5xl font-normal text-[#1a1a1a] leading-[1.15] mb-6`}
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1a1a1a] leading-[1.15] mb-6"
           >
             Une équipe qui connaît votre métier.
           </h2>
@@ -76,7 +70,7 @@ export default function Team() {
 
         <div className="mt-12 bg-[#782478] rounded-2xl p-8 sm:p-10 shadow-xl text-center">
           <h3
-            className={`${playfair.className} text-2xl sm:text-3xl font-normal text-white mb-4`}
+            className="text-2xl sm:text-3xl font-bold text-white mb-4"
           >
             SAS SHIFTLY
           </h3>

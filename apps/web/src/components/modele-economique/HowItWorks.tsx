@@ -1,10 +1,4 @@
-import { Playfair_Display } from "next/font/google";
 import { Clock, Zap, CheckCircle } from "lucide-react";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function HowItWorks() {
   const steps = [
@@ -46,7 +40,7 @@ export default function HowItWorks() {
           </p>
 
           <h2
-            className={`${playfair.className} text-3xl sm:text-4xl lg:text-5xl font-normal text-[#1a1a1a] leading-[1.15] mb-6`}
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1a1a1a] leading-[1.15] mb-6"
           >
             Opérationnel dès le premier service.
           </h2>

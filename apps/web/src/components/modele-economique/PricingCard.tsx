@@ -1,11 +1,5 @@
 import { Check } from "lucide-react";
-import { Playfair_Display } from "next/font/google";
 import Link from "next/link";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function PricingCard() {
   const features = [
@@ -71,7 +65,7 @@ export default function PricingCard() {
             </p>
 
             <h2
-              className={`${playfair.className} text-3xl sm:text-4xl font-normal text-[#fcfaf7] mb-8`}
+              className="text-3xl sm:text-4xl font-bold text-[#fcfaf7] mb-8"
             >
               Shiftly Établissement
             </h2>
@@ -79,7 +73,7 @@ export default function PricingCard() {
             <div className="mb-8 flex items-baseline gap-2">
               <span className="text-[#bdaaa1]">€</span>
               <span
-                className={`${playfair.className} text-6xl sm:text-7xl font-normal text-[#fcfaf7]`}
+                className="text-6xl sm:text-7xl font-bold text-[#fcfaf7]"
               >
                 50
               </span>
@@ -133,7 +127,7 @@ export default function PricingCard() {
                 className="rounded-2xl border border-[#e8e2dc] bg-white p-8 text-center shadow-sm"
               >
                 <p
-                  className={`${playfair.className} text-5xl sm:text-6xl font-normal text-[#782478] mb-3`}
+                  className="text-5xl sm:text-6xl font-bold text-[#782478] mb-3"
                 >
                   {card.value}
                 </p>

@@ -1,10 +1,3 @@
-import { Playfair_Display } from "next/font/google";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export default function PricingHero() {
   const features = [
     "100% profils locaux & vérifiés",
@@ -22,7 +15,7 @@ export default function PricingHero() {
           </p>
 
           <h1
-            className={`${playfair.className} text-3xl sm:text-4xl lg:text-5xl xl:text-[3.5rem] font-normal text-[#1a1a1a] leading-[1.15] mb-6`}
+            className="text-3xl sm:text-4xl lg:text-5xl xl:text-[3.5rem] font-bold text-[#1a1a1a] leading-[1.15] mb-6"
           >
             Un abonnement.{" "}
             <span className="italic text-[#782478]">Tout inclus.</span>
