@@ -776,7 +776,7 @@ function SubscriptionPageContent() {
                   color={colors.shiftlyViolet}
                   fontWeight="600"
                 >
-                  💰 Économisez 2 mois avec l'abonnement annuel !
+                  💰 Économisez 5 mois avec l'abonnement annuel !
                 </Text>
               )}
             </YStack>
@@ -811,12 +811,12 @@ function SubscriptionPageContent() {
                   plan.id === "establishment"
                     ? "Commencer gratuitement"
                     : plan.id === "establishment-annual"
-                      ? "Économiser 2 mois"
+                      ? "S'abonner à l'année"
                       : undefined;
                 const establishmentPriceDisplayLabel =
                   plan.id === "establishment" ? "Offert" : undefined;
                 const establishmentPriceDetailsLabel =
-                  plan.id === "establishment" ? "pendant 2 mois" : undefined;
+                  plan.id === "establishment" ? "pendant 1 mois" : undefined;
 
                 return (
                   <SubscriptionCard
