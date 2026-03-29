@@ -384,6 +384,21 @@ export function Navbar({
                           Mes paiements
                         </Text>
                       )}
+                    {/* Lien Freelance pour les commerciaux */}
+                    {userRole === "commercial" && onFreelanceClick && (
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color={colors.gray900}
+                        cursor="pointer"
+                        hoverStyle={{
+                          color: colors.shiftlyViolet,
+                        }}
+                        onPress={onFreelanceClick}
+                      >
+                        Freelance
+                      </Text>
+                    )}
                     {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
                     {userRole !== "commercial" && (
                       <>
@@ -686,6 +701,13 @@ export function Navbar({
                             onPress={onPaymentsClick}
                           />
                         )}
+                      {/* Lien Freelance pour les commerciaux */}
+                      {userRole === "commercial" && onFreelanceClick && (
+                        <MenuLink
+                          label="Freelance"
+                          onPress={onFreelanceClick}
+                        />
+                      )}
                       {/* Masquer les liens spécifiques aux recruteurs/freelances pour les commerciaux */}
                       {userRole !== "commercial" && (
                         <>

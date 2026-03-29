@@ -32,7 +32,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     price: 50,
     priceCents: 5000,
     currency: "eur",
-    description: "2 mois offerts puis 50€/mois",
+    description: "1 mois offert puis 50€/mois",
     features: [
       "Publication illimitée de missions",
       "Accès à tous les freelances",
@@ -80,10 +80,10 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: "establishment-annual",
     name: "Établissement",
-    price: 500, // 50 x 10
-    priceCents: 50000,
+    price: 350,
+    priceCents: 35000,
     currency: "eur",
-    description: "500€/an soit 41,67€/mois",
+    description: "350€/an soit 29,17€/mois",
     features: [
       "Publication illimitée de missions",
       "Accès à tous les freelances",
@@ -93,7 +93,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Recherche avancée",
     ],
     billingPeriod: "annual",
-    monthlyPrice: 41.67, // 500 / 12
+    monthlyPrice: 29.17, // 350 / 12
   },
   {
     id: "freelance-annual",
@@ -193,5 +193,5 @@ export const subscriptionPlansById = SUBSCRIPTION_PLANS.reduce(
     acc[plan.id] = plan;
     return acc;
   },
-  {} as Record<SubscriptionPlanId, SubscriptionPlan>
+  {} as Record<SubscriptionPlanId, SubscriptionPlan>,
 );

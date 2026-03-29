@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       console.error("Plan invalide:", planId);
       return NextResponse.json(
         { error: "Plan d'abonnement invalide" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error(
           "Erreur lors de la récupération de l'utilisateur avec token:",
-          err
+          err,
         );
       }
     }
@@ -135,12 +135,12 @@ export async function POST(req: NextRequest) {
       console.error("❌ Utilisateur non authentifié.");
       console.error(
         "Cookies reçus:",
-        req.headers.get("cookie") ? "Oui" : "Non"
+        req.headers.get("cookie") ? "Oui" : "Non",
       );
       console.error("Auth header:", authHeader ? "Oui" : "Non");
       return NextResponse.json(
         { error: "Vous devez être connecté pour vous abonner" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -164,14 +164,14 @@ export async function POST(req: NextRequest) {
       console.log("Customer ID existant trouvé:", customerId);
     } else {
       console.log(
-        "Aucun customer ID existant, un nouveau sera créé par Stripe"
+        "Aucun customer ID existant, un nouveau sera créé par Stripe",
       );
     }
 
     const origin = req.headers.get("origin") ?? req.nextUrl.origin;
     const successUrl = `${origin}/subscription?status=success&plan=${planId}`;
     const cancelUrl = `${origin}/subscription?status=cancelled&plan=${planId}`;
-    const trialPeriodDays = planId === "establishment" ? 61 : undefined;
+    const trialPeriodDays = planId === "establishment" ? 30 : undefined;
 
     console.log("Création de la session Stripe...");
     console.log("Plan:", planId);
@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
       console.error("❌ Aucune URL retournée par createCheckoutSession");
       return NextResponse.json(
         { error: "Impossible de générer l'URL de paiement Stripe" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
             ? error.message
             : "Impossible de créer la session de paiement",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

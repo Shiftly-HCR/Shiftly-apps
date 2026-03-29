@@ -153,7 +153,7 @@ export function SubscriptionCard({
               gap="$2"
             >
               <Text fontSize={12} fontWeight="600" color={colors.shiftlyViolet}>
-                💰 Économisez 2 mois
+                💰 Économisez 5 mois
               </Text>
             </XStack>
           )}

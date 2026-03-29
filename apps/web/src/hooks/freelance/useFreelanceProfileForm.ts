@@ -11,7 +11,7 @@ import {
   deleteFreelanceEducation,
   syncLinkedInData,
 } from "@shiftly/data";
-import { useFreelanceData } from "@/hooks";
+import { useFreelanceData, useCurrentUser } from "@/hooks";
 
 interface UseFreelanceProfileFormProps {
   onSave?: () => void;
@@ -95,6 +95,8 @@ export function useFreelanceProfileForm({
   externalCityOfResidence,
   externalBio,
 }: UseFreelanceProfileFormProps = {}) {
+  const { user } = useCurrentUser();
+
   const {
     freelanceProfile,
     experiences,
@@ -103,7 +105,7 @@ export function useFreelanceProfileForm({
     refreshProfile,
     refreshExperiences,
     refreshEducations,
-  } = useFreelanceData();
+  } = useFreelanceData(user?.id ?? null);
 
   // États pour le profil
   const [bio, setBio] = useState("");
