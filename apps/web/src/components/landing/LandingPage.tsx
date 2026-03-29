@@ -2,7 +2,7 @@ import Ambassadors from "./Ambassadors";
 import FinalCTA from "./FinalCTA";
 import { Footer } from "@shiftly/ui";
 import ForEstablishments from "./ForEstablishments";
-import ForFreelancers from "./ForFreelancers";
+import SolutionForHCR from "./ForFreelancers";
 import Hero from "./Hero";
 import PricingModel from "./PricingModel";
 import ProblemSolution from "./ProblemSolution";
@@ -15,7 +15,7 @@ export function LandingPage() {
       <PublicTopNavigation />
       <Hero />
       <ProblemSolution />
-      <ForFreelancers />
+      <SolutionForHCR />
       <ForEstablishments />
       <PricingModel />
       <Ambassadors />

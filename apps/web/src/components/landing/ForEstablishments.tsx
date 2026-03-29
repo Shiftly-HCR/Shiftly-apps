@@ -1,89 +1,142 @@
-import {
-  Zap,
-  CheckCircle,
-  Users,
-  BarChart3,
-  Building2,
-  ArrowRight,
-} from "lucide-react";
+import { Playfair_Display } from "next/font/google";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export default function ForEstablishments() {
-  const features = [
+  const leftFeatures = [
     {
-      icon: Zap,
-      title: "Matching intelligent",
-      description: "Candidats disponibles et qualifiés sous 48h.",
+      number: "1",
+      title: "Démarrage simple, sans friction",
+      description:
+        "Mise en place rapide, prise en main guidée. Vous êtes opérationnels dès les premières heures.",
     },
     {
-      icon: CheckCircle,
-      title: "Freelances certifiés",
-      description: "Base de talents vérifiés et évalués par la communauté.",
+      number: "2",
+      title: "Paramétrage sur mesure",
+      description:
+        "La solution se configure selon vos flux, vos postes, vos saisonnalités et vos obligations conventionnelles.",
     },
     {
-      icon: Users,
-      title: "Équipes prêtes à l'emploi",
-      description: "Constitution de teams complètes en quelques clics.",
+      number: "3",
+      title: "Montée en charge accompagnée",
+      description:
+        "Que vous ouvriez un second établissement ou que vous passiez à la vitesse supérieure, nous suivons votre croissance.",
     },
     {
-      icon: BarChart3,
-      title: "Outils de suivi",
-      description: "Statistiques de recrutement et gestion simplifiée.",
+      number: "4",
+      title: "Évolutions continues",
+      description:
+        "Notre roadmap est construite avec les retours terrain de nos clients. Vos besoins façonnent la solution.",
+    },
+  ];
+
+  const rightFeatures = [
+    {
+      icon: "✨",
+      title: "Matching intelligent des profils",
+      description:
+        "Propositions automatiques selon vos critères métier.",
     },
     {
-      icon: Building2,
-      title: "Accès Premium",
-      description: "Analytics avancés et gestion multi-sites.",
+      icon: "📅",
+      title: "Planification dynamique",
+      description:
+        "Gestion des plannings, remplacements et renforts en temps réel.",
+    },
+    {
+      icon: "📊",
+      title: "Tableaux de bord exploitation",
+      description:
+        "KPIs RH et opérationnels adaptés à votre structure.",
+    },
+    {
+      icon: "💼",
+      title: "Gestion administrative externalisée",
+      description:
+        "Conformité juridique et gestion des transactions sécurisées.",
+    },
+    {
+      icon: "🎯",
+      title: "Accès aux profils qualifiés",
+      description:
+        "Vivier de talents évalués et certifiés secteur HCR.",
     },
   ];
 
   return (
-    <section
-      id="etablissements"
-      className="py-24 px-4 sm:px-6 lg:px-8 bg-[#fcfaf7]"
-    >
+    <section className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#1e1424]">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div className="space-y-6 order-2 lg:order-1">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="flex gap-4 p-6 rounded-xl bg-[#bdaaa1]/20 hover:bg-gradient-to-r hover:from-[#cc9933]/10 hover:to-[#782478]/10 border border-transparent hover:border-[#cc9933] hover:shadow-lg transition-all duration-300 group"
-              >
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-lg bg-[#cc9933]/10 flex items-center justify-center group-hover:bg-[#cc9933] transition-colors">
-                    <feature.icon className="w-6 h-6 text-[#cc9933] group-hover:text-[#fcfaf7] transition-colors" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-[#4c114f] mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-[#503342]">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="order-1 lg:order-2">
-            <div className="inline-block px-4 py-2 bg-[#cc9933]/10 rounded-full mb-6">
-              <span className="text-[#cc9933] font-semibold">
-                Pour les établissements
-              </span>
-            </div>
-
-            <h2 className="text-4xl sm:text-5xl font-bold text-[#4c114f] mb-6">
-              Constituez vos équipes en un instant.
-            </h2>
-
-            <p className="text-xl text-[#503342] mb-12 leading-relaxed">
-              Accédez à un vivier de talents qualifiés, constituez vos équipes
-              rapidement et pilotez vos recrutements efficacement.
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#cc9933] mb-4">
+              Un logiciel évolutif
             </p>
 
-            <button className="group px-8 py-4 bg-[#cc9933] text-[#fcfaf7] rounded-lg hover:bg-[#782478] transition-all transform hover:scale-105 flex items-center gap-2 font-semibold text-lg">
-              Essayer Shiftly Entreprise
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            <h2
+              className={`${playfair.className} text-3xl sm:text-4xl lg:text-[2.75rem] font-normal text-[#fcfaf7] leading-[1.15] mb-6`}
+            >
+              Une solution qui grandit avec votre établissement.
+            </h2>
+
+            <p className="text-base sm:text-lg text-[#bdaaa1] leading-relaxed mb-10">
+              Shiftly n&apos;est pas un outil figé. Notre solution s&apos;adapte
+              à votre niveau de structuration, vos pics d&apos;activité, vos
+              contraintes saisonnières et vos ambitions de développement. Elle
+              évolue avec vous — pas l&apos;inverse.
+            </p>
+
+            <div className="space-y-5">
+              {leftFeatures.map((feature) => (
+                <div key={feature.number} className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#782478] text-[#fcfaf7] font-bold">
+                      {feature.number}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-[#fcfaf7] mb-1.5">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm sm:text-base text-[#bdaaa1] leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="rounded-2xl bg-[#2d1f35] p-6 sm:p-8 ring-1 ring-white/5">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#782478] px-4 py-2 text-xs font-semibold text-[#fcfaf7]">
+                <span className="text-sm">✨</span>
+                Fonctionnalités disponibles
+              </div>
+
+              <div className="space-y-4">
+                {rightFeatures.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="group rounded-xl border border-white/5 bg-[#1e1424]/50 p-5 transition hover:border-[#782478]/30 hover:bg-[#1e1424]"
+                  >
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="text-2xl" aria-hidden>
+                        {feature.icon}
+                      </span>
+                      <h3 className="text-base font-bold text-[#fcfaf7]">
+                        {feature.title}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-[#bdaaa1] leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
