@@ -11,7 +11,8 @@ export default function HowItWorks() {
     {
       number: "1",
       icon: Clock,
-      badge: "⏱️ 2 minutes",
+      badgeIcon: Clock,
+      badgeText: "2 minutes",
       title: "Vous publiez votre besoin",
       description:
         "Définissez le poste, les horaires, le TJM et vos contraintes terrain. La mission est diffusée immédiatement sur notre réseau local HCR.",
@@ -19,7 +20,8 @@ export default function HowItWorks() {
     {
       number: "2",
       icon: Zap,
-      badge: "⚡ < 48h",
+      badgeIcon: Zap,
+      badgeText: "< 48h",
       title: "Vous recevez des profils qualifiés",
       description:
         "Nos équipes locales vous suggèrent les profils les mieux adaptés. Accédez aux expériences, avis et disponibilités de chaque talent en un coup d'œil.",
@@ -27,7 +29,8 @@ export default function HowItWorks() {
     {
       number: "3",
       icon: CheckCircle,
-      badge: "✓ Immédiat",
+      badgeIcon: CheckCircle,
+      badgeText: "Immédiat",
       title: "Vous choisissez et renforcez",
       description:
         "Sélectionnez le bon profil, confirmez la mission. Le talent s'intègre immédiatement à votre équipe — déjà dans le rythme du service.",
@@ -72,7 +75,8 @@ export default function HowItWorks() {
 
                 <div className="text-center">
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#782478]/10 px-4 py-2 text-xs font-semibold text-[#782478]">
-                    {step.badge}
+                    <step.badgeIcon className="h-3.5 w-3.5" aria-hidden />
+                    {step.badgeText}
                   </div>
 
                   <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] mb-4">
