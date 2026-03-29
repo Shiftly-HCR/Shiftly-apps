@@ -1,10 +1,10 @@
-import Ambassadors from "./Ambassadors";
+import HCRExpertise from "./HCRExpertise";
 import FinalCTA from "./FinalCTA";
 import { Footer } from "@shiftly/ui";
 import ForEstablishments from "./ForEstablishments";
 import SolutionForHCR from "./ForFreelancers";
 import Hero from "./Hero";
-import PricingModel from "./PricingModel";
+import Benefits from "./Benefits";
 import ProblemSolution from "./ProblemSolution";
 import Stats from "./Stats";
 import { PublicTopNavigation } from "@/components/layout";
@@ -17,9 +17,8 @@ export function LandingPage() {
       <ProblemSolution />
       <SolutionForHCR />
       <ForEstablishments />
-      <PricingModel />
-      <Ambassadors />
-      <Stats />
+      <Benefits />
+      <HCRExpertise />
       <FinalCTA />
       <Footer />
     </div>
