@@ -675,15 +675,6 @@ export default function SecteurHero() {
                 </div>
               )}
             </div>
-
-            <div className="absolute -bottom-4 -right-4 z-20 rounded-2xl bg-[#782478] p-6 shadow-xl shadow-[#782478]/40">
-              <p className="text-4xl font-bold text-[#fcfaf7] leading-none">
-                {sectorContent[activeSector].bottomCard.value}
-              </p>
-              <p className="mt-2 text-sm font-medium text-[#fcfaf7]/90 leading-tight">
-                {sectorContent[activeSector].bottomCard.label}
-              </p>
-            </div>
           </div>
         </div>
       </div>
