@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, Hotel, UtensilsCrossed, BarChart3, Building2 } from "lucide-react";
 
 export default function HCRExpertise() {
   const leftChecks = [
@@ -11,7 +11,7 @@ export default function HCRExpertise() {
 
   const sectors = [
     {
-      icon: "🏨",
+      icon: Hotel,
       title: "Hôtellerie",
       description:
         "Réception, housekeeping, service, F&B — nous maîtrisons les postes, les standards et les exigences de l'hôtellerie indépendante comme des groupes.",
@@ -20,7 +20,7 @@ export default function HCRExpertise() {
       descColor: "text-[#503342]",
     },
     {
-      icon: "🍽️",
+      icon: UtensilsCrossed,
       title: "Restauration",
       description:
         "Brigade de cuisine, service en salle, bar, événementiel — nous connaissons les réalités d'un service de midi et les enjeux d'une ouverture.",
@@ -29,7 +29,7 @@ export default function HCRExpertise() {
       descColor: "text-[#bdaaa1]",
     },
     {
-      icon: "📊",
+      icon: BarChart3,
       title: "RH & exploitation",
       description:
         "Planning, gestion des absences, turn-over, pics saisonniers — nous apportons structure et fluidité à vos processus RH.",
@@ -38,7 +38,7 @@ export default function HCRExpertise() {
       descColor: "text-[#bdaaa1]",
     },
     {
-      icon: "😊",
+      icon: Building2,
       title: "Groupes & chaînes",
       description:
         "Multi-sites, standardisation, remontées d'indicateurs consolidés — notre solution s'adapte aux logiques de groupe comme aux établissements indépendants.",
@@ -99,8 +99,21 @@ export default function HCRExpertise() {
                     : "border border-[#e8e2dc]"
                 }`}
               >
-                <div className="mb-4 text-3xl" aria-hidden>
-                  {sector.icon}
+                <div
+                  className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${
+                    sector.bgColor === "bg-[#1e1424]"
+                      ? "bg-[#782478]/20"
+                      : "bg-[#782478]/5"
+                  }`}
+                >
+                  <sector.icon
+                    className={`h-6 w-6 ${
+                      sector.bgColor === "bg-[#1e1424]"
+                        ? "text-[#782478]"
+                        : "text-[#782478]"
+                    }`}
+                    aria-hidden
+                  />
                 </div>
                 <h3
                   className={`text-lg sm:text-xl font-bold ${sector.textColor} mb-3`}

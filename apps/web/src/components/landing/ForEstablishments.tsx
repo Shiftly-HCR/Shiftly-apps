@@ -1,4 +1,11 @@
 import { Playfair_Display } from "next/font/google";
+import {
+  Sparkles,
+  CalendarDays,
+  BarChart3,
+  Briefcase,
+  Target,
+} from "lucide-react";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -35,31 +42,31 @@ export default function ForEstablishments() {
 
   const rightFeatures = [
     {
-      icon: "✨",
+      icon: Sparkles,
       title: "Matching intelligent des profils",
       description:
         "Propositions automatiques selon vos critères métier.",
     },
     {
-      icon: "📅",
+      icon: CalendarDays,
       title: "Planification dynamique",
       description:
         "Gestion des plannings, remplacements et renforts en temps réel.",
     },
     {
-      icon: "📊",
+      icon: BarChart3,
       title: "Tableaux de bord exploitation",
       description:
         "KPIs RH et opérationnels adaptés à votre structure.",
     },
     {
-      icon: "💼",
+      icon: Briefcase,
       title: "Gestion administrative externalisée",
       description:
         "Conformité juridique et gestion des transactions sécurisées.",
     },
     {
-      icon: "🎯",
+      icon: Target,
       title: "Accès aux profils qualifiés",
       description:
         "Vivier de talents évalués et certifiés secteur HCR.",
@@ -126,9 +133,9 @@ export default function ForEstablishments() {
                     className="group rounded-xl border border-white/5 bg-[#1e1424]/50 p-5 transition hover:border-[#782478]/30 hover:bg-[#1e1424]"
                   >
                     <div className="mb-3 flex items-center gap-3">
-                      <span className="text-2xl" aria-hidden>
-                        {feature.icon}
-                      </span>
+                      <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#782478]/20">
+                        <feature.icon className="h-5 w-5 text-[#782478]" aria-hidden />
+                      </div>
                       <h3 className="text-base font-bold text-[#fcfaf7]">
                         {feature.title}
                       </h3>

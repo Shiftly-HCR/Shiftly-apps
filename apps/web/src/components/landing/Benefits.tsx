@@ -1,49 +1,60 @@
+import {
+  Zap,
+  Compass,
+  RefreshCw,
+  Trophy,
+  Clock,
+  Handshake,
+  MapPin,
+  TrendingUp,
+} from "lucide-react";
+
 export default function PricingModel() {
   const benefits = [
     {
-      icon: "⚡",
+      icon: Zap,
       title: "Réactivité face aux imprévus",
       description:
         "Un poste vacant, une urgence de renfort — vous avez une réponse opérationnelle en moins de 24h.",
     },
     {
-      icon: "🧭",
+      icon: Compass,
       title: "Pilotage simplifié",
       description:
         "Vos indicateurs clés sont visibles, lisibles et actionnables. Moins de temps en back-office, plus de présence terrain.",
     },
     {
-      icon: "🔄",
+      icon: RefreshCw,
       title: "Continuité de service",
       description:
         "Pics d'activité, congés, saisons — Shiftly garantit la continuité de vos équipes quelle que soit la période.",
     },
     {
-      icon: "🏆",
+      icon: Trophy,
       title: "Qualité opérationnelle",
       description:
         "Des profils évalués, des missions suivies, un accompagnement rigoureux. La qualité de service reste votre priorité — et la nôtre.",
     },
     {
-      icon: "⏱️",
+      icon: Clock,
       title: "Gain de temps immédiat",
       description:
         "Finies les heures perdues sur les recrutements urgents, les recherches de remplaçants et la gestion administrative.",
     },
     {
-      icon: "🤝",
+      icon: Handshake,
       title: "Un partenaire engagé",
       description:
         "Pas d'outil livré et oublié. Nous assurons un suivi régulier, des ajustements et une vraie relation dans la durée.",
     },
     {
-      icon: "📍",
+      icon: MapPin,
       title: "Proximité locale",
       description:
         "Une antenne près de chez vous, une équipe qui connaît votre territoire et ses réalités de marché.",
     },
     {
-      icon: "📈",
+      icon: TrendingUp,
       title: "Solution qui vous suit",
       description:
         "Que vous grandissiez, que vous ouvriez un second site ou que vos besoins évoluent — la solution s'adapte.",
@@ -68,8 +79,8 @@ export default function PricingModel() {
               key={index}
               className="group rounded-2xl border border-[#e8e2dc] bg-white p-6 shadow-sm transition hover:border-[#782478]/30 hover:shadow-md"
             >
-              <div className="mb-4 text-3xl" aria-hidden>
-                {benefit.icon}
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#782478]/5">
+                <benefit.icon className="h-6 w-6 text-[#782478]" aria-hidden />
               </div>
               <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-3 leading-snug">
                 {benefit.title}
