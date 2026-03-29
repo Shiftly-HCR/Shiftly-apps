@@ -50,7 +50,7 @@ export default function HCRExpertise() {
 
   return (
     <section
-      id="ambassadeurs"
+      id="a-propos"
       className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#f5f1ed]"
     >
       <div className="max-w-7xl mx-auto">

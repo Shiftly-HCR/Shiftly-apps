@@ -67,7 +67,10 @@ export default function ForEstablishments() {
   ];
 
   return (
-    <section className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#1e1424]">
+    <section
+      id="modele-economique"
+      className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#1e1424]"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           <div>

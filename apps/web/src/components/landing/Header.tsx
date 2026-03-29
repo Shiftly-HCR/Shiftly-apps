@@ -15,28 +15,24 @@ export default function Header() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            <a
-              href="#freelances"
+            <Link
+              href="/secteur"
               className="text-[#503342] hover:text-[#782478] transition-colors"
             >
-              Freelances
-            </a>
-            <a
-              href="#etablissements"
+              Secteur
+            </Link>
+            <Link
+              href="/modele-economique"
               className="text-[#503342] hover:text-[#782478] transition-colors"
             >
-              Établissements
-            </a>
-            <a
-              href="#ambassadeurs"
+              Modèle économique
+            </Link>
+            <Link
+              href="/a-propos"
               className="text-[#503342] hover:text-[#782478] transition-colors"
             >
-              Ambassadeurs
-            </a>
-            <button className="flex items-center gap-2 text-[#503342] hover:text-[#782478] transition-colors">
-              <Globe className="w-4 h-4" />
-              FR
-            </button>
+              À propos
+            </Link>
           </nav>
 
           <div className="flex items-center gap-4">
