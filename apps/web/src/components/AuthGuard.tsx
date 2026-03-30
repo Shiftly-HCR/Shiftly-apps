@@ -18,6 +18,7 @@ const AUTH_ROUTES = [
 ];
 
 const PUBLIC_ROUTES = [
+  "/",
   "/cgv",
   "/terms",
   "/legal",
@@ -25,6 +26,9 @@ const PUBLIC_ROUTES = [
   "/contact",
   "/faq",
   "/help",
+  "/secteur",
+  "/modele-economique",
+  "/a-propos",
 ];
 
 /**

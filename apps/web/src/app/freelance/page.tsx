@@ -32,6 +32,7 @@ export default function FreelancePage() {
     getFullName,
     getTags,
     handleViewProfile,
+    handleInvite,
   } = useFreelancePage();
 
   const [isMobile, setIsMobile] = useState(false);
@@ -187,7 +188,6 @@ export default function FreelancePage() {
                           onPress={() => handleViewProfile(freelance.id)}
                         >
                           <YStack flex={1} gap="$3">
-                            {/* Avatar et infos principales */}
                             <XStack gap="$3" alignItems="center">
                               <YStack position="relative">
                                 <YStack
@@ -269,7 +269,6 @@ export default function FreelancePage() {
                               </YStack>
                             </XStack>
 
-                            {/* Compétences (badges sur 1 seule ligne, overflow masqué) */}
                             {getTags(freelance).length > 0 && (
                               <XStack
                                 gap="$2"
@@ -304,18 +303,28 @@ export default function FreelancePage() {
                             )}
                           </YStack>
 
-                          {/* Boutons d'action */}
                           <XStack gap="$2" marginTop="auto" paddingTop="$2">
                             <Button
                               variant="secondary"
                               size="sm"
-                              onPress={(e: any) => {
+                              onPress={(e: { stopPropagation: () => void }) => {
                                 e.stopPropagation();
                                 handleViewProfile(freelance.id);
                               }}
                               flex={1}
                             >
                               Voir profil
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onPress={(e: { stopPropagation: () => void }) => {
+                                e.stopPropagation();
+                                handleInvite(freelance.id);
+                              }}
+                              flex={1}
+                            >
+                              Inviter
                             </Button>
                           </XStack>
                         </YStack>

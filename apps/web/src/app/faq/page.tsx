@@ -1,7 +1,7 @@
 "use client";
 
 import { YStack, Text, ScrollView } from "tamagui";
-import { AppLayout, PageHeader, FAQSection } from "@/components";
+import { PublicLayout, PageHeader, FAQSection } from "@/components";
 import { useResponsive } from "@/hooks";
 import { colors } from "@shiftly/ui";
 
@@ -100,7 +100,7 @@ export default function FAQPage() {
 
   const { isMobile } = useResponsive();
   return (
-    <AppLayout>
+    <PublicLayout>
       <ScrollView flex={1}>
         <YStack
           maxWidth={1200}
@@ -163,6 +163,6 @@ export default function FAQPage() {
           </YStack>
         </YStack>
       </ScrollView>
-    </AppLayout>
+    </PublicLayout>
   );
 }

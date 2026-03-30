@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ScrollView, Text, YStack } from "tamagui";
 import { colors } from "@shiftly/ui";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { PublicLayout } from "@/components";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 type ContentBlock =
@@ -144,7 +144,7 @@ export default function LegalPage() {
   const blocks = useMemo(() => parseLegalContent(legalContent), [legalContent]);
 
   return (
-    <AppLayout>
+    <PublicLayout>
       <ScrollView flex={1}>
         <YStack maxWidth={1000} width="100%" alignSelf="center" padding="$6" gap="$6">
           <PageHeader
@@ -243,6 +243,6 @@ export default function LegalPage() {
           </YStack>
         </YStack>
       </ScrollView>
-    </AppLayout>
+    </PublicLayout>
   );
 }
