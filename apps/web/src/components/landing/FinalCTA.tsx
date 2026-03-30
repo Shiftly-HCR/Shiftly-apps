@@ -3,7 +3,10 @@ import Link from "next/link";
 
 export default function FinalCTA() {
   return (
-    <section className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#6b2d9e] via-[#782478] to-[#8b3aa8] overflow-hidden">
+    <section
+      data-nav-dark
+      className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#6b2d9e] via-[#782478] to-[#8b3aa8] overflow-hidden"
+    >
       <div
         className="pointer-events-none absolute inset-0 opacity-30"
         aria-hidden

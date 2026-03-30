@@ -16,9 +16,7 @@ export default function Hero() {
       <div className="relative max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-12 lg:gap-16 items-center">
           <div className="space-y-8 lg:space-y-10">
-            <h1
-              className="text-4xl sm:text-5xl lg:text-[3.35rem] xl:text-6xl leading-[1.08] tracking-tight text-[#1a1a1a] font-bold"
-            >
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.35rem] xl:text-6xl leading-[1.08] tracking-tight text-[#1a1a1a] font-bold">
               <span className="block">La solution qui</span>
               <span className="block text-[#782478] italic font-normal">
                 s&apos;adapte
@@ -34,8 +32,8 @@ export default function Hero() {
             </p>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
-              <Link
-                href="/register"
+              <a
+                href="mailto:contact@shiftly.pro?subject=Demande%20de%20d%C3%A9monstration%20Shiftly&body=Bonjour%2C%0D%0A%0D%0AJe%20souhaite%20en%20savoir%20plus%20sur%20Shiftly%20et%20b%C3%A9n%C3%A9ficier%20d%27une%20d%C3%A9monstration.%0D%0A%0D%0ANom%20de%20l%27%C3%A9tablissement%20%3A%20%0D%0AType%20d%27%C3%A9tablissement%20%3A%20%0D%0ANombre%20de%20sites%20%3A%20%0D%0AT%C3%A9l%C3%A9phone%20%3A%20%0D%0A%0D%0AMerci%2C"
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#782478] px-8 py-4 text-lg font-semibold text-[#fcfaf7] shadow-lg shadow-[#782478]/25 transition hover:bg-[#5c1c5c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#782478]"
               >
                 Demander une démo
@@ -43,7 +41,7 @@ export default function Hero() {
                   className="h-5 w-5 transition-transform group-hover:translate-x-0.5"
                   aria-hidden
                 />
-              </Link>
+              </a>
               <Link
                 href="#etablissements"
                 className="text-base font-medium text-[#1a1a1a] underline decoration-[#1a1a1a] underline-offset-4 transition hover:text-[#782478] hover:decoration-[#782478]"
@@ -54,17 +52,15 @@ export default function Hero() {
           </div>
 
           <div className="relative mx-auto w-full max-w-lg lg:max-w-none lg:mx-0 min-h-[420px] sm:min-h-[480px]">
-            <div
-              className="relative z-10 rounded-2xl bg-[#1e1424] p-6 sm:p-8 shadow-2xl shadow-black/20 ring-1 ring-white/5"
-            >
+            <div className="relative z-10 rounded-2xl bg-[#1e1424] p-6 sm:p-8 shadow-2xl shadow-black/20 ring-1 ring-white/5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#bdaaa1]">
                 Établissement accompagné
               </p>
               <h2 className="mt-3 text-2xl sm:text-3xl font-bold text-[#fcfaf7] leading-tight">
-                Hôtel Le Méridien Lyon
+                Hôtel Le Parisien
               </h2>
               <p className="mt-2 text-sm text-[#bdaaa1]">
-                Directeur d&apos;exploitation — Lyon 2e
+                Directeur d&apos;exploitation — Paris 8e
               </p>
 
               <div className="mt-8 grid grid-cols-3 gap-4 border-t border-white/10 pt-8">
@@ -85,10 +81,7 @@ export default function Hero() {
               </div>
 
               <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#4c114f] px-4 py-2 text-sm text-[#fcfaf7]">
-                <span
-                  className="relative flex h-2 w-2"
-                  aria-hidden
-                >
+                <span className="relative flex h-2 w-2" aria-hidden>
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
                 </span>
@@ -97,11 +90,9 @@ export default function Hero() {
             </div>
 
             {/* Purple stat card overlap */}
-            <div
-              className="absolute -bottom-2 right-0 z-20 w-[46%] max-w-[200px] rounded-2xl bg-[#782478] p-5 sm:p-6 shadow-xl shadow-[#782478]/40"
-            >
+            <div className="absolute -bottom-2 right-0 z-20 w-[46%] max-w-[200px] rounded-2xl bg-[#782478] p-5 sm:p-6 shadow-xl shadow-[#782478]/40">
               <p className="text-4xl sm:text-5xl font-bold leading-none text-[#fcfaf7]">
-                10
+                4
               </p>
               <p className="mt-2 text-xs sm:text-sm font-sans font-medium text-[#fcfaf7]/90">
                 Antennes locales

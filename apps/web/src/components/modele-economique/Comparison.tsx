@@ -45,7 +45,10 @@ export default function Comparison() {
   ];
 
   return (
-    <section className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#1e1424]">
+    <section
+      data-nav-dark
+      className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#1e1424]"
+    >
       <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] gap-12 lg:gap-16 items-start">
           <div>
